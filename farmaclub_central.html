@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FarmaClub — Central de Sistemas</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',system-ui,sans-serif;background:#f4f4f2;color:#14152a;min-height:100vh}
+.hero{background:linear-gradient(135deg,#0d9488 0%,#0f766e 60%,#134e4a 100%);padding:48px 24px 56px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(255,255,255,.05);right:-80px;top:-120px}
+.hero::after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,.04);left:-60px;bottom:-80px}
+.logo{font-size:48px;font-weight:800;color:#fff;letter-spacing:-1px;position:relative;z-index:1}
+.logo span{color:#ccfbf1}
+.tagline{font-size:18px;color:rgba(255,255,255,.8);margin-top:10px;position:relative;z-index:1}
+.subtag{font-size:13px;color:rgba(255,255,255,.55);margin-top:6px;position:relative;z-index:1}
+.grid{max-width:1100px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.card{background:#fff;border-radius:18px;border:1.5px solid #e8eaf4;padding:28px;text-decoration:none;color:inherit;transition:all .18s;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;border-radius:18px 18px 0 0}
+.card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(20,21,42,.12);border-color:#0d9488}
+.card-ico{font-size:36px;margin-bottom:4px}
+.card-tag{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 10px;border-radius:20px;display:inline-block;width:fit-content}
+.card-title{font-size:20px;font-weight:700;color:#14152a}
+.card-desc{font-size:13px;color:#5a5e7a;line-height:1.6}
+.card-features{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.card-features li{font-size:12px;color:#5a5e7a;display:flex;align-items:center;gap:6px}
+.card-features li::before{content:"✓";color:#0d9488;font-weight:700;font-size:11px}
+.card-btn{margin-top:auto;padding:12px 20px;background:#0d9488;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:center;font-family:'Sora',sans-serif;transition:background .15s}
+.card:hover .card-btn{background:#0f766e}
+.section-label{max-width:1100px;margin:0 auto;padding:0 24px;font-size:11px;font-weight:700;color:#9a9eb8;letter-spacing:.8px;text-transform:uppercase;margin-top:12px}
+.status-bar{background:#fff;border-top:1px solid #e8eaf4;padding:16px 24px;text-align:center;font-size:12px;color:#9a9eb8;margin-top:20px}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#0d9488;margin-right:6px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* Cores por módulo */
+.c-central::before{background:linear-gradient(90deg,#0d9488,#0f766e)}
+.c-farmacia::before{background:linear-gradient(90deg,#2563eb,#1d4ed8)}
+.c-cliente::before{background:linear-gradient(90deg,#16a34a,#15803d)}
+.c-motoboy::before{background:linear-gradient(90deg,#d97706,#b45309)}
+.c-compras::before{background:linear-gradient(90deg,#7c3aed,#6d28d9)}
+.c-contabil::before{background:linear-gradient(90deg,#0891b2,#0e7490)}
+.c-frete::before{background:linear-gradient(90deg,#dc2626,#b91c1c)}
+
+.tag-central{background:#e6faf8;color:#0d9488}
+.tag-farmacia{background:#eff6ff;color:#2563eb}
+.tag-cliente{background:#f0fdf4;color:#16a34a}
+.tag-motoboy{background:#fffbeb;color:#d97706}
+.tag-compras{background:#f5f3ff;color:#7c3aed}
+.tag-contabil{background:#ecfeff;color:#0891b2}
+.tag-frete{background:#fef2f2;color:#dc2626}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo">Farma<span>Club</span></div>
+  <div class="tagline">O clube das farmácias independentes de Itaperuna</div>
+  <div class="subtag">Ecossistema completo · Gestão · Tecnologia · Compras Coletivas</div>
+</div>
+
+<div class="section-label" style="margin-top:32px">GESTÃO CENTRAL</div>
+<div class="grid" style="padding-top:16px;grid-template-columns:1fr">
+  <a class="card c-central" href="farmaclub_erp_central.html" target="_blank">
+    <div>
+      <div class="card-ico">▣</div>
+      <div class="card-tag tag-central">Mury — Acesso exclusivo</div>
+      <div class="card-title" style="margin-top:8px">ERP Central FarmaClub</div>
+      <div class="card-desc">Seu painel de controle total. Veja em tempo real o faturamento de todas as farmácias parceiras, pedidos ativos, motoboys em rota, repasses e alertas de inteligência artificial.</div>
+    </div>
+    <ul class="card-features">
+      <li>Dashboard consolidado — 6 farmácias em tempo real</li>
+      <li>Controle de repasses e comissão de 10%</li>
+      <li>Gestão da equipe de motoboys</li>
+      <li>IA & Insights com recomendações automáticas</li>
+    </ul>
+    <div class="card-btn">Acessar ERP Central →</div>
+  </a>
+</div>
+
+<div class="section-label">MÓDULOS DAS FARMÁCIAS</div>
+<div class="grid" style="padding-top:16px">
+
+  <a class="card c-farmacia" href="farmaclub_erp_farmacia.html" target="_blank">
+    <div>
+      <div class="card-ico">🏥</div>
+      <div class="card-tag tag-farmacia">ERP da Farmácia</div>
+      <div class="card-title" style="margin-top:8px">Sistema da Farmácia Parceira</div>
+      <div class="card-desc">O ERP completo que o dono da farmácia acessa. PDV, estoque, precificação automática, notas fiscais, financeiro e relatórios — tudo em um link.</div>
+    </div>
+    <ul class="card-features">
+      <li>PDV com leitor de código de barras</li>
+      <li>Estoque com alerta de vencimento e mínimo</li>
+      <li>Entrada de NF-e por XML ou manual</li>
+      <li>SNGPC — registro de psicotrópicos</li>
+      <li>DRE, contas a pagar e receber</li>
+    </ul>
+    <div class="card-btn">Acessar ERP Farmácia →</div>
+  </a>
+
+  <a class="card c-compras" href="farmaclub_compra_coletiva.html" target="_blank">
+    <div>
+      <div class="card-ico">🤝</div>
+      <div class="card-tag tag-compras">Compra Coletiva</div>
+      <div class="card-title" style="margin-top:8px">Central de Compras</div>
+      <div class="card-desc">O coração do FarmaClub. Consolida as necessidades de todas as farmácias, compara fornecedores, gera o pedido único e mostra quanto o grupo economizou.</div>
+    </div>
+    <ul class="card-features">
+      <li>Necessidades consolidadas automaticamente</li>
+      <li>Comparativo de até 4 fornecedores lado a lado</li>
+      <li>Rateio automático por farmácia</li>
+      <li>Histórico e economia gerada em R$</li>
+    </ul>
+    <div class="card-btn">Acessar Compras →</div>
+  </a>
+
+  <a class="card c-contabil" href="farmaclub_contabilidade.html" target="_blank">
+    <div>
+      <div class="card-ico">📊</div>
+      <div class="card-tag tag-contabil">Contabilidade</div>
+      <div class="card-title" style="margin-top:8px">ERP Contabilidade</div>
+      <div class="card-desc">Integração direta com o escritório contábil. Obrigações fiscais, DAS, DRE, folha de pagamento, documentos e o canal de mensagens entre você e os contadores.</div>
+    </div>
+    <ul class="card-features">
+      <li>Calendário de obrigações com alertas</li>
+      <li>DAS Simples Nacional calculado automaticamente</li>
+      <li>DRE consolidado e por farmácia</li>
+      <li>Visão pessoal Mury — IR e comissões</li>
+    </ul>
+    <div class="card-btn">Acessar Contabilidade →</div>
+  </a>
+
+</div>
+
+<div class="section-label">APPS DE CAMPO</div>
+<div class="grid" style="padding-top:16px">
+
+  <a class="card c-cliente" href="farmaclub_app_cliente.html" target="_blank">
+    <div>
+      <div class="card-ico">📱</div>
+      <div class="card-tag tag-cliente">App do Cliente</div>
+      <div class="card-title" style="margin-top:8px">App / Site do Cliente</div>
+      <div class="card-desc">O marketplace que o cliente usa para comprar. Busca por nome ou código de barras, carrinho multi-farmácia, frete calculado por bairro, checkout e rastreamento ao vivo.</div>
+    </div>
+    <ul class="card-features">
+      <li>Scanner de código de barras pela câmera</li>
+      <li>Compra em múltiplas farmácias num pedido</li>
+      <li>Frete por bairro calculado em tempo real</li>
+      <li>Rastreamento ao vivo com nome do motoboy</li>
+      <li>Notificação via WhatsApp automática</li>
+    </ul>
+    <div class="card-btn">Abrir App Cliente →</div>
+  </a>
+
+  <a class="card c-motoboy" href="farmaclub_app_motoboy.html" target="_blank">
+    <div>
+      <div class="card-ico">🛵</div>
+      <div class="card-tag tag-motoboy">App do Motoboy</div>
+      <div class="card-title" style="margin-top:8px">App do Motoboy Parceiro</div>
+      <div class="card-desc">O app que o motoboy usa em campo. Aceita pedidos, confirma coleta item a item por código de barras, registra entrega e pagamento. Ganhos em tempo real.</div>
+    </div>
+    <ul class="card-features">
+      <li>Scanner confirma cada item antes de sair</li>
+      <li>Produto errado? Sistema bloqueia e alerta</li>
+      <li>Rastreamento em tempo real compartilhado</li>
+      <li>Ganhos do dia e histórico de entregas</li>
+    </ul>
+    <div class="card-btn">Abrir App Motoboy →</div>
+  </a>
+
+  <a class="card c-frete" href="farmaclub_frete.html" target="_blank">
+    <div>
+      <div class="card-ico">📍</div>
+      <div class="card-tag tag-frete">Calculadora de Frete</div>
+      <div class="card-title" style="margin-top:8px">Frete por Bairro — Itaperuna</div>
+      <div class="card-desc">Calculadora de frete modelo Uber com todos os bairros de Itaperuna mapeados. Taxa base + R$/km + multiplicador horário de pico. Frete sempre separado do produto.</div>
+    </div>
+    <ul class="card-features">
+      <li>16 bairros de Itaperuna mapeados</li>
+      <li>Multiplicador de horário de pico (almoço e noite)</li>
+      <li>Frete grátis configurável por valor mínimo</li>
+      <li>Configuração de zonas e preços ajustável</li>
+    </ul>
+    <div class="card-btn">Abrir Calculadora →</div>
+  </a>
+
+</div>
+
+<div class="status-bar">
+  <span class="status-dot"></span>
+  FarmaClub Itaperuna · Todos os sistemas operacionais · Versão protótipo · 2026
+  <br style="margin-top:6px">
+  <span style="font-size:11px">Para colocar no ar com dados reais: registre farmaclub.com.br no Registro.br e configure o Supabase + Vercel</span>
+</div>
+
+</body>
+</html>

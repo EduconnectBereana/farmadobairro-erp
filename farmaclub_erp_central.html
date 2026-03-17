@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FarmaClub — ERP Central</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:14px;display:flex;min-height:100vh}
+button,input,select{font-family:inherit;cursor:pointer}
+input,select{background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:7px;padding:7px 10px;font-size:12px}
+#sidebar{width:190px;background:#fff;border-right:1px solid #e8e8e8;padding:18px 10px;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{font-size:16px;font-weight:700;color:#0d9488;padding:0 8px}
+.logo-sub{font-size:10px;color:#aaa;padding:2px 8px 18px;line-height:1.5}
+.nav-sec{font-size:10px;color:#bbb;font-weight:600;letter-spacing:.6px;padding:10px 10px 4px;text-transform:uppercase}
+.nav-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:8px;border:none;border-left:3px solid transparent;background:transparent;color:#666;font-size:12px;text-align:left;cursor:pointer;margin-bottom:2px;transition:all .15s}
+.nav-btn:hover{background:#f5f5f5;color:#1a1a1a}
+.nav-btn.ativo{background:#0d9488;color:#fff;border-left-color:#0d9488}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#topbar{padding:13px 24px;background:#fff;border-bottom:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+#content{padding:22px 24px;flex:1;overflow-y:auto}
+.card{background:#fff;border-radius:12px;border:1px solid #e8e8e8;padding:16px}
+.kpi{background:#f8f8f8;border-radius:10px;padding:14px 16px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.sec-tit{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.tbl-wrap{border:1px solid #e8e8e8;border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 12px;color:#888;font-weight:500;font-size:11px;background:#f8f8f8;border-bottom:1px solid #eee;white-space:nowrap}
+td{padding:8px 12px;font-size:12px;border-bottom:1px solid #f5f5f5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+tfoot td{font-weight:700;font-size:12px;padding:10px 12px;background:#f8f8f8;border-top:1px solid #e0e0e0}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.alert{border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px}
+.btn-pri{padding:7px 14px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.btn-pri:hover{background:#0f766e}
+.prog{height:4px;background:#eee;border-radius:2px;overflow:hidden;margin-top:4px}
+.prog-bar{height:100%;border-radius:2px}
+.chart-wrap{display:flex;align-items:flex-end;gap:5px;padding:4px 0}
+.bar-col{display:flex;flex-direction:column;align-items:center;flex:1}
+.bar-val{font-size:9px;color:#888;margin-bottom:3px;white-space:nowrap}
+.bar-body{width:100%;border-radius:4px 4px 0 0;min-width:6px;transition:height .4s}
+.bar-lbl{font-size:9px;color:#aaa;margin-top:5px;white-space:nowrap}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.live{animation:pulse 1.8s infinite}
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div class="logo">FarmaClub</div>
+  <div class="logo-sub">ERP Central · Itaperuna/RJ<br>Painel do Gestor</div>
+  <div class="nav-sec">Visão Geral</div>
+  <button class="nav-btn ativo" data-tab="dashboard" onclick="setTab('dashboard')">◼ Dashboard</button>
+  <button class="nav-btn" data-tab="farmacias" onclick="setTab('farmacias')">🏥 Farmácias</button>
+  <button class="nav-btn" data-tab="pedidos" onclick="setTab('pedidos')">📦 Pedidos</button>
+  <div class="nav-sec">Operação</div>
+  <button class="nav-btn" data-tab="motoboys" onclick="setTab('motoboys')">🛵 Motoboys</button>
+  <button class="nav-btn" data-tab="financeiro" onclick="setTab('financeiro')">💰 Financeiro</button>
+  <button class="nav-btn" data-tab="compras" onclick="setTab('compras')">🛒 Compras</button>
+  <div class="nav-sec">Inteligência</div>
+  <button class="nav-btn" data-tab="insights" onclick="setTab('insights')">★ IA & Insights</button>
+  <button class="nav-btn" data-tab="relatorios" onclick="setTab('relatorios')">📊 Relatórios</button>
+  <div style="margin-top:auto;padding-top:14px;border-top:1px solid #eee;font-size:10px;color:#888;padding-left:8px;line-height:1.9">
+    <div><span class="live" style="color:#0d9488">●</span> <span style="color:#0d9488;font-weight:600">6 farmácias</span> online</div>
+    <div>4 motoboys em campo</div>
+    <div style="color:#aaa;margin-top:4px">FarmaClub · v1.0 · 2026</div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <div>
+      <div id="tab-title" style="font-weight:700;font-size:15px">Dashboard</div>
+      <div id="tab-sub" style="font-size:11px;color:#aaa;margin-top:2px">Visão consolidada · 16 de março de 2026</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="background:#e6faf8;color:#0d9488;border:1px solid #b2ece7;border-radius:20px;padding:5px 14px;font-size:11px;font-weight:600">
+        <span class="live">●</span> Sistema operacional
+      </div>
+      <select style="font-size:12px;padding:6px 10px;width:auto">
+        <option>Março/2026</option><option>Fevereiro/2026</option><option>Janeiro/2026</option>
+      </select>
+    </div>
+  </div>
+  <div id="content" style="overflow-y:auto;flex:1;padding:22px 24px"></div>
+</div>
+
+<script>
+const T="#0d9488",AM="#d97706",RD="#dc2626",GN="#16a34a",BL="#2563eb",PU="#7c3aed";
+const fmt=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:2});
+const fmtK=v=>"R$"+(v/1000).toFixed(0)+"k";
+
+const farmacias=[
+  {nome:"Farmácia São João",bairro:"Centro",status:"online",vendasHoje:3420.50,vendasMes:87600,comissao:8760,pedidos:3,estoque:94,nota:4.9},
+  {nome:"Vida & Saúde",bairro:"Parque Noel",status:"online",vendasHoje:1850,vendasMes:52000,comissao:5200,pedidos:1,estoque:78,nota:4.7},
+  {nome:"Farmácia Popular",bairro:"São Cristóvão",status:"offline",vendasHoje:0,vendasMes:41200,comissao:4120,pedidos:0,estoque:65,nota:4.5},
+  {nome:"Drogaria Esperança",bairro:"Morro do Crica",status:"online",vendasHoje:2100.75,vendasMes:63400,comissao:6340,pedidos:2,estoque:88,nota:4.7},
+  {nome:"Farmácia Boa Saúde",bairro:"Meudon",status:"online",vendasHoje:980,vendasMes:29800,comissao:2980,pedidos:1,estoque:55,nota:4.6},
+  {nome:"Drogaria Central",bairro:"Boa Sorte",status:"online",vendasHoje:1560.20,vendasMes:44700,comissao:4470,pedidos:0,estoque:71,nota:4.5},
+];
+const pedidos=[
+  {id:"#4521",cliente:"Maria Silva",farmacia:"São João",bairro:"Parque Noel",itens:3,valor:87.50,frete:3.50,status:"entregando",motoboy:"Carlos M.",tempo:"12 min"},
+  {id:"#4520",cliente:"João Pereira",farmacia:"Esperança",bairro:"Centro",itens:1,valor:45.00,frete:1.00,status:"coletando",motoboy:"Pedro L.",tempo:"5 min"},
+  {id:"#4519",cliente:"Ana Costa",farmacia:"São João",bairro:"S. Cristóvão",itens:5,valor:156.30,frete:5.00,status:"entregue",motoboy:"Carlos M.",tempo:"✓ 32 min"},
+  {id:"#4518",cliente:"Roberto Alves",farmacia:"Vida & Saúde",bairro:"Parque Noel",itens:2,valor:62.00,frete:1.00,status:"aguardando",motoboy:"—",tempo:"—"},
+  {id:"#4517",cliente:"Fernanda Lima",farmacia:"Esperança",bairro:"Meudon",itens:4,valor:198.90,frete:8.00,status:"entregando",motoboy:"Marcos T.",tempo:"8 min"},
+  {id:"#4516",cliente:"Paulo Santos",farmacia:"Boa Saúde",bairro:"Boa Sorte",itens:1,valor:29.90,frete:3.00,status:"entregue",motoboy:"Rafael S.",tempo:"✓ 18 min"},
+  {id:"#4515",cliente:"Camila Rocha",farmacia:"São João",bairro:"Centro",itens:7,valor:312.00,frete:1.00,status:"cancelado",motoboy:"—",tempo:"—"},
+];
+const motoboys=[
+  {nome:"Carlos Mendes",status:"em rota",pedidosHoje:8,ganhos:48.00,local:"Centro → Parque Noel",av:4.9},
+  {nome:"Pedro Lima",status:"coletando",pedidosHoje:5,ganhos:30.00,local:"Drog. Esperança",av:4.7},
+  {nome:"Marcos Torres",status:"em rota",pedidosHoje:7,ganhos:42.00,local:"S. Cristóvão → Meudon",av:4.8},
+  {nome:"Rafael Souza",status:"disponível",pedidosHoje:3,ganhos:18.00,local:"Centro",av:4.6},
+  {nome:"Diego Ferreira",status:"offline",pedidosHoje:0,ganhos:0,local:"—",av:4.5},
+];
+const repasses=[
+  {farmacia:"Farmácia São João",bruto:87600,com:8760,liq:78840,status:"pendente"},
+  {farmacia:"Vida & Saúde",bruto:52000,com:5200,liq:46800,status:"pendente"},
+  {farmacia:"Farmácia Popular",bruto:41200,com:4120,liq:37080,status:"pago"},
+  {farmacia:"Drog. Esperança",bruto:63400,com:6340,liq:57060,status:"pendente"},
+  {farmacia:"Farmácia Boa Saúde",bruto:29800,com:2980,liq:26820,status:"pago"},
+  {farmacia:"Drog. Central",bruto:44700,com:4470,liq:40230,status:"pendente"},
+];
+const insights=[
+  {tipo:"danger",tit:"Farmácia Popular offline há 4h",desc:"Perda estimada de R$ 680 em vendas. Verificar responsável.",acao:"Ligar agora"},
+  {tipo:"warning",tit:"Compra coletiva: Dipirona 500mg",desc:"3 farmácias com estoque crítico. Pedido consolidado reduz custo em ~22%.",acao:"Ver cotação"},
+  {tipo:"info",tit:"Potencial no bairro Meudon",desc:"23% dos pedidos sem atendimento esta semana. Nova parceira = +R$12k/mês.",acao:"Ver análise"},
+  {tipo:"warning",tit:"Repasse previsto: R$ 27.400",desc:"4 farmácias aguardam repasse. Saldo disponível: R$ 31.200.",acao:"Ver detalhes"},
+  {tipo:"success",tit:"Março +22% vs fevereiro",desc:"FarmaClub cresce. Ticket médio subiu R$ 18. São João e Esperança lideram.",acao:"Ver breakdown"},
+];
+
+// HELPERS
+function dot(s){
+  const c={online:GN,offline:RD,"em rota":BL,coletando:AM,disponível:GN,entregando:BL,entregue:GN,aguardando:AM,cancelado:RD,pendente:AM,pago:GN};
+  const cor=c[s]||"#999";
+  return`<span style="display:inline-flex;align-items:center;gap:5px"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${cor}"></span><span style="font-size:11px;color:#666">${s}</span></span>`;
+}
+function badge(t,c){return`<span class="badge" style="background:${c}22;color:${c}">${t}</span>`;}
+function kpi(l,v,s,a){return`<div class="kpi"><div style="font-size:11px;color:#888;margin-bottom:5px">${l}</div><div style="font-size:22px;font-weight:700;color:${a||"#1a1a1a"}">${v}</div>${s?`<div style="font-size:11px;color:#aaa;margin-top:3px">${s}</div>`:""}</div>`;}
+function th(ls){return ls.map(h=>`<th>${h}</th>`).join("");}
+function td(c,e=""){return`<td style="${e}">${c}</td>`;}
+function tbl(cols,rows,foot=""){return`<div class="tbl-wrap"><table><thead style="background:#f8f8f8"><tr>${th(cols)}</tr></thead><tbody>${rows}</tbody>${foot?`<tfoot>${foot}</tfoot>`:""}</table></div>`;}
+
+function barras(labels,vals,cor,h=150){
+  const max=Math.max(...vals,1);
+  return`<div class="chart-wrap" style="height:${h}px">${labels.map((l,i)=>{
+    const pct=Math.round((vals[i]/max)*100);
+    const vStr=vals[i]>=1000?fmtK(vals[i]):vals[i];
+    return`<div class="bar-col"><div class="bar-val">${vStr}</div><div style="flex:1;display:flex;align-items:flex-end;width:100%"><div class="bar-body" style="height:${Math.max(pct,3)}%;background:${cor}"></div></div><div class="bar-lbl">${l}</div></div>`;
+  }).join("")}</div>`;
+}
+function progLista(labels,vals,cor){
+  const max=Math.max(...vals,1);
+  return labels.map((l,i)=>`<div style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:12px;color:#555">${l}</span>
+      <span style="font-size:12px;font-weight:700;color:${cor}">${fmtK(vals[i])}</span>
+    </div>
+    <div class="prog"><div class="prog-bar" style="width:${Math.round((vals[i]/max)*100)}%;background:${cor}"></div></div>
+  </div>`).join("");
+}
+
+// ABAS
+let filtPed="todos";
+
+function renderDashboard(){
+  const fatT=farmacias.reduce((s,f)=>s+f.vendasMes,0);
+  const comT=farmacias.reduce((s,f)=>s+f.comissao,0);
+  const ativos=pedidos.filter(p=>["entregando","coletando","aguardando"].includes(p.status)).length;
+  const fOn=farmacias.filter(f=>f.status==="online").length;
+  const rows=pedidos.slice(0,6).map((p,i)=>`<tr style="border-bottom:${i<5?"1px solid #f5f5f5":"none"}">
+    ${td(`<span style="color:${T};font-weight:600;font-family:monospace">${p.id}</span>`)}${td(p.cliente)}${td(p.farmacia,"color:#888")}${td(fmt(p.valor+p.frete),"font-weight:700;text-align:right")}${td(p.motoboy,"color:#888")}${td(dot(p.status))}</tr>`).join("");
+  return`
+    <div class="grid4">
+      ${kpi("Receita Bruta (Março)",fmtK(fatT),"↑ 22% vs fevereiro",T)}
+      ${kpi("Comissão FarmaClub",fmt(comT),"sua receita — 10%")}
+      ${kpi("Pedidos Ativos",ativos,"em andamento agora")}
+      ${kpi("Farmácias Online",fOn+"/"+farmacias.length,"1 offline — verificar")}
+    </div>
+    <div class="alert" style="background:#fef2f2;border:1px solid #fecaca">
+      <span style="color:${RD};font-size:12px"><strong>⚠ Farmácia Popular offline há 4h.</strong> Perda estimada de R$ 680 em vendas.</span>
+      <button class="btn-pri" style="background:${RD};flex-shrink:0">Ligar agora</button>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="sec-tit">Receita consolidada — 6 meses</div>
+        ${barras(["Out","Nov","Dez","Jan","Fev","Mar"],[180000,210000,265000,198000,224000,274000],T,150)}
+      </div>
+      <div class="card">
+        <div class="sec-tit">Pedidos por hora — hoje</div>
+        ${barras(["08h","10h","12h","14h","16h","18h","20h"],[3,12,9,18,14,21,8],BL,150)}
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="sec-tit">Ranking de faturamento</div>
+        ${progLista(farmacias.map(f=>f.nome.replace("Farmácia ","").replace("Drogaria ","")),farmacias.map(f=>f.vendasMes),T)}
+      </div>
+      <div class="card">
+        <div class="sec-tit">Pedidos recentes</div>
+        <table style="width:100%;border-collapse:collapse"><thead><tr>${th(["Pedido","Cliente","Farmácia","Total","Status"])}</tr></thead><tbody>${rows}</tbody></table>
+      </div>
+    </div>`;
+}
+
+function renderFarmacias(){
+  const rows=farmacias.map((f,i)=>`<tr style="border-bottom:${i<farmacias.length-1?"1px solid #f5f5f5":"none"}">
+    ${td(`<div style="font-weight:600">${f.nome}</div><div style="font-size:10px;color:#aaa">${f.bairro}</div>`)}
+    ${td(dot(f.status))}${td(fmt(f.vendasHoje),"text-align:right")}${td(`<strong>${fmt(f.vendasMes)}</strong>`,"text-align:right")}
+    ${td(`<span style="color:${T};font-weight:700">${fmt(f.comissao)}</span>`,"text-align:right")}
+    ${td(f.pedidos,"text-align:center")}
+    ${td(`<div style="display:flex;align-items:center;gap:6px"><div class="prog" style="flex:1"><div class="prog-bar" style="width:${f.estoque}%;background:${f.estoque>70?GN:f.estoque>40?AM:RD}"></div></div><span style="font-size:11px;color:#888">${f.estoque}%</span></div>`)}
+    ${td(`<span style="color:${AM}">★</span> ${f.nota}`,"font-size:12px")}</tr>`).join("");
+  return`
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px">
+      <span style="font-size:13px;color:#888">${farmacias.length} cadastradas · ${farmacias.filter(f=>f.status==="online").length} online agora</span>
+      <button class="btn-pri">+ Cadastrar farmácia</button>
+    </div>
+    ${tbl(["Farmácia","Status","Vendas Hoje","Vendas Março","Comissão 10%","Pedidos","Estoque","Nota"],rows)}`;
+}
+
+function renderPedidos(){
+  const filtros=["todos","aguardando","coletando","entregando","entregue","cancelado"];
+  const filtered=filtPed==="todos"?pedidos:pedidos.filter(p=>p.status===filtPed);
+  const btns=filtros.map(f=>`<button onclick="filtPed='${f}';renderContent()" style="padding:5px 12px;border-radius:20px;border:1px solid ${filtPed===f?T:"#ddd"};background:${filtPed===f?T:"transparent"};color:${filtPed===f?"#fff":"#888"};font-size:11px;cursor:pointer;font-family:inherit;text-transform:capitalize">${f}</button>`).join("");
+  const rows=filtered.map((p,i)=>`<tr style="border-bottom:${i<filtered.length-1?"1px solid #f5f5f5":"none"}">
+    ${td(`<span style="color:${T};font-weight:600;font-family:monospace">${p.id}</span>`)}${td(p.cliente)}${td(p.bairro,"color:#888")}${td(p.farmacia,"color:#888")}${td(p.itens,"text-align:center")}${td(fmt(p.valor),"text-align:right")}${td(fmt(p.frete),"text-align:right;color:#aaa")}${td(`<strong>${fmt(p.valor+p.frete)}</strong>`,"text-align:right")}${td(p.motoboy,"color:#888")}${td(dot(p.status))}</tr>`).join("")||`<tr><td colspan="10" style="text-align:center;color:#aaa;padding:20px">Nenhum pedido neste filtro</td></tr>`;
+  return`<div style="display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap">${btns}</div>
+    ${tbl(["#","Cliente","Bairro","Farmácia","Itens","Produtos","Frete","Total","Motoboy","Status"],rows)}`;
+}
+
+function renderMotoboys(){
+  const tG=motoboys.reduce((s,m)=>s+m.ganhos,0);
+  const tE=motoboys.reduce((s,m)=>s+m.pedidosHoje,0);
+  const rows=motoboys.map((m,i)=>`<tr style="border-bottom:${i<motoboys.length-1?"1px solid #f5f5f5":"none"};opacity:${m.status==="offline"?.5:1}">
+    ${td(`<strong>${m.nome}</strong>`)}${td(dot(m.status))}${td(m.local,"font-size:11px;color:#888")}${td(m.pedidosHoje,"text-align:center")}${td(fmt(m.ganhos),"text-align:right;font-weight:700")}${td(`<span style="color:${AM}">${"★".repeat(Math.round(m.av))}</span> <span style="color:#888;font-size:11px">${m.av}</span>`)}</tr>`).join("");
+  return`
+    <div class="grid4" style="margin-bottom:16px">
+      ${kpi("Ativos agora",motoboys.filter(m=>m.status!=="offline").length,`${motoboys.filter(m=>m.status==="disponível").length} disponíveis`)}
+      ${kpi("Entregas hoje",tE,"todos os motoboys")}${kpi("Ganhos do dia",fmt(tG),"R$ 6,00/entrega")}${kpi("Nota média","4.76","★ satisfação",AM)}
+    </div>
+    ${tbl(["Motoboy","Status","Localização","Entregas","Ganhos","Avaliação"],rows)}
+    <div style="margin-top:16px" class="card">
+      <div class="sec-tit">Entregas por motoboy hoje</div>
+      ${barras(motoboys.map(m=>m.nome.split(" ")[0]),motoboys.map(m=>m.pedidosHoje),BL,120)}
+    </div>`;
+}
+
+function renderFinanceiro(){
+  const tB=repasses.reduce((s,r)=>s+r.bruto,0);
+  const tC=repasses.reduce((s,r)=>s+r.com,0);
+  const pend=repasses.filter(r=>r.status==="pendente").reduce((s,r)=>s+r.com,0);
+  const rows=repasses.map((r,i)=>`<tr style="border-bottom:${i<repasses.length-1?"1px solid #f5f5f5":"none"}">
+    ${td(`<strong>${r.farmacia}</strong>`)}${td(fmt(r.bruto),"text-align:right")}${td(`<span style="color:${T};font-weight:700">${fmt(r.com)}</span>`,"text-align:right")}${td(fmt(r.liq),"text-align:right;font-weight:700")}${td(dot(r.status))}
+    ${r.status==="pendente"?`<td style="padding:6px 8px"><button style="background:${GN};color:#fff;border:none;border-radius:6px;padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit">Pagar</button></td>`:`<td></td>`}</tr>`).join("");
+  const foot=`<tr><td>Total Março/2026</td><td style="text-align:right">${fmt(tB)}</td><td style="text-align:right;color:${T}">${fmt(tC)}</td><td style="text-align:right">${fmt(tB-tC)}</td><td colspan="2"></td></tr>`;
+  return`
+    <div class="grid4" style="margin-bottom:18px">
+      ${kpi("Receita bruta total",fmt(tB),"todas as farmácias")}${kpi("Comissão FarmaClub",fmt(tC),"sua receita 10%",T)}${kpi("A repassar",fmt(pend),"pendente",AM)}${kpi("Já pagos",fmt(tC-pend),"2 farmácias",GN)}
+    </div>
+    ${tbl(["Farmácia","Receita Bruta","Comissão 10%","Líquido Repasse","Status",""],rows,foot)}`;
+}
+
+function renderCompras(){
+  const prods=[
+    {nome:"Dipirona 500mg",nec:420,custo:4.20,melhor:3.85,econ:147,urgente:true},
+    {nome:"Amoxicilina 500mg",nec:180,custo:9.80,melhor:8.90,econ:162,urgente:false},
+    {nome:"Omeprazol 20mg",nec:280,custo:5.60,melhor:5.10,econ:140,urgente:false},
+    {nome:"Vitamina C 1g",nec:480,custo:2.10,melhor:1.92,econ:86,urgente:false},
+    {nome:"Losartana 50mg",nec:150,custo:7.20,melhor:6.60,econ:90,urgente:true},
+  ];
+  const tE=prods.reduce((s,p)=>s+p.econ,0);
+  const tC=prods.reduce((s,p)=>s+p.nec*p.melhor,0);
+  const rows=prods.map((p,i)=>`<tr style="border-bottom:${i<prods.length-1?"1px solid #f5f5f5":"none"}">
+    ${td(`<strong>${p.nome}</strong>`)}${td(p.nec+" un","text-align:center")}${td(fmt(p.custo),"text-align:right;color:#888")}${td(`<span style="color:${T};font-weight:700">${fmt(p.melhor)}</span>`,"text-align:right")}${td(`<span style="color:${GN};font-weight:700">${fmt(p.econ)}</span>`,"text-align:right")}${td(p.urgente?badge("urgente",RD):badge("normal",AM))}</tr>`).join("");
+  return`
+    <div class="grid4" style="margin-bottom:16px">
+      ${kpi("Pedido consolidado",fmt(tC),"5 produtos")}${kpi("Economia estimada",fmt(tE),"vs compra individual",GN)}${kpi("Produtos para cotar","5","de 8 cadastrados")}${kpi("Fornecedores","3","Farmanobre, EMS, Vital")}
+    </div>
+    <div class="alert" style="background:#eff6ff;border:1px solid #bfdbfe">
+      <span style="color:#1d4ed8;font-size:12px"><strong>Próxima cotação: 20/03/2026.</strong> 5 produtos aguardam consolidação para envio aos fornecedores.</span>
+      <button class="btn-pri">Iniciar cotação →</button>
+    </div>
+    ${tbl(["Produto","Necessidade","Preço atual","Melhor preço","Economia","Status"],rows)}`;
+}
+
+function renderInsights(){
+  const tipoCor={danger:RD,warning:AM,info:BL,success:GN};
+  const tipoBg={danger:"#fef2f2",warning:"#fffbeb",info:"#eff6ff",success:"#f0fdf4"};
+  return`
+    <div style="font-size:13px;color:#888;margin-bottom:16px">IA FarmaClub identificou <strong>${insights.length} oportunidades e alertas</strong> em tempo real.</div>
+    ${insights.map(ins=>`
+      <div style="border:1px solid ${tipoCor[ins.tipo]}44;border-left:3px solid ${tipoCor[ins.tipo]};border-radius:10px;padding:14px 16px;margin-bottom:10px;background:${tipoBg[ins.tipo]};display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div>
+          <div style="font-weight:600;font-size:13px;margin-bottom:4px;color:${tipoCor[ins.tipo]}">${ins.tit}</div>
+          <div style="font-size:12px;color:#555;line-height:1.6">${ins.desc}</div>
+        </div>
+        <button style="font-size:11px;padding:5px 12px;background:transparent;border:1px solid ${tipoCor[ins.tipo]};color:${tipoCor[ins.tipo]};border-radius:7px;cursor:pointer;flex-shrink:0;font-family:inherit">${ins.acao} →</button>
+      </div>`).join("")}`;
+}
+
+function renderRelatorios(){
+  const rels=[
+    {tit:"DRE Consolidado",desc:"Receita, despesas e lucro líquido de todas as farmácias.",tipo:"Financeiro",c:GN},
+    {tit:"Ranking de farmácias",desc:"Performance comparativa por faturamento, crescimento e margem.",tipo:"Gestão",c:T},
+    {tit:"Economia compra coletiva",desc:"Quanto o grupo economizou vs compra individual — mês a mês.",tipo:"Compras",c:PU},
+    {tit:"Análise de motoboys",desc:"Produtividade, avaliação e custo por entrega.",tipo:"Logística",c:AM},
+    {tit:"Clientes ativos vs inativos",desc:"Base consolidada com análise de recorrência.",tipo:"CRM",c:BL},
+    {tit:"Fluxo de caixa projetado",desc:"Receitas previstas e repasses dos próximos 90 dias.",tipo:"Financeiro",c:GN},
+  ];
+  return`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    ${rels.map(r=>`<div style="background:#fff;border:1px solid #e8e8e8;border-radius:10px;padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div>
+          <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">${badge(r.tipo,r.c)}<span style="font-weight:600;font-size:13px">${r.tit}</span></div>
+          <div style="font-size:12px;color:#888;line-height:1.5">${r.desc}</div>
+        </div>
+        <button style="font-size:11px;padding:5px 12px;background:transparent;border:1px solid ${r.c};color:${r.c};border-radius:6px;cursor:pointer;flex-shrink:0;font-family:inherit">Gerar →</button>
+      </div>
+    </div>`).join("")}
+  </div>`;
+}
+
+// NAVEGAÇÃO
+const tabTitles={
+  dashboard:["Dashboard","Visão consolidada · FarmaClub Itaperuna"],
+  farmacias:["Farmácias Parceiras","6 unidades em Itaperuna"],
+  pedidos:["Pedidos","Todos os pedidos em tempo real"],
+  motoboys:["Motoboys","Equipe de entrega FarmaClub"],
+  financeiro:["Financeiro & Repasses","Comissões e repasses"],
+  compras:["Compras Coletivas","Necessidades e cotações"],
+  insights:["IA & Insights","Alertas e recomendações automáticas"],
+  relatorios:["Relatórios","Análises gerenciais"],
+};
+const renders={dashboard:renderDashboard,farmacias:renderFarmacias,pedidos:renderPedidos,motoboys:renderMotoboys,financeiro:renderFinanceiro,compras:renderCompras,insights:renderInsights,relatorios:renderRelatorios};
+let tabAtual="dashboard";
+
+function setTab(t){
+  tabAtual=t;
+  document.querySelectorAll(".nav-btn").forEach(b=>b.className="nav-btn"+(b.dataset.tab===t?" ativo":""));
+  const [tit,sub]=tabTitles[t]||[t,""];
+  document.getElementById("tab-title").textContent=tit;
+  document.getElementById("tab-sub").textContent=sub;
+  renderContent();
+}
+function renderContent(){document.getElementById("content").innerHTML=(renders[tabAtual]||renderDashboard)();}
+window.setTab=setTab;
+window.renderContent=function(){renderContent();};
+renderContent();
+</script>
+</body>
+</html>

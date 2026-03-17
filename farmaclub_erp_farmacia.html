@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FarmaClub — ERP Farmácia</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:14px;display:flex;min-height:100vh}
+button,input,select,textarea{font-family:inherit}
+input,select,textarea{background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:7px;padding:7px 10px;font-size:12px;width:100%}
+input:focus,select:focus{outline:none;border-color:#0d9488}
+#sidebar{width:175px;background:#fff;border-right:1px solid #e8e8e8;padding:18px 10px;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo-title{font-size:14px;font-weight:700;color:#0d9488;padding:0 8px}
+.logo-sub{font-size:10px;color:#aaa;padding:0 8px;margin-top:2px;margin-bottom:18px;line-height:1.5}
+.nav-sec{font-size:10px;color:#bbb;font-weight:600;letter-spacing:.6px;padding:10px 10px 4px;text-transform:uppercase}
+.nav-btn{display:flex;align-items:center;gap:8px;width:100%;padding:7px 10px;border-radius:8px;border:none;border-left:3px solid transparent;background:transparent;color:#666;font-size:12px;text-align:left;cursor:pointer;margin-bottom:2px;transition:all .12s}
+.nav-btn:hover{background:#f5f5f5}
+.nav-btn.ativo{background:#0d9488;color:#fff;border-left-color:#0d9488}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#topbar{padding:12px 20px;background:#fff;border-bottom:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+#content{padding:20px;flex:1;overflow:auto}
+.card{background:#fff;border-radius:12px;border:1px solid #e8e8e8;padding:16px}
+.kpi{background:#f8f8f8;border-radius:10px;padding:14px 16px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.tbl-wrap{border:1px solid #e8e8e8;border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 12px;color:#888;font-weight:500;font-size:11px;background:#f8f8f8;border-bottom:1px solid #eee;white-space:nowrap}
+td{padding:8px 12px;font-size:12px;border-bottom:1px solid #f5f5f5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.btn-pri{padding:7px 14px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.btn-sec{padding:7px 14px;background:#fff;border:1px solid #ddd;border-radius:8px;font-size:12px;color:#555;cursor:pointer}
+.btn-sm{padding:5px 11px;font-size:11px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
+.prog-wrap{height:4px;background:#eee;border-radius:2px;overflow:hidden;margin-top:4px}
+.prog-bar{height:100%;border-radius:2px}
+.alert{border-radius:10px;padding:11px 14px;margin-bottom:12px;font-size:12px}
+.qty-ctrl{display:flex;align-items:center;gap:6px}
+.qty-btn{width:24px;height:24px;border:1px solid #ddd;border-radius:5px;background:#f5f5f5;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1}
+</style>
+</head>
+<body>
+<div id="sidebar">
+  <div class="logo-title">ERP Farmácia</div>
+  <div class="logo-sub" id="sidebar-farm-nome">Farmácia São João<br>FarmaClub</div>
+  <div class="nav-sec">Operação</div>
+  <button class="nav-btn ativo" data-tab="dashboard" onclick="setTab('dashboard')"><span style="font-size:10px">▣</span> Dashboard</button>
+  <button class="nav-btn" data-tab="pdv" onclick="setTab('pdv')"><span style="font-size:10px">◉</span> PDV / Vendas</button>
+  <button class="nav-btn" data-tab="estoque" onclick="setTab('estoque')"><span style="font-size:10px">◈</span> Estoque</button>
+  <button class="nav-btn" data-tab="precificacao" onclick="setTab('precificacao')"><span style="font-size:10px">◆</span> Precificação</button>
+  <div class="nav-sec">Fiscal</div>
+  <button class="nav-btn" data-tab="nfe" onclick="setTab('nfe')"><span style="font-size:10px">◷</span> Entrada NF</button>
+  <button class="nav-btn" data-tab="financeiro" onclick="setTab('financeiro')"><span style="font-size:10px">◧</span> Financeiro</button>
+  <div class="nav-sec">Gestão</div>
+  <button class="nav-btn" data-tab="clientes" onclick="setTab('clientes')"><span style="font-size:10px">◑</span> Clientes</button>
+  <button class="nav-btn" data-tab="relatorios" onclick="setTab('relatorios')"><span style="font-size:10px">★</span> Relatórios</button>
+  <div style="margin-top:auto;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;padding-left:8px;line-height:1.8">
+    <span style="color:#0d9488">●</span> FarmaClub: online<br>
+    CNPJ: 12.345.678/0001-90<br>
+    CRF-RJ 12345
+  </div>
+</div>
+<div id="main">
+  <div id="topbar">
+    <div>
+      <div id="tab-title" style="font-weight:600;font-size:14px">Dashboard</div>
+      <div style="font-size:11px;color:#aaa">Farmácia São João · Centro · 16/03/2026</div>
+    </div>
+    <div style="font-size:11px;color:#888">16/03/2026</div>
+  </div>
+  <div id="content"></div>
+</div>
+<script>
+const T="#0d9488",AM="#d97706",RD="#dc2626",GN="#16a34a",BL="#2563eb",PU="#7c3aed";
+const fmt=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:2});
+const fmtD=s=>new Date(s+"T12:00").toLocaleDateString("pt-BR");
+const diasP=s=>Math.round((new Date(s+"T12:00")-new Date())/86400000);
+
+const produtos=[
+  {id:1,codigo:"7896004004532",nome:"Dipirona 500mg 20cp",categoria:"Analgesicos",fabricante:"EMS",validade:"2027-06",estoque:84,estoqueMin:20,custo:4.20,preco:8.90,margem:112,receita:false,curva:"A"},
+  {id:2,codigo:"7896714240118",nome:"Amoxicilina 500mg 21cp",categoria:"Antibioticos",fabricante:"Medley",validade:"2026-11",estoque:31,estoqueMin:15,custo:9.80,preco:22.50,margem:130,receita:true,curva:"A"},
+  {id:3,codigo:"7896523240065",nome:"Omeprazol 20mg 28cp",categoria:"Gastro",fabricante:"Aché",validade:"2027-08",estoque:55,estoqueMin:20,custo:5.60,preco:14.90,margem:166,receita:false,curva:"A"},
+  {id:4,codigo:"7891058006824",nome:"Vitamina C 1g 10cp",categoria:"Vitaminas",fabricante:"EMS",validade:"2027-12",estoque:102,estoqueMin:30,custo:2.10,preco:5.90,margem:181,receita:false,curva:"A"},
+  {id:5,codigo:"7896658010077",nome:"Losartana 50mg 30cp",categoria:"Cardiovasc.",fabricante:"EMS",validade:"2026-09",estoque:12,estoqueMin:20,custo:7.20,preco:18.50,margem:157,receita:true,curva:"A"},
+  {id:6,codigo:"7891047944513",nome:"Metformina 850mg 30cp",categoria:"Diabetes",fabricante:"Merck",validade:"2027-01",estoque:44,estoqueMin:15,custo:3.80,preco:9.90,margem:161,receita:true,curva:"B"},
+  {id:7,codigo:"7896714270048",nome:"Ibuprofeno 600mg 20cp",categoria:"Anti-inflam.",fabricante:"Medley",validade:"2027-05",estoque:67,estoqueMin:25,custo:6.10,preco:15.90,margem:161,receita:false,curva:"A"},
+  {id:8,codigo:"7896523405055",nome:"Simeticona 40mg 50cp",categoria:"Gastro",fabricante:"Aché",validade:"2028-02",estoque:29,estoqueMin:10,custo:4.90,preco:11.50,margem:135,receita:false,curva:"B"},
+];
+
+const contasPagar=[
+  {credor:"Distribuidora Farmanobre",venc:"2026-03-20",valor:4820,status:"pendente",tipo:"fornecedor"},
+  {credor:"Aluguel — Proprietário",venc:"2026-03-25",valor:2800,status:"pendente",tipo:"aluguel"},
+  {credor:"FarmaClub — Comissão 10%",venc:"2026-03-31",valor:876,status:"pendente",tipo:"comissão"},
+  {credor:"Distribuidora EMS",venc:"2026-03-15",valor:1240,status:"pago",tipo:"fornecedor"},
+];
+
+let vendaItens=[];
+
+const kpi=(l,v,s,a)=>`<div class="kpi"><div style="font-size:11px;color:#888;margin-bottom:5px">${l}</div><div style="font-size:20px;font-weight:700;color:${a||"#1a1a1a"}">${v}</div>${s?`<div style="font-size:11px;color:#aaa;margin-top:3px">${s}</div>`:""}</div>`;
+const dot=(s)=>{const c={pendente:AM,pago:GN,critico:RD,baixo:AM,ok:GN};return`<span style="display:inline-flex;align-items:center;gap:4px"><span style="width:6px;height:6px;border-radius:50%;background:${c[s]||"#999"}"></span><span style="font-size:11px;color:#666">${s}</span></span>`;};
+const badge=(t,c)=>`<span class="badge" style="background:${c}22;color:${c}">${t}</span>`;
+const th=ls=>ls.map(h=>`<th>${h}</th>`).join("");
+const td=(c,e="")=>`<td style="${e}">${c}</td>`;
+const tbl=(cols,rows)=>`<div class="tbl-wrap"><table><thead style="background:#f8f8f8"><tr>${th(cols)}</tr></thead><tbody>${rows}</tbody></table></div>`;
+
+function renderDashboard(){
+  const criticos=produtos.filter(p=>p.estoque<=p.estoqueMin).length;
+  const vendasHoje=3420.50;
+  return`
+    <div class="grid4">
+      ${kpi("Vendas de hoje",fmt(vendasHoje),"↑ 18% vs ontem",T)}
+      ${kpi("Receita do mês",fmt(87600),"Março/2026")}
+      ${kpi("Estoque crítico",criticos+" produtos","abaixo do mínimo",RD)}
+      ${kpi("A pagar",fmt(contasPagar.filter(c=>c.status==="pendente").reduce((s,c)=>s+c.valor,0)),"contas em aberto",AM)}
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Vendas — últimos 7 dias</div>
+        <div style="position:relative;height:160px"><canvas id="chtV"></canvas></div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px">Alertas</div>
+        ${criticos>0?`<div class="alert" style="background:#fef2f2;border-left:3px solid ${RD}"><span style="font-size:12px;color:${RD}"><strong>${criticos} produtos</strong> em estoque crítico — repor urgente</span></div>`:""}
+        <div class="alert" style="background:#eff6ff;border-left:3px solid ${BL}"><span style="font-size:12px;color:${BL}">FarmaClub: você está sincronizado · 3 pedidos ativos agora</span></div>
+        <div class="alert" style="background:#fffbeb;border-left:3px solid ${AM}"><span style="font-size:12px;color:${AM}">Losartana e Amoxicilina vencem em 60–90 dias</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Top produtos — últimos 7 dias</div>
+      ${tbl(["#","Produto","Vendas","Receita"],
+        produtos.sort((a,b)=>b.estoque-a.estoque).slice(0,5).map((p,i)=>`<tr>
+          ${td(`<span style="color:${T};font-weight:600">#${i+1}</span>`)}${td(p.nome)}${td(Math.floor(Math.random()*40+10)+" un","text-align:center")}${td(fmt(p.preco*Math.floor(Math.random()*40+10)),"text-align:right;font-weight:600")}
+        </tr>`).join(""))}
+    </div>`;
+}
+
+function renderPDV(){
+  const total=vendaItens.reduce((s,i)=>s+i.preco*i.qtd,0);
+  return`
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:16px">
+      <div>
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:10px">Buscar produto</div>
+          <input id="buscaPDV" type="text" placeholder="Nome ou código EAN..." onkeyup="pdvBusca(this.value)">
+          <div id="pdvRes" style="margin-top:10px;display:grid;gap:6px"></div>
+        </div>
+        <div class="card">
+          <div style="font-size:12px;font-weight:600;margin-bottom:10px">Últimas vendas</div>
+          ${tbl(["Venda","Horário","Total","Forma"],
+            [["V4521","14:32","R$ 91,00","Débito"],["V4520","13:58","R$ 46,00","Pix"],["V4519","13:22","R$ 156,30","Crédito"]].map(([id,h,t,f])=>`<tr>
+              ${td(`<span style="color:${T};font-weight:600">${id}</span>`)}${td(h)}${td(`<strong>${t}</strong>`)}${td(f,"color:#888")}
+            </tr>`).join(""))}
+        </div>
+      </div>
+      <div class="card" style="position:sticky;top:0;height:fit-content">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Carrinho</div>
+        <div style="min-height:100px">
+          ${vendaItens.length===0?`<div style="text-align:center;padding:24px;color:#aaa;font-size:12px">Nenhum item</div>`
+            :`<table style="width:100%;border-collapse:collapse">${vendaItens.map((i,idx)=>`<tr><td style="font-size:12px;padding:6px 0;border-bottom:1px solid #f5f5f5">${i.nome}</td><td style="text-align:right;font-size:12px;font-weight:600">${fmt(i.preco*i.qtd)}</td><td style="text-align:center"><button onclick="remPDV(${idx})" style="background:transparent;border:none;color:${RD};cursor:pointer">✕</button></td></tr>`).join("")}</table>`}
+        </div>
+        <div style="border-top:1px solid #eee;padding-top:10px;margin-top:10px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:13px;font-weight:600">Total</span>
+            <span style="font-size:18px;font-weight:700;color:${T}">${fmt(total)}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+            ${["Dinheiro","Pix","Débito","Crédito"].map(f=>`<button onclick="selForma(this)" style="padding:7px;border:1px solid #ddd;border-radius:7px;background:transparent;color:#666;font-size:12px;cursor:pointer">${f}</button>`).join("")}
+          </div>
+          <button onclick="finalizarVenda()" style="width:100%;padding:10px;background:${T};color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Finalizar Venda</button>
+          <button onclick="vendaItens=[];renderContent()" style="width:100%;padding:8px;margin-top:6px;background:transparent;border:1px solid #ddd;border-radius:8px;color:#888;font-size:12px;cursor:pointer">Limpar</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderEstoque(){
+  const criticos=produtos.filter(p=>p.estoque<=p.estoqueMin);
+  return`
+    <div class="grid4" style="margin-bottom:14px">
+      ${kpi("Total de produtos",produtos.length,"ativos")}
+      ${kpi("Estoque crítico",criticos.length,"abaixo do mínimo",RD)}
+      ${kpi("Vencendo 60 dias",produtos.filter(p=>{const d=diasP(p.validade);return d>=0&&d<=60}).length,"revisar",AM)}
+      ${kpi("Curva A",produtos.filter(p=>p.curva==="A").length,"prioritários",T)}
+    </div>
+    ${criticos.length>0?`<div class="alert" style="background:#fef2f2;border:1px solid #fecaca;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-radius:10px;margin-bottom:14px">
+      <span style="font-size:12px;color:${RD}"><strong>${criticos.length} produtos abaixo do mínimo:</strong> ${criticos.map(p=>p.nome.split(" ")[0]).join(", ")}</span>
+      <button class="btn-pri" style="background:${RD};flex-shrink:0">Gerar pedido</button>
+    </div>`:""}
+    ${tbl(["Código","Produto","Categoria","Qtd","Mín","Validade","Tarja",""],
+      produtos.map((p,i)=>{
+        const st=p.estoque<=p.estoqueMin?"critico":p.estoque<=p.estoqueMin*1.5?"baixo":"ok";
+        return`<tr>
+          ${td(`<span style="font-size:10px;color:#aaa;font-family:monospace">${p.codigo}</span>`)}
+          ${td(`<strong style="font-size:12px">${p.nome}</strong><div style="font-size:10px;color:#aaa">${p.fabricante}</div>`)}
+          ${td(badge(p.categoria,"#6b7280"))}
+          ${td(`<span style="font-weight:700;color:${st==="critico"?RD:st==="baixo"?AM:"#1a1a1a"}">${p.estoque}</span>`,"text-align:center")}
+          ${td(p.estoqueMin,"text-align:center;color:#aaa")}
+          ${td(fmtD(p.validade),"color:#888")}
+          ${td(p.receita?badge("Receita",BL):"—")}
+          ${td(`<button class="btn-sm" style="background:#f5f5f5;color:#555" onclick="alert('Estoque de '+${JSON.stringify(p.nome)}+': ajuste manual')">Ajustar</button>`)}
+        </tr>`;}).join(""))}`;
+}
+
+function renderPrecificacao(){
+  return`
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Margem automática por categoria</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+        ${[["Analgesicos",120],["Antibioticos",140],["Vitaminas",180],["Gastro",160]].map(([cat,m])=>`
+          <div style="border:1px solid #eee;border-radius:8px;padding:12px">
+            <div style="font-size:11px;color:#888;margin-bottom:6px">${cat}</div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="range" min="50" max="250" value="${m}" style="flex:1;accent-color:#0d9488">
+              <span style="font-size:13px;font-weight:700;color:${T}">${m}%</span>
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>
+    ${tbl(["Produto","Custo","Margem","Preço atual","Preço sugerido","Novo preço"],
+      produtos.map(p=>{const sug=+(p.custo*1.5).toFixed(2);return`<tr>
+        ${td(p.nome)}${td(fmt(p.custo),"text-align:right")}${td(`<strong style="color:${p.margem>=100?GN:AM}">${p.margem}%</strong>`,"text-align:center")}
+        ${td(fmt(p.preco),"text-align:right;font-weight:700")}${td(`<span style="color:${T}">${fmt(sug)}</span>`,"text-align:right")}
+        <td style="padding:6px 8px"><input type="number" value="${p.preco}" min="0" step="0.01" style="width:90px;text-align:right;padding:5px 8px;border:1px solid #ddd;border-radius:6px;font-size:12px"></td>
+      </tr>`}).join(""))}`;
+}
+
+function renderNFE(){
+  return`
+    <div class="grid2">
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Entrada por NF-e (XML)</div>
+        <div style="border:2px dashed #ddd;border-radius:10px;padding:28px;text-align:center;margin-bottom:14px;cursor:pointer" onclick="this.style.borderColor='${T}'">
+          <div style="font-size:24px;margin-bottom:8px;color:#aaa">⬆</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:4px">Arraste o XML da NF-e aqui</div>
+          <div style="font-size:12px;color:#888">ou clique para selecionar arquivo</div>
+        </div>
+        <div style="font-size:12px;color:#888;line-height:1.7">Ao importar o XML, o sistema atualiza o estoque, lança a conta a pagar e recalcula o preço de venda automaticamente.</div>
+      </div>
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Entrada manual</div>
+        <div style="display:grid;gap:8px">
+          ${[["Fornecedor","text",""],["CNPJ do fornecedor","text","XX.XXX.XXX/XXXX-XX"],["Nº da nota","text",""],["Data de emissão","date",""],["Valor total","number","0.00"],["Vencimento pagamento","date",""]].map(([l,t,p])=>`
+            <div>
+              <div style="font-size:11px;color:#888;margin-bottom:3px">${l}</div>
+              <input type="${t}" placeholder="${p}">
+            </div>`).join("")}
+          <button style="padding:9px;background:${T};color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">Registrar entrada</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderFinanceiro(){
+  const pagar=contasPagar.filter(c=>c.status==="pendente").reduce((s,c)=>s+c.valor,0);
+  return`
+    <div class="grid4" style="margin-bottom:16px">
+      ${kpi("Receita do mês",fmt(87600),"Março/2026",T)}
+      ${kpi("A receber",fmt(4244),"FarmaClub + convênios")}
+      ${kpi("A pagar",fmt(pagar),"contas em aberto",AM)}
+      ${kpi("Saldo projetado",fmt(4244-pagar+87600*0.3),"estimado")}
+    </div>
+    <div class="grid2">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:600">Contas a pagar</div>
+          <button class="btn-pri">+ Lançar</button>
+        </div>
+        ${tbl(["Credor","Vencimento","Valor","Status",""],
+          contasPagar.map((c,i)=>`<tr>
+            ${td(`<strong>${c.credor}</strong>`)}${td(fmtD(c.venc),"color:#888")}${td(fmt(c.valor),"font-weight:700;text-align:right")}${td(dot(c.status))}
+            ${td(c.status==="pendente"?`<button class="btn-sm" style="background:${GN};color:#fff" onclick="this.closest('tr').style.opacity='.4'">Pagar</button>`:"")}
+          </tr>`).join(""))}
+      </div>
+      <div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:10px">Contas a receber</div>
+        ${tbl(["Cliente","Valor","Forma","Status"],
+          [["FarmaClub — Pedido #4521",156.30,"Débito","pendente"],["FarmaClub — Pedido #4519",87.50,"Pix","pendente"],["Convênio Prefeitura",2100,"convênio","pendente"]].map(([c,v,f,s])=>`<tr>
+            ${td(`<strong>${c}</strong>`)}${td(fmt(v),"font-weight:700;text-align:right")}${td(f,"color:#888")}${td(dot(s))}
+          </tr>`).join(""))}
+      </div>
+    </div>`;
+}
+
+function renderClientes(){
+  return`
+    <div class="grid4" style="margin-bottom:14px">
+      ${kpi("Total de clientes","342","cadastrados",T)}${kpi("Ativos (30 dias)","89","fizeram compra")}${kpi("Ticket médio",fmt(58.40),"por venda")}${kpi("Convênios","3","Petrobrás, Pref., INSS")}
+    </div>
+    ${tbl(["Nome","CPF","Telefone","Bairro","Compras","Total gasto","Última compra"],
+      [["Maria da Silva","***.842.***-21","(22) 99812-3456","Parque Noel",12,fmt(487.50),"14/03/2026"],
+       ["João Pereira","***.037.***-88","(22) 98765-0123","Centro",8,fmt(312.00),"16/03/2026"],
+       ["Ana Paula Ferreira","***.432.***-98","(22) 99234-5678","S. Cristóvão",21,fmt(1240.80),"16/03/2026"],
+       ["Fernanda Lima","***.018.***-77","(22) 99456-1234","Boa Sorte",15,fmt(876.40),"12/03/2026"]].map(r=>`<tr>${r.map((c,i)=>td(c,i===4?"text-align:center":i===5?"font-weight:700;text-align:right":"")).join("")}</tr>`).join(""))}`;
+}
+
+function renderRelatorios(){
+  const rels=[
+    {tit:"Curva ABC de produtos",desc:"Top 20% dos produtos que geram 80% da receita.",tipo:"Estoque",c:T},
+    {tit:"DRE — Resultado do mês",desc:"Receita bruta, CMV, despesas e lucro líquido.",tipo:"Financeiro",c:GN},
+    {tit:"Produtos perto do vencimento",desc:"Lista com 30/60/90 dias de antecedência.",tipo:"Estoque",c:AM},
+    {tit:"Projeção de fluxo de caixa",desc:"Projeta o caixa dos próximos 30/60/90 dias com IA.",tipo:"IA",c:BL},
+    {tit:"Clientes inativos 60+ dias",desc:"Gera lista para campanha de reativação via WhatsApp.",tipo:"CRM",c:PU},
+    {tit:"Quanto FarmaClub me economizou",desc:"ROI da parceria: preço coletivo vs individual.",tipo:"IA",c:T},
+  ];
+  return`
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
+      ${rels.map(r=>`<div style="border:1px solid #eee;border-radius:10px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px">
+              <span class="badge" style="background:${r.c}22;color:${r.c}">${r.tipo}</span>
+              <span style="font-weight:600;font-size:13px">${r.tit}</span>
+            </div>
+            <div style="font-size:12px;color:#888;line-height:1.5">${r.desc}</div>
+          </div>
+          <button style="font-size:11px;padding:5px 11px;background:transparent;border:1px solid ${r.c};color:${r.c};border-radius:6px;cursor:pointer;flex-shrink:0">Gerar →</button>
+        </div>
+      </div>`).join("")}
+    </div>`;
+}
+
+// PDV helpers
+window.pdvBusca=function(q){
+  const res=document.getElementById("pdvRes");
+  if(!res||q.length<2){if(res)res.innerHTML="";return;}
+  const found=produtos.filter(p=>p.nome.toLowerCase().includes(q.toLowerCase())||p.codigo.includes(q));
+  res.innerHTML=found.slice(0,5).map(p=>`
+    <div onclick="addPDV(${p.id})" style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border:1px solid #eee;border-radius:8px;cursor:pointer;background:#fff" onmouseover="this.style.background='#f8f8f8'" onmouseout="this.style.background='#fff'">
+      <div>
+        <div style="font-size:12px;font-weight:600">${p.nome}</div>
+        <div style="font-size:10px;color:#aaa">Estoque: ${p.estoque} un</div>
+      </div>
+      <div style="font-weight:700;color:${T}">${fmt(p.preco)}</div>
+    </div>`).join("")||`<div style="font-size:12px;color:#aaa;padding:8px">Nenhum produto encontrado</div>`;
+};
+
+window.addPDV=function(id){
+  const p=produtos.find(x=>x.id===id);if(!p) return;
+  const ex=vendaItens.find(x=>x.id===id);
+  if(ex)ex.qtd++;else vendaItens.push({...p,qtd:1});
+  renderContent();
+  setTimeout(()=>{const el=document.getElementById("buscaPDV");if(el)el.focus();},50);
+};
+window.remPDV=function(i){vendaItens.splice(i,1);renderContent();};
+window.selForma=function(btn){
+  document.querySelectorAll("#content .qty-ctrl ~ button, .card button[onclick='selForma(this)']").forEach(b=>{b.style.background="transparent";b.style.color="#666";});
+  btn.style.background="#0d9488";btn.style.color="#fff";
+};
+window.finalizarVenda=function(){
+  if(!vendaItens.length){alert("Adicione produtos ao carrinho.");return;}
+  alert("Venda finalizada! Total: "+fmt(vendaItens.reduce((s,i)=>s+i.preco*i.qtd,0)));
+  vendaItens=[];renderContent();
+};
+
+// Charts
+function initCharts(){
+  setTimeout(()=>{
+    const vEl=document.getElementById("chtV");
+    if(vEl&&!vEl._c){vEl._c=new Chart(vEl,{type:"bar",data:{labels:["Seg","Ter","Qua","Qui","Sex","Sáb","Dom"],datasets:[{data:[2800,3100,2600,3400,3800,4200,3420],backgroundColor:T+"99",borderRadius:4,barThickness:22}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:"rgba(0,0,0,.05)"},ticks:{font:{size:10},callback:v=>"R$"+v}}}}});}
+  },80);
+}
+
+const renders={dashboard:renderDashboard,pdv:renderPDV,estoque:renderEstoque,precificacao:renderPrecificacao,nfe:renderNFE,financeiro:renderFinanceiro,clientes:renderClientes,relatorios:renderRelatorios};
+const titulos={dashboard:"Dashboard",pdv:"PDV — Ponto de Venda",estoque:"Controle de Estoque",precificacao:"Precificação Automática",nfe:"Entrada de Nota Fiscal",financeiro:"Financeiro",clientes:"Clientes",relatorios:"Relatórios & IA"};
+let tabAtual="dashboard";
+
+function setTab(t){
+  tabAtual=t;
+  document.querySelectorAll(".nav-btn").forEach(b=>b.className="nav-btn"+(b.dataset.tab===t?" ativo":""));
+  document.getElementById("tab-title").textContent=titulos[t];
+  document.getElementById("content").innerHTML=renders[t]();
+  if(t==="dashboard") initCharts();
+}
+function renderContent(){document.getElementById("content").innerHTML=renders[tabAtual]();if(tabAtual==="dashboard")initCharts();}
+window.setTab=setTab;
+renderContent();
+</script>
+</body>
+</html>

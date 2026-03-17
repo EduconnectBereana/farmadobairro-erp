@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FarmaClub — App Cliente</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f7f8fc;--bg2:#ffffff;--bg3:#f0f2f9;--bg4:#e8eaf4;
+  --t:#14152a;--t2:#5a5e7a;--t3:#9a9eb8;
+  --green:#0d9488;--green2:#0f766e;--greenBg:#e6faf8;--greenLight:#ccfbf1;
+  --amber:#d97706;--amberBg:#fffbeb;
+  --red:#dc2626;--redBg:#fef2f2;
+  --blue:#2563eb;--blueBg:#eff6ff;
+  --r:18px;--r2:14px;--r3:10px;
+  --shadow:0 2px 16px rgba(20,21,42,.08);
+  --shadow2:0 8px 32px rgba(20,21,42,.14);
+}
+html,body{height:100%;background:linear-gradient(135deg,#0d9488 0%,#0f766e 40%,#134e4a 100%);display:flex;align-items:center;justify-content:center;font-family:'Sora',sans-serif}
+.phone{width:390px;height:780px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 50px 100px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.2);display:flex;flex-direction:column}
+.notch{height:44px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;position:relative;z-index:10}
+.notch-time{font-size:14px;font-weight:700;color:var(--t);font-family:'DM Mono',monospace}
+.screen{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;background:var(--bg);transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .28s;display:flex;flex-direction:column}
+.page.hidden{transform:translateX(100%);opacity:0;pointer-events:none}
+.page.slide-up.hidden{transform:translateY(100%)}
+.page::-webkit-scrollbar{display:none}
+
+/* HERO */
+.hero-hdr{background:linear-gradient(135deg,var(--green) 0%,var(--green2) 100%);padding:16px 20px 28px;flex-shrink:0;position:relative;overflow:hidden}
+.hero-hdr::after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);right:-40px;top:-60px;pointer-events:none}
+
+/* SEARCH COM SCANNER */
+.search-wrap{position:relative}
+.search-inp{width:100%;padding:12px 52px 12px 44px;border-radius:var(--r2);border:none;font-size:14px;font-family:'Sora',sans-serif;background:#fff;color:var(--t);outline:none;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.search-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;pointer-events:none}
+.scan-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:9px;background:var(--green);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;transition:all .15s;flex-shrink:0}
+.scan-btn:active{transform:translateY(-50%) scale(.9)}
+.scan-btn:hover{background:var(--green2)}
+
+/* ═══ SCANNER OVERLAY ═══ */
+.scanner-overlay{position:absolute;inset:0;background:#000;z-index:500;display:flex;flex-direction:column;transition:opacity .3s}
+.scanner-overlay.hidden{opacity:0;pointer-events:none}
+.scanner-header{padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;background:rgba(0,0,0,.6)}
+.scanner-close{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.scanner-title{font-size:16px;font-weight:700;color:#fff}
+.scanner-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.video-container{flex:1;position:relative;overflow:hidden}
+#scanner-video{width:100%;height:100%;object-fit:cover;display:block}
+/* Moldura de mira */
+.scan-frame{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.scan-box{width:220px;height:140px;position:relative}
+.scan-corner{position:absolute;width:28px;height:28px;border-color:var(--green);border-style:solid}
+.scan-corner.tl{top:0;left:0;border-width:4px 0 0 4px;border-radius:4px 0 0 0}
+.scan-corner.tr{top:0;right:0;border-width:4px 4px 0 0;border-radius:0 4px 0 0}
+.scan-corner.bl{bottom:0;left:0;border-width:0 0 4px 4px;border-radius:0 0 0 4px}
+.scan-corner.br{bottom:0;right:0;border-width:0 4px 4px 0;border-radius:0 0 4px 0}
+/* Linha laser animada */
+@keyframes laser{0%{top:10px}100%{top:calc(100% - 10px)}}
+.scan-laser{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:laser 1.8s ease-in-out infinite alternate;box-shadow:0 0 8px var(--green)}
+.scan-hint{position:absolute;bottom:20px;left:0;right:0;text-align:center}
+.scan-hint-txt{font-size:12px;color:rgba(255,255,255,.8);background:rgba(0,0,0,.5);padding:6px 16px;border-radius:20px;display:inline-block}
+/* Status scanning */
+.scan-status{position:absolute;top:12px;left:0;right:0;text-align:center;transition:all .3s}
+.scan-status-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.6);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.blink{animation:blink 1.2s infinite}
+/* Resultado do scan */
+.scan-result{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:24px 24px 0 0;padding:20px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.scan-result.show{transform:translateY(0)}
+/* Torch button */
+.torch-btn{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.3);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.torch-btn.on{background:rgba(255,230,100,.3);border-color:rgba(255,230,100,.6)}
+
+/* PRODUTOS GRID */
+.prod-card{background:var(--bg2);border-radius:var(--r2);border:1.5px solid var(--bg4);padding:14px;cursor:pointer;transition:all .15s;position:relative}
+.prod-card:active{transform:scale(.97)}
+.prod-ico{font-size:32px;margin-bottom:8px;display:block}
+.prod-nome{font-size:13px;font-weight:600;color:var(--t);line-height:1.3;margin-bottom:4px}
+.prod-farm{font-size:11px;color:var(--t3);margin-bottom:8px}
+.prod-preco{font-size:17px;font-weight:800;color:var(--green)}
+.prod-add{width:30px;height:30px;border-radius:8px;background:var(--green);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;transition:transform .1s}
+.prod-add:active{transform:scale(.9)}
+
+.cat-pill{padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap;border:none;cursor:pointer;transition:all .15s;font-family:'Sora',sans-serif;flex-shrink:0}
+.cat-pill.ativo{background:var(--green);color:#fff;box-shadow:0 4px 12px rgba(13,148,136,.35)}
+.cat-pill:not(.ativo){background:#fff;color:var(--t2);border:1.5px solid var(--bg4)}
+.sec-tit{font-size:16px;font-weight:700;color:var(--t);margin:0 0 12px}
+
+.farm-group{border:1.5px solid var(--bg4);border-radius:var(--r2);margin-bottom:12px;overflow:hidden}
+.farm-group-hdr{background:var(--greenBg);padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--greenLight)}
+.qty-btn2{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--bg4);background:var(--bg3);font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t);transition:all .1s}
+.qty-btn2:active{transform:scale(.9)}
+.qty-num{font-size:14px;font-weight:700;color:var(--t);min-width:24px;text-align:center}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.hdrbar{background:#fff;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;box-shadow:0 1px 0 var(--bg4)}
+.back-btn{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:none;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t);flex-shrink:0}
+.btn-g{background:var(--green);color:#fff;border:none;border-radius:var(--r2);padding:16px;font-size:15px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif;width:100%;transition:all .15s}
+.btn-g:active{transform:scale(.97)}
+.btn-o{background:transparent;color:var(--t2);border:1.5px solid var(--bg4);border-radius:var(--r2);padding:13px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;width:100%}
+.total-box{background:var(--green);border-radius:var(--r2);padding:14px 16px;margin:12px 0}
+.frete-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bg3)}
+.forma-btn{background:var(--bg3);border:2px solid var(--bg4);border-radius:var(--r3);padding:14px;cursor:pointer;transition:all .15s;text-align:left;width:100%;font-family:'Sora',sans-serif;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.forma-btn.sel{border-color:var(--green);background:var(--greenBg)}
+.bnav{background:#fff;border-top:1px solid var(--bg4);display:flex;padding:8px 0 12px;flex-shrink:0;position:relative;z-index:10}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;cursor:pointer;padding:4px 0;font-family:'Sora',sans-serif;position:relative}
+.bnav-ico{font-size:20px;transition:transform .15s}
+.bnav-lbl{font-size:9px;font-weight:700;letter-spacing:.3px;color:var(--t3);transition:color .15s}
+.bnav-btn.ativo .bnav-lbl{color:var(--green)}
+.bnav-btn.ativo .bnav-ico{transform:scale(1.1)}
+.bnav-badge{position:absolute;top:2px;right:calc(50% - 20px);background:var(--red);color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:1px 5px;min-width:16px;text-align:center}
+.toast{position:absolute;top:54px;left:16px;right:16px;background:var(--t);color:#fff;border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;z-index:600;transform:translateY(-20px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow2)}
+.toast.show{transform:translateY(0);opacity:1}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeSlideUp .3s ease forwards}
+@keyframes popIn{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+.pop-in{animation:popIn .25s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes pulse2{0%,100%{box-shadow:0 0 0 0 rgba(13,148,136,.4)}70%{box-shadow:0 0 0 8px rgba(13,148,136,0)}}
+.pulsing{animation:pulse2 1.8s infinite}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="notch">
+    <div class="notch-time" id="clock">14:32</div>
+    <div style="width:90px;height:8px;background:#f7f8fc;border-radius:0 0 14px 14px;position:absolute;left:50%;transform:translateX(-50%);top:0"></div>
+    <div style="font-size:12px;color:var(--t)">●●● 🔋</div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast">🛒 <span id="toast-msg"></span></div>
+
+  <div class="screen" id="screen">
+
+    <!-- ════ SCANNER OVERLAY ════ -->
+    <div class="scanner-overlay hidden" id="scanner-overlay">
+      <div class="scanner-header">
+        <button class="scanner-close" onclick="fecharScanner()">✕</button>
+        <div>
+          <div class="scanner-title">Ler código de barras</div>
+          <div class="scanner-sub">Aponte a câmera para o código do produto</div>
+        </div>
+      </div>
+      <div class="video-container">
+        <video id="scanner-video" autoplay playsinline muted></video>
+        <!-- Torch -->
+        <button class="torch-btn" id="torch-btn" onclick="toggleTorch()" title="Lanterna">🔦</button>
+        <!-- Moldura -->
+        <div class="scan-frame">
+          <div class="scan-box">
+            <div class="scan-corner tl"></div>
+            <div class="scan-corner tr"></div>
+            <div class="scan-corner bl"></div>
+            <div class="scan-corner br"></div>
+            <div class="scan-laser" id="scan-laser"></div>
+          </div>
+        </div>
+        <!-- Hint -->
+        <div class="scan-hint"><span class="scan-hint-txt">Centralize o código na moldura</span></div>
+        <!-- Status -->
+        <div class="scan-status" id="scan-status">
+          <div class="scan-status-pill"><span class="blink">●</span> Procurando código...</div>
+        </div>
+        <!-- Resultado -->
+        <div class="scan-result" id="scan-result"></div>
+      </div>
+    </div>
+
+    <!-- ════ HOME ════ -->
+    <div class="page" id="pg-home">
+      <div class="hero-hdr">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;position:relative;z-index:1">
+          <div>
+            <div style="font-size:13px;color:rgba(255,255,255,.75);font-weight:500">Olá, Maria 👋</div>
+            <div style="font-size:18px;font-weight:800;color:#fff;margin-top:2px">FarmaClub Itaperuna</div>
+          </div>
+          <button onclick="navTo('pedidos')" style="background:rgba(255,255,255,.15);border:none;border-radius:12px;padding:8px 12px;cursor:pointer;position:relative">
+            <span style="font-size:20px">📦</span>
+            <span style="position:absolute;top:-4px;right:-4px;background:#fff;color:var(--green);font-size:9px;font-weight:800;border-radius:6px;padding:1px 5px">2</span>
+          </button>
+        </div>
+        <div class="search-wrap" style="position:relative;z-index:1">
+          <span class="search-ico">🔍</span>
+          <input class="search-inp" placeholder="Buscar medicamento ou vitamina..." id="search-inp" oninput="buscar(this.value)">
+          <button class="scan-btn" onclick="abrirScanner()" title="Ler código de barras">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+              <path d="M3 5v2M3 19v-2M5 3h2M19 3h-2M21 5v2M21 19v-2M19 21h-2M5 21h2"/>
+              <line x1="6" y1="8" x2="6" y2="16"/><line x1="8" y1="8" x2="8" y2="16"/>
+              <line x1="10" y1="8" x2="10" y2="12"/><line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="14" y1="8" x2="14" y2="12"/><line x1="16" y1="8" x2="16" y2="16"/>
+              <line x1="18" y1="8" x2="18" y2="16"/>
+            </svg>
+          </button>
+        </div>
+        <div id="busca-resultado" style="display:none;position:absolute;top:122px;left:16px;right:16px;background:#fff;border-radius:var(--r2);box-shadow:var(--shadow2);z-index:200;max-height:240px;overflow-y:auto;border:1px solid var(--bg4)"></div>
+      </div>
+
+      <!-- Dica do scanner -->
+      <div style="margin:10px 16px 0;background:var(--greenBg);border:1px solid var(--greenLight);border-radius:var(--r3);padding:9px 12px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0">
+          <path d="M3 5v2M3 19v-2M5 3h2M19 3h-2M21 5v2M21 19v-2M19 21h-2M5 21h2"/>
+          <line x1="6" y1="8" x2="6" y2="16"/><line x1="8" y1="8" x2="8" y2="16"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="16" y1="8" x2="16" y2="16"/>
+        </svg>
+        <div style="font-size:11px;color:var(--green)"><strong>Novo:</strong> toque em <strong>📷</strong> na busca para ler o código de barras do produto direto da embalagem</div>
+      </div>
+
+      <!-- Categorias -->
+      <div style="display:flex;gap:8px;padding:12px 16px 6px;overflow-x:auto;flex-shrink:0">
+        <div style="display:flex;gap:8px">
+          <button class="cat-pill ativo" onclick="filtrarCat('todos',this)">🏥 Todos</button>
+          <button class="cat-pill" onclick="filtrarCat('analgesicos',this)">💊 Analgésicos</button>
+          <button class="cat-pill" onclick="filtrarCat('antibioticos',this)">🔬 Antibióticos</button>
+          <button class="cat-pill" onclick="filtrarCat('vitaminas',this)">⚡ Vitaminas</button>
+          <button class="cat-pill" onclick="filtrarCat('gastro',this)">🫀 Gastro</button>
+          <button class="cat-pill" onclick="filtrarCat('diabetes',this)">🩺 Diabetes</button>
+        </div>
+      </div>
+
+      <!-- Farmácias próximas -->
+      <div style="padding:10px 16px 6px;flex-shrink:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="sec-tit" style="margin:0">Farmácias próximas</div>
+          <span style="font-size:11px;color:var(--green);font-weight:600;cursor:pointer">Ver todas →</span>
+        </div>
+        <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:2px">
+          ${[{ico:"💊",nome:"São João",bairro:"Centro",tempo:"~12 min",nota:4.9,ok:true},{ico:"🏥",nome:"Esperança",bairro:"M. Crica",tempo:"~20 min",nota:4.7,ok:true},{ico:"💉",nome:"Boa Saúde",bairro:"Meudon",tempo:"~25 min",nota:4.6,ok:true},{ico:"🩺",nome:"Central",bairro:"Boa Sorte",tempo:"~28 min",nota:4.5,ok:false}].map(f=>`
+            <div style="background:#fff;border-radius:var(--r2);border:1.5px solid var(--bg4);padding:12px 10px;min-width:96px;cursor:pointer;flex-shrink:0;text-align:center">
+              <div style="font-size:24px;margin-bottom:5px">${f.ico}</div>
+              <div style="font-size:11px;font-weight:700;color:var(--t)">${f.nome}</div>
+              <div style="font-size:10px;color:var(--t3)">${f.bairro}</div>
+              <div style="font-size:10px;color:${f.ok?"var(--green)":"var(--red)"};font-weight:600;margin-top:4px">${f.ok?"● "+f.tempo:"● Fechada"}</div>
+            </div>`).join("")}
+        </div>
+      </div>
+
+      <!-- Produtos -->
+      <div style="padding:10px 16px 8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div class="sec-tit" style="margin:0" id="prod-section-title">Mais vendidos</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px" id="prod-grid"></div>
+      </div>
+      <div style="height:20px"></div>
+    </div>
+
+    <!-- ════ PRODUTO DETALHE ════ -->
+    <div class="page hidden" id="pg-produto">
+      <div class="hdrbar">
+        <button class="back-btn" onclick="voltarDeProduto()">‹</button>
+        <div class="hdr-pg-title" id="prod-det-titulo">Produto</div>
+        <button onclick="navTo('carrinho')" style="margin-left:auto;background:var(--bg3);border:none;border-radius:10px;padding:8px 12px;cursor:pointer">
+          🛒 <span style="font-weight:700;font-size:12px;color:var(--green)" id="prod-det-cart-n">0</span>
+        </button>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:20px" id="prod-det-content"></div>
+    </div>
+
+    <!-- ════ CARRINHO ════ -->
+    <div class="page hidden" id="pg-carrinho">
+      <div class="hdrbar">
+        <button class="back-btn" onclick="navTo('home')">‹</button>
+        <div class="hdr-pg-title">Carrinho</div>
+        <span id="cart-count-hdr" style="font-size:12px;color:var(--t3);margin-left:auto"></span>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px 20px" id="cart-content"></div>
+    </div>
+
+    <!-- ════ CHECKOUT ════ -->
+    <div class="page hidden" id="pg-checkout">
+      <div class="hdrbar">
+        <button class="back-btn" onclick="navTo('carrinho')">‹</button>
+        <div class="hdr-pg-title">Finalizar pedido</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px 20px" id="checkout-content"></div>
+    </div>
+
+    <!-- ════ PEDIDO CONFIRMADO ════ -->
+    <div class="page hidden slide-up" id="pg-confirmado">
+      <div style="flex:1;overflow-y:auto;padding:20px" id="confirmado-content"></div>
+    </div>
+
+    <!-- ════ RASTREAMENTO ════ -->
+    <div class="page hidden" id="pg-rastreio">
+      <div class="hdrbar">
+        <button class="back-btn" onclick="navTo('pedidos')">‹</button>
+        <div class="hdr-pg-title">Acompanhar entrega</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:16px 20px" id="rastreio-content"></div>
+    </div>
+
+    <!-- ════ MEUS PEDIDOS ════ -->
+    <div class="page hidden" id="pg-pedidos">
+      <div class="hdrbar"><div class="hdr-pg-title">Meus pedidos</div></div>
+      <div style="flex:1;overflow-y:auto;padding:16px 20px" id="pedidos-content"></div>
+    </div>
+
+    <!-- ════ PERFIL ════ -->
+    <div class="page hidden" id="pg-perfil">
+      <div style="flex:1;overflow-y:auto">
+        <div style="background:linear-gradient(135deg,var(--green),var(--green2));padding:32px 20px 24px;text-align:center">
+          <div style="width:72px;height:72px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700;color:#fff;margin:0 auto 12px;border:3px solid rgba(255,255,255,.4)">MS</div>
+          <div style="font-size:20px;font-weight:800;color:#fff">Maria da Silva</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.75);margin-top:4px">(22) 99812-3456 · Parque Noel</div>
+        </div>
+        <div style="padding:20px">
+          ${[["📍","Endereço","Rua das Flores, 88 — Parque Noel"],["💊","Medicamentos frequentes","Dipirona, Omeprazol, Vitamina C"],["💳","Forma de pagamento","Pix (padrão)"],["📞","Contato para entrega","(22) 99812-3456"]].map(([i,k,v])=>`
+            <div style="background:#fff;border-radius:var(--r3);border:1.5px solid var(--bg4);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+              <span style="font-size:22px;width:36px;text-align:center">${i}</span>
+              <div><div style="font-size:11px;color:var(--t3);margin-bottom:2px">${k}</div><div style="font-size:13px;font-weight:600;color:var(--t)">${v}</div></div>
+            </div>`).join("")}
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /screen -->
+
+  <div class="bnav">
+    <button class="bnav-btn ativo" id="bnav-home" onclick="navTo('home')"><span class="bnav-ico">🏠</span><span class="bnav-lbl">Início</span></button>
+    <button class="bnav-btn" id="bnav-farmacias" onclick="navTo('pedidos')"><span class="bnav-ico">🏥</span><span class="bnav-lbl">Farmácias</span></button>
+    <button class="bnav-btn" id="bnav-carrinho" onclick="navTo('carrinho')">
+      <span class="bnav-ico">🛒</span><span class="bnav-lbl">Carrinho</span>
+      <span class="bnav-badge" id="cart-nav-badge" style="display:none">0</span>
+    </button>
+    <button class="bnav-btn" id="bnav-pedidos" onclick="navTo('pedidos')"><span class="bnav-ico">📦</span><span class="bnav-lbl">Pedidos</span></button>
+    <button class="bnav-btn" id="bnav-perfil" onclick="navTo('perfil')"><span class="bnav-ico">👤</span><span class="bnav-lbl">Perfil</span></button>
+  </div>
+</div>
+
+<!-- ZXing library para leitura de código de barras -->
+<script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
+<script>
+// ══════ DADOS ══════
+const todosProdutos=[
+  {id:1,ean:"7896004004532",ico:"💊",nome:"Dipirona 500mg 20cp",lab:"EMS",farm:"São João",farmId:"sj",cat:"analgesicos",preco:8.90,precoOld:11.50,estoque:84,desc:"Analgésico e antitérmico. Alívio de dores e febre.",uso:"1 comprimido a cada 6h conforme necessidade.",receita:false},
+  {id:2,ean:"7896714240118",ico:"🔬",nome:"Amoxicilina 500mg 21cp",lab:"Medley",farm:"São João",farmId:"sj",cat:"antibioticos",preco:22.50,estoque:31,desc:"Antibiótico de amplo espectro.",uso:"Conforme prescrição médica.",receita:true},
+  {id:3,ean:"7896523240065",ico:"🫀",nome:"Omeprazol 20mg 28cp",lab:"Aché",farm:"Esperança",farmId:"de",cat:"gastro",preco:14.90,precoOld:18.00,estoque:55,desc:"Protetor gástrico.",uso:"1 cápsula em jejum 30 min antes do café.",receita:false},
+  {id:4,ean:"7891058006824",ico:"⚡",nome:"Vitamina C 1g 10cp",lab:"EMS",farm:"São João",farmId:"sj",cat:"vitaminas",preco:5.90,estoque:102,desc:"Fortalece o sistema imunológico.",uso:"1 comprimido por dia.",receita:false},
+  {id:5,ean:"7896658010077",ico:"❤️",nome:"Losartana 50mg 30cp",lab:"EMS",farm:"Esperança",farmId:"de",cat:"cardiovasc",preco:18.50,estoque:12,desc:"Controle da pressão arterial.",uso:"Conforme prescrição médica.",receita:true},
+  {id:6,ean:"7891047944513",ico:"🩺",nome:"Metformina 850mg 30cp",lab:"Merck",farm:"Esperança",farmId:"de",cat:"diabetes",preco:9.90,estoque:44,desc:"Antidiabético oral.",uso:"Conforme prescrição médica.",receita:true},
+  {id:7,ean:"7896714270048",ico:"💊",nome:"Ibuprofeno 600mg 20cp",lab:"Medley",farm:"São João",farmId:"sj",cat:"analgesicos",preco:15.90,estoque:67,desc:"Anti-inflamatório e analgésico.",uso:"1 comprimido a cada 8h com alimentos.",receita:false},
+  {id:8,ean:"7896523405055",ico:"🫧",nome:"Simeticona 40mg 50cp",lab:"Aché",farm:"Esperança",farmId:"de",cat:"gastro",preco:11.50,estoque:29,desc:"Alivia gases e desconforto abdominal.",uso:"1 a 2 comprimidos mastigáveis após refeições.",receita:false},
+  {id:9,ean:"7896714240119",ico:"💪",nome:"Vitamina D3 2000UI 30cp",lab:"Aché",farm:"Boa Saúde",farmId:"bs",cat:"vitaminas",preco:18.90,precoOld:24.00,estoque:45,desc:"Essencial para ossos e imunidade.",uso:"1 cápsula ao dia com refeição.",receita:false},
+];
+
+const bairrosCliente={"Centro":{frete:1.00},"Parque Noel":{frete:3.50},"São Cristóvão":{frete:4.50},"Morro do Crica":{frete:5.00},"Meudon":{frete:7.00},"Boa Sorte":{frete:6.50}};
+
+// ══════ STATE ══════
+let carrinho=[];
+let catAtual="todos";
+let ultimaPg="home";
+let pedidoConfirmado=null;
+let trackStep=2;
+let formaPgto="pix";
+let bairroCliente="Parque Noel";
+let scannerAtivo=false;
+let codeReader=null;
+let streamAtivo=null;
+let torchOn=false;
+
+const fmt=v=>"R$ "+v.toFixed(2).replace(".",",");
+
+// ══════ CLOCK ══════
+function tick(){const d=new Date();document.getElementById("clock").textContent=d.getHours().toString().padStart(2,"0")+":"+d.getMinutes().toString().padStart(2,"0");}
+tick();setInterval(tick,10000);
+
+// ══════ TOAST ══════
+function showToast(msg,ico="🛒"){
+  const t=document.getElementById("toast");
+  t.innerHTML=`${ico} <span>${msg}</span>`;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2800);
+}
+
+// ══════ CARRINHO ══════
+function totalItens(){return carrinho.reduce((s,i)=>s+i.qtd,0)}
+function totalProdutos(){return carrinho.reduce((s,i)=>s+i.preco*i.qtd,0)}
+function freteTotal(){const grupos=[...new Set(carrinho.map(i=>i.farmId))];const bf=bairrosCliente[bairroCliente]||{frete:3.50};return grupos.length*bf.frete;}
+function totalGeral(){return totalProdutos()+freteTotal()}
+function atualizarBadges(){const n=totalItens();const b=document.getElementById("cart-nav-badge");if(b){b.textContent=n;b.style.display=n>0?"flex":"none";}}
+function addProduto(id){
+  const p=todosProdutos.find(x=>x.id===id);if(!p) return;
+  const ex=carrinho.find(x=>x.id===id);
+  if(ex) ex.qtd++;else carrinho.push({...p,qtd:1});
+  atualizarBadges();showToast(p.nome+" adicionado","✅");
+}
+function remItem(id){const ex=carrinho.find(x=>x.id===id);if(!ex) return;if(ex.qtd>1)ex.qtd--;else carrinho=carrinho.filter(x=>x.id!==id);atualizarBadges();}
+
+// ══════ SCANNER ══════
+async function abrirScanner(){
+  const overlay=document.getElementById("scanner-overlay");
+  overlay.classList.remove("hidden");
+  scannerAtivo=true;
+  document.getElementById("scan-result").classList.remove("show");
+  document.getElementById("scan-status").innerHTML=`<div class="scan-status-pill"><span class="blink">●</span> Procurando código...</div>`;
+
+  // Tenta usar ZXing se disponível
+  if(typeof ZXing !== "undefined"){
+    try{
+      codeReader=new ZXing.BrowserMultiFormatReader();
+      const devices=await ZXing.BrowserMultiFormatReader.listVideoInputDevices();
+      const deviceId=devices.length>1?devices[devices.length-1].deviceId:devices[0]?.deviceId;
+      codeReader.decodeFromVideoDevice(deviceId||null,"scanner-video",resultado=>{
+        if(resultado && scannerAtivo){
+          processarCodigo(resultado.getText());
+        }
+      });
+    }catch(e){
+      usarSimulacao();
+    }
+  } else {
+    // ZXing não carregou — usar câmera nativa + simulação
+    iniciarCameraNativa();
+  }
+}
+
+async function iniciarCameraNativa(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}});
+    streamAtivo=stream;
+    const video=document.getElementById("scanner-video");
+    video.srcObject=stream;
+    video.play();
+
+    // Usar BarcodeDetector nativo se disponível (Chrome/Android)
+    if("BarcodeDetector" in window){
+      const detector=new BarcodeDetector({formats:["ean_13","ean_8","code_128","code_39","upc_a","upc_e","qr_code"]});
+      const scan=async()=>{
+        if(!scannerAtivo) return;
+        try{
+          const barcodes=await detector.detect(video);
+          if(barcodes.length>0){
+            processarCodigo(barcodes[0].rawValue);return;
+          }
+        }catch(e){}
+        if(scannerAtivo) requestAnimationFrame(scan);
+      };
+      requestAnimationFrame(scan);
+      return;
+    }
+  }catch(e){}
+  // fallback: simulação com timer
+  usarSimulacao();
+}
+
+function usarSimulacao(){
+  // Simula encontrar um código após 3 segundos (para demonstração no protótipo)
+  document.getElementById("scan-status").innerHTML=`<div class="scan-status-pill">📱 Modo demonstração — simulando leitura</div>`;
+  setTimeout(()=>{
+    if(!scannerAtivo) return;
+    // Simula leitura de EAN aleatório dos produtos cadastrados
+    const p=todosProdutos[Math.floor(Math.random()*todosProdutos.length)];
+    processarCodigo(p.ean);
+  },3000);
+}
+
+function processarCodigo(codigo){
+  if(!scannerAtivo) return;
+  scannerAtivo=false; // Para novas leituras
+
+  // Vibrar o dispositivo
+  if(navigator.vibrate) navigator.vibrate([100,50,100]);
+
+  // Atualizar status
+  document.getElementById("scan-status").innerHTML=`<div class="scan-status-pill" style="background:rgba(13,148,136,.8)">✓ Código lido: ${codigo}</div>`;
+
+  // Buscar produto pelo EAN
+  const prod=todosProdutos.find(p=>p.ean===codigo);
+  const result=document.getElementById("scan-result");
+
+  if(prod){
+    result.innerHTML=`
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="font-size:42px">${prod.ico}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:var(--t)">${prod.nome}</div>
+          <div style="font-size:11px;color:var(--t3)">${prod.lab} · ${prod.farm}</div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--t3);margin-top:2px">${codigo}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:19px;font-weight:800;color:var(--green)">${fmt(prod.preco)}</div>
+          <div style="font-size:10px;color:var(--t3)">em estoque ✓</div>
+        </div>
+      </div>
+      ${prod.receita?`<div style="background:var(--amberBg);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:var(--amber);font-weight:600">⚕️ Produto sujeito a receita médica</div>`:""}
+      <div style="display:flex;gap:8px">
+        <button onclick="addScanProduto(${prod.id})" style="flex:1;padding:13px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif">+ Adicionar ao carrinho</button>
+        <button onclick="verDetalhesScan(${prod.id})" style="padding:13px 14px;background:var(--bg3);border:none;border-radius:12px;font-size:13px;cursor:pointer;font-family:'Sora',sans-serif;color:var(--t2)">Ver mais</button>
+      </div>`;
+  } else {
+    result.innerHTML=`
+      <div style="text-align:center;padding:8px 0 14px">
+        <div style="font-size:36px;margin-bottom:8px">🔍</div>
+        <div style="font-size:15px;font-weight:700;color:var(--t)">Produto não encontrado</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:4px">EAN: ${codigo}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:4px">Este produto ainda não está cadastrado na FarmaClub.</div>
+      </div>
+      <button onclick="escanearNovamente()" style="width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sora',sans-serif">Ler outro código</button>`;
+  }
+  result.classList.add("show");
+  pararCamera();
+}
+
+function pararCamera(){
+  if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;}
+  if(streamAtivo){streamAtivo.getTracks().forEach(t=>t.stop());streamAtivo=null;}
+}
+
+function fecharScanner(){
+  scannerAtivo=false;
+  pararCamera();
+  document.getElementById("scanner-overlay").classList.add("hidden");
+  document.getElementById("scan-result").classList.remove("show");
+}
+
+window.addScanProduto=function(id){addProduto(id);fecharScanner();};
+window.verDetalhesScan=function(id){fecharScanner();abrirProduto(id);};
+window.escanearNovamente=function(){
+  scannerAtivo=true;
+  document.getElementById("scan-result").classList.remove("show");
+  document.getElementById("scan-status").innerHTML=`<div class="scan-status-pill"><span class="blink">●</span> Procurando código...</div>`;
+  usarSimulacao();
+};
+
+async function toggleTorch(){
+  if(!streamAtivo) return;
+  const track=streamAtivo.getVideoTracks()[0];
+  if(!track) return;
+  try{
+    torchOn=!torchOn;
+    await track.applyConstraints({advanced:[{torch:torchOn}]});
+    document.getElementById("torch-btn").classList.toggle("on",torchOn);
+  }catch(e){showToast("Lanterna não disponível","🔦");}
+}
+
+// ══════ NAV ══════
+const allPages=["home","produto","carrinho","checkout","confirmado","rastreio","pedidos","perfil"];
+function navTo(pg){
+  allPages.forEach(p=>{
+    const el=document.getElementById("pg-"+p);
+    if(!el) return;
+    p===pg?el.classList.remove("hidden","slide-up"):el.classList.add("hidden");
+  });
+  ["home","farmacias","carrinho","pedidos","perfil"].forEach(p=>{
+    const btn=document.getElementById("bnav-"+p);
+    if(!btn) return;
+    btn.classList.toggle("ativo",p===pg);
+    if(btn.querySelector(".bnav-lbl")) btn.querySelector(".bnav-lbl").style.color=p===pg?"var(--green)":"var(--t3)";
+  });
+  if(pg==="carrinho") renderCarrinho();
+  if(pg==="checkout") renderCheckout();
+  if(pg==="pedidos") renderPedidos();
+  if(pg==="rastreio") renderRastreio();
+  renderGrid(catAtual);
+}
+
+// ══════ GRID ══════
+function renderGrid(cat){
+  const list=cat==="todos"?todosProdutos:todosProdutos.filter(p=>p.cat===cat);
+  document.getElementById("prod-section-title").textContent=cat==="todos"?"Mais vendidos":cat.charAt(0).toUpperCase()+cat.slice(1);
+  document.getElementById("prod-grid").innerHTML=list.map(p=>`
+    <div class="prod-card fade-up" onclick="abrirProduto(${p.id})">
+      ${p.precoOld?`<div class="chip" style="background:var(--redBg);color:var(--red);position:absolute;top:10px;right:10px;font-size:10px">OFERTA</div>`:""}
+      <span class="prod-ico">${p.ico}</span>
+      <div class="prod-nome">${p.nome}</div>
+      <div class="prod-farm">🏥 ${p.farm}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end">
+        <div>
+          ${p.precoOld?`<div style="font-size:11px;color:var(--t3);text-decoration:line-through">${fmt(p.precoOld)}</div>`:""}
+          <div class="prod-preco">${fmt(p.preco)}</div>
+        </div>
+        <button class="prod-add pop-in" onclick="event.stopPropagation();addProduto(${p.id})">+</button>
+      </div>
+    </div>`).join("");
+}
+
+function filtrarCat(cat,btn){
+  catAtual=cat;
+  document.querySelectorAll(".cat-pill").forEach(b=>b.classList.remove("ativo"));
+  btn.classList.add("ativo");
+  renderGrid(cat);
+}
+
+// ══════ BUSCA ══════
+function buscar(q){
+  const res=document.getElementById("busca-resultado");
+  if(q.length<2){res.style.display="none";return;}
+  const found=todosProdutos.filter(p=>p.nome.toLowerCase().includes(q.toLowerCase())||p.lab.toLowerCase().includes(q.toLowerCase())||p.ean.includes(q));
+  res.style.display=found.length?"block":"none";
+  if(!found.length) return;
+  res.innerHTML=found.map(p=>`
+    <div onclick="abrirProduto(${p.id});document.getElementById('busca-resultado').style.display='none';document.getElementById('search-inp').value=''"
+      style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--bg4);cursor:pointer">
+      <span style="font-size:22px">${p.ico}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600;color:var(--t)">${p.nome}</div>
+        <div style="font-size:11px;color:var(--t3)">${p.farm} · ${fmt(p.preco)}</div>
+      </div>
+      ${p.receita?`<div class="chip" style="background:var(--amberBg);color:var(--amber)">Receita</div>`:""}
+    </div>`).join("")||`<div style="padding:12px 16px;font-size:12px;color:var(--t3)">Nenhum resultado</div>`;
+}
+
+// ══════ PRODUTO DETALHE ══════
+function abrirProduto(id){
+  ultimaPg=document.querySelector(".page:not(.hidden)")?.id?.replace("pg-","")||"home";
+  const p=todosProdutos.find(x=>x.id===id);
+  document.getElementById("prod-det-titulo").textContent=p.nome;
+  document.getElementById("prod-det-cart-n").textContent=totalItens();
+  const ex=carrinho.find(x=>x.id===id);
+  document.getElementById("prod-det-content").innerHTML=`
+    <div style="text-align:center;padding:16px 0 24px"><div style="font-size:72px">${p.ico}</div></div>
+    ${p.receita?`<div style="background:var(--amberBg);border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--amber);font-weight:600">⚕️ Produto sujeito a receita médica</div>`:""}
+    <div style="font-size:20px;font-weight:800;color:var(--t);margin-bottom:4px">${p.nome}</div>
+    <div style="font-size:13px;color:var(--t3);margin-bottom:4px">${p.lab} · ${p.farm}</div>
+    <div style="font-size:11px;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:16px">EAN: ${p.ean}</div>
+    <div style="font-size:28px;font-weight:800;color:var(--green);margin-bottom:20px">${fmt(p.preco)}</div>
+    <div style="background:var(--bg3);border-radius:var(--r3);padding:14px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:6px">📋 Descrição</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6">${p.desc}</div>
+    </div>
+    <div style="background:var(--bg3);border-radius:var(--r3);padding:14px;margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:6px">💊 Modo de uso</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.6">${p.uso}</div>
+    </div>
+    <div style="background:var(--bg3);border-radius:var(--r3);padding:12px;margin-bottom:20px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">🏥</span>
+      <div><div style="font-size:12px;font-weight:600;color:var(--t)">${p.farm}</div><div style="font-size:11px;color:var(--green)">● Em estoque · ${p.estoque} unidades</div></div>
+    </div>
+    ${ex?`
+    <div style="display:flex;align-items:center;gap:12px;background:var(--greenBg);border-radius:var(--r3);padding:12px;margin-bottom:10px">
+      <button class="qty-btn2" onclick="remItem(${p.id});abrirProduto(${p.id})">−</button>
+      <div style="font-size:15px;font-weight:700;color:var(--green);flex:1;text-align:center">${ex.qtd} no carrinho</div>
+      <button class="qty-btn2" style="background:var(--green);color:#fff;border-color:var(--green)" onclick="addProduto(${p.id});abrirProduto(${p.id})">+</button>
+    </div>
+    <button class="btn-g" onclick="navTo('carrinho')">Ver carrinho →</button>`:`
+    <button class="btn-g" onclick="addProduto(${p.id});abrirProduto(${p.id})">+ Adicionar ao carrinho</button>`}
+    <div style="height:20px"></div>`;
+  navTo("produto");
+}
+function voltarDeProduto(){navTo(ultimaPg||"home");}
+
+// ══════ CARRINHO ══════
+function renderCarrinho(){
+  const cc=document.getElementById("cart-content");
+  const hdr=document.getElementById("cart-count-hdr");
+  const n=totalItens();
+  if(hdr) hdr.textContent=n>0?n+" ite"+(n>1?"ns":"m"):"";
+  if(!carrinho.length){
+    cc.innerHTML=`<div style="text-align:center;padding:60px 20px">
+      <div style="font-size:60px;margin-bottom:16px">🛒</div>
+      <div style="font-size:17px;font-weight:700;color:var(--t)">Carrinho vazio</div>
+      <div style="font-size:13px;color:var(--t3);margin-top:8px">Adicione produtos para continuar</div>
+      <button class="btn-g" style="margin-top:24px" onclick="navTo('home')">Ver produtos</button>
+      <button style="margin-top:10px;width:100%;padding:14px;background:var(--greenBg);border:1.5px solid var(--greenLight);border-radius:var(--r2);font-size:14px;font-weight:700;color:var(--green);cursor:pointer;font-family:'Sora',sans-serif" onclick="navTo('home');setTimeout(abrirScanner,300)">
+        📷 Ler código de barras
+      </button>
+    </div>`;return;
+  }
+  const grupos={};
+  carrinho.forEach(i=>{if(!grupos[i.farmId])grupos[i.farmId]={farm:i.farm,items:[]};grupos[i.farmId].items.push(i);});
+  const bf=bairrosCliente[bairroCliente]||{frete:3.50};
+  const nGrupos=Object.keys(grupos).length;
+  let html="";
+  Object.values(grupos).forEach(g=>{
+    html+=`<div class="farm-group">
+      <div class="farm-group-hdr">
+        <span style="font-size:16px">🏥</span>
+        <span style="font-size:13px;font-weight:700;color:var(--green)">${g.farm}</span>
+        <div class="chip" style="background:#fff;color:var(--green);margin-left:auto">${fmt(bf.frete)} frete</div>
+      </div>
+      <div style="padding:10px 14px">
+        ${g.items.map(i=>`
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bg3)">
+            <span style="font-size:28px">${i.ico}</span>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600;color:var(--t)">${i.nome}</div>
+              <div style="font-size:13px;font-weight:700;color:var(--green);margin-top:4px">${fmt(i.preco*i.qtd)}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <button class="qty-btn2" onclick="remItem(${i.id});renderCarrinho()">−</button>
+              <span class="qty-num">${i.qtd}</span>
+              <button class="qty-btn2" style="background:var(--green);color:#fff;border-color:var(--green)" onclick="addProduto(${i.id});renderCarrinho()">+</button>
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+  });
+  html+=`<div style="background:#fff;border-radius:var(--r2);border:1.5px solid var(--bg4);padding:14px;margin-bottom:12px">
+    <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:10px">📍 Entregar em</div>
+    <select onchange="bairroCliente=this.value;renderCarrinho()" style="background:var(--bg3);border:1px solid var(--bg4);border-radius:8px;padding:10px;font-size:13px;color:var(--t);width:100%;font-family:'Sora',sans-serif">
+      ${Object.keys(bairrosCliente).map(b=>`<option ${b===bairroCliente?"selected":""}>${b}</option>`).join("")}
+    </select>
+  </div>`;
+  html+=`<div style="background:#fff;border-radius:var(--r2);border:1.5px solid var(--bg4);padding:14px;margin-bottom:12px">
+    <div class="frete-row"><span style="font-size:13px;color:var(--t2)">Produtos (${n} ite${n>1?"ns":"m"})</span><span style="font-size:13px;font-weight:700;color:var(--t)">${fmt(totalProdutos())}</span></div>
+    <div class="frete-row"><span style="font-size:13px;color:var(--t2)">Frete (${nGrupos} farm.)</span><span style="font-size:13px;font-weight:700;color:var(--t)">${fmt(freteTotal())}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:12px 0 0;font-size:16px;font-weight:800">
+      <span>Total</span><span style="color:var(--green)">${fmt(totalGeral())}</span>
+    </div>
+  </div>`;
+  html+=`<button class="btn-g" onclick="navTo('checkout')">Continuar para pagamento</button>
+  <button style="margin-top:8px;width:100%;padding:12px;background:var(--greenBg);border:1.5px solid var(--greenLight);border-radius:var(--r2);font-size:13px;font-weight:700;color:var(--green);cursor:pointer;font-family:'Sora',sans-serif" onclick="abrirScanner()">📷 Adicionar mais por código de barras</button>
+  <div style="height:20px"></div>`;
+  cc.innerHTML=html;
+}
+
+// ══════ CHECKOUT ══════
+function renderCheckout(){
+  const cc=document.getElementById("checkout-content");
+  const bf=bairrosCliente[bairroCliente]||{frete:3.50};
+  const grupos=[...new Set(carrinho.map(i=>i.farmId))];
+  cc.innerHTML=`
+    <div style="font-size:14px;font-weight:700;color:var(--t);margin-bottom:14px">Forma de pagamento</div>
+    ${[{id:"pix",ico:"🟢",n:"Pix",d:"Confirmação instantânea"},{id:"debito",ico:"💳",n:"Cartão de Débito",d:"Maquininha na entrega"},{id:"credito",ico:"💳",n:"Cartão de Crédito",d:"Maquininha · até 3x s/juros"}].map(f=>`
+      <button class="forma-btn ${formaPgto===f.id?"sel":""}" onclick="formaPgto='${f.id}';renderCheckout()">
+        <span style="font-size:22px">${f.ico}</span>
+        <div style="flex:1;text-align:left"><div style="font-size:13px;font-weight:700;color:var(--t)">${f.n}</div><div style="font-size:11px;color:var(--t3)">${f.d}</div></div>
+        ${formaPgto===f.id?`<div style="width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">✓</div>`:`<div style="width:20px;height:20px;border-radius:50%;border:2px solid var(--bg4)"></div>`}
+      </button>`).join("")}
+    <div style="background:var(--green);border-radius:var(--r2);padding:14px 16px;margin:14px 0">
+      <div style="font-size:12px;color:rgba(255,255,255,.75)">Você vai pagar</div>
+      <div style="font-size:26px;font-weight:800;color:#fff">${fmt(totalGeral())}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:4px">${formaPgto==="pix"?"via Pix":"maquininha na entrega"} · ${bairroCliente}</div>
+    </div>
+    <button class="btn-g pulsing" onclick="confirmarPedido()">✓ Confirmar pedido</button>
+    <div style="font-size:11px;color:var(--t3);text-align:center;margin-top:10px">Atualizações via WhatsApp</div>
+    <div style="height:20px"></div>`;
+}
+
+// ══════ CONFIRMAR ══════
+function confirmarPedido(){
+  pedidoConfirmado={id:"#4522",itens:[...carrinho],total:totalGeral(),frete:freteTotal(),forma:formaPgto,bairro:bairroCliente,hora:new Date().toTimeString().slice(0,5),grupos:[...new Set(carrinho.map(i=>i.farmId))]};
+  carrinho=[];atualizarBadges();trackStep=0;
+  const pg=document.getElementById("pg-confirmado");
+  pg.classList.remove("hidden","slide-up");
+  allPages.filter(p=>p!=="confirmado").forEach(p=>document.getElementById("pg-"+p)?.classList.add("hidden"));
+  document.getElementById("confirmado-content").innerHTML=`
+    <div style="text-align:center;padding:30px 0 20px">
+      <div style="font-size:70px;margin-bottom:12px">🎉</div>
+      <div style="font-size:22px;font-weight:800;color:var(--green)">Pedido confirmado!</div>
+      <div style="font-size:13px;color:var(--t3);margin-top:6px">Pedido ${pedidoConfirmado.id} · ${pedidoConfirmado.hora}</div>
+    </div>
+    <div style="background:#fff;border-radius:var(--r2);border:1.5px solid var(--greenLight);padding:16px;margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px">💬 WhatsApp enviado:</div>
+      <div style="background:var(--bg3);border-radius:var(--r3);padding:12px;font-size:12px;color:var(--t2);line-height:1.8;white-space:pre-line">✅ Pedido FarmaClub ${pedidoConfirmado.id} confirmado!
+
+📦 ${pedidoConfirmado.itens.length} produto${pedidoConfirmado.itens.length>1?"s":""}
+💰 Total: ${fmt(pedidoConfirmado.total)}
+🛵 Em breve você será notificada!</div>
+    </div>
+    <button class="btn-g" onclick="iniciarRastreio()">🛵 Acompanhar entrega ao vivo</button>
+    <button class="btn-o" style="margin-top:8px" onclick="navTo('home')">Continuar comprando</button>
+    <div style="height:20px"></div>`;
+}
+
+// ══════ RASTREIO ══════
+function iniciarRastreio(){navTo("rastreio");}
+function renderRastreio(){
+  const steps=[
+    {lbl:"Pedido confirmado",sub:"Pagamento processado",ok:trackStep>=0,at:trackStep===0},
+    {lbl:"Farmácia preparando",sub:"Separando seus itens",ok:trackStep>=1,at:trackStep===1},
+    {lbl:"Pedido coletado",sub:"Carlos Mendes saiu",ok:trackStep>=2,at:trackStep===2},
+    {lbl:"A caminho da sua casa",sub:"Estimativa: ~12 min",ok:trackStep>=3,at:trackStep===3},
+    {lbl:"Entregue! ✓",sub:"Recebido com sucesso",ok:trackStep>=4,at:trackStep===4},
+  ];
+  document.getElementById("rastreio-content").innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div><div style="font-size:16px;font-weight:800;color:var(--t)">Pedido ${pedidoConfirmado?.id||"#4521"}</div><div style="font-size:12px;color:var(--t3)">${bairroCliente}</div></div>
+      <div class="chip" style="background:var(--greenBg);color:var(--green)">${steps[trackStep]?.lbl||"Em andamento"}</div>
+    </div>
+    <div style="background:linear-gradient(160deg,#e6f4f1,#d1ece8);border-radius:var(--r2);height:150px;position:relative;overflow:hidden;margin-bottom:14px">
+      <div style="position:absolute;inset:0;background-image:linear-gradient(rgba(13,148,136,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(13,148,136,.08) 1px,transparent 1px);background-size:28px 28px"></div>
+      <div style="position:absolute;font-size:22px;transition:all 1.2s ease;left:${trackStep>=3?"55%":"28%"};top:${trackStep>=3?"42%":"30%"}">🛵</div>
+      <div style="position:absolute;right:18%;top:38%;display:flex;flex-direction:column;align-items:center"><div style="width:16px;height:16px;border-radius:50%;background:var(--green);border:3px solid #fff"></div><div style="font-size:9px;color:var(--green);font-weight:700;margin-top:2px">Sua casa</div></div>
+      ${trackStep>=2?`<div style="position:absolute;top:10px;left:10px;background:rgba(255,255,255,.9);border-radius:8px;padding:5px 10px;font-size:11px;font-weight:600;color:var(--green)">🛵 Carlos · ~12 min</div>`:""}
+    </div>
+    ${trackStep>=2?`<div style="background:#fff;border-radius:var(--r2);border:1.5px solid var(--bg4);padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green2));display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff">CM</div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--t)">Carlos Mendes</div><div style="font-size:11px;color:var(--t3)">★ 4.9 · Motoboy FarmaClub</div></div>
+      <a href="tel:+5522998123456" style="background:var(--greenBg);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;color:var(--green);text-decoration:none">📞 Ligar</a>
+    </div>`:""}
+    <div style="background:#fff;border-radius:var(--r2);border:1.5px solid var(--bg4);padding:16px;margin-bottom:14px">
+      ${steps.map((s,i)=>`
+        <div style="display:flex;gap:14px">
+          <div style="display:flex;flex-direction:column;align-items:center">
+            <div style="width:14px;height:14px;border-radius:50%;background:${s.ok||s.at?"var(--green)":"var(--bg4)"};flex-shrink:0;${s.at?"box-shadow:0 0 0 4px var(--greenBg)":""}"></div>
+            ${i<steps.length-1?`<div style="width:2px;height:24px;background:${s.ok?"var(--green)":"var(--bg4)"};margin:2px 0"></div>`:""}
+          </div>
+          <div style="padding-bottom:${i<steps.length-1?"14px":"0"}">
+            <div style="font-size:13px;font-weight:${s.at?"700":"500"};color:${s.ok||s.at?"var(--t)":"var(--t3)"}">${s.lbl}</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">${s.sub}</div>
+          </div>
+        </div>`).join("")}
+    </div>
+    <button class="btn-o" style="font-size:12px" onclick="avancarTrack()">${trackStep<4?"▶ Simular próxima etapa":"✓ Entrega concluída"}</button>
+    <div style="height:20px"></div>`;
+}
+window.avancarTrack=function(){if(trackStep<4){trackStep++;renderRastreio();}if(trackStep===4)showToast("Entregue! Avalie sua experiência 😊","⭐");};
+
+// ══════ MEUS PEDIDOS ══════
+function renderPedidos(){
+  const hist=[
+    {id:"#4521",data:"Hoje",itens:"Dipirona, Omeprazol",farm:"São João",total:91.00,status:"entregando"},
+    {id:"#4519",data:"14/03",itens:"Vitamina C, Ibuprofeno",farm:"São João",total:45.70,status:"entregue"},
+    {id:"#4512",data:"10/03",itens:"Metformina",farm:"Esperança",total:10.90,status:"entregue"},
+  ];
+  if(pedidoConfirmado) hist.unshift({id:pedidoConfirmado.id,data:"Agora",itens:pedidoConfirmado.itens.map(i=>i.nome).join(", "),farm:"Multi",total:pedidoConfirmado.total,status:"confirmado"});
+  const sc={entregando:{t:"A caminho",bg:"var(--blueBg)",c:"var(--blue)"},entregue:{t:"Entregue ✓",bg:"var(--greenBg)",c:"var(--green)"},confirmado:{t:"Confirmado",bg:"var(--amberBg)",c:"var(--amber)"}};
+  document.getElementById("pedidos-content").innerHTML=hist.map(p=>{
+    const s=sc[p.status]||sc.entregue;
+    return`<div style="background:#fff;border-radius:var(--r2);border:1.5px solid var(--bg4);padding:14px;margin-bottom:10px;cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div><div style="font-size:15px;font-weight:800;color:var(--green)">${p.id}</div><div style="font-size:11px;color:var(--t3);margin-top:2px">${p.data}</div></div>
+        <div class="chip" style="background:${s.bg};color:${s.c}">${s.t}</div>
+      </div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:8px">${p.itens.length>40?p.itens.slice(0,40)+"...":p.itens}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:12px;color:var(--t3)">🏥 ${p.farm}</div>
+        <div style="font-size:15px;font-weight:800;color:var(--t)">${fmt(p.total)}</div>
+      </div>
+      ${p.status==="entregando"||p.status==="confirmado"?`<button style="margin-top:10px;background:var(--blueBg);border:none;border-radius:8px;padding:8px;width:100%;font-size:12px;font-weight:700;color:var(--blue);cursor:pointer;font-family:'Sora',sans-serif" onclick="iniciarRastreio()">🛵 Acompanhar ao vivo</button>`:""}
+    </div>`;}).join("")+`<div style="height:20px"></div>`;
+}
+
+// ══════ INIT ══════
+renderGrid("todos");
+atualizarBadges();
+</script>
+</body>
+</html>

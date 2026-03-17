@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FarmaClub — Calculadora de Frete</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f5f5;color:#1a1a1a;font-size:14px}
+button,input,select{font-family:inherit;cursor:pointer}
+input[type=range]{width:100%;accent-color:#0d9488}
+.app{max-width:1100px;margin:0 auto;padding:20px}
+.card{background:#fff;border-radius:12px;border:1px solid #e5e5e5;padding:16px}
+.kpi{background:#f8f8f8;border-radius:10px;padding:14px 16px}
+.kpi-label{font-size:11px;color:#666;margin-bottom:4px}
+.kpi-val{font-size:20px;font-weight:600}
+.kpi-sub{font-size:11px;color:#999;margin-top:3px}
+.btn-pri{padding:8px 16px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:500}
+.btn-sec{padding:8px 16px;background:transparent;border:1px solid #ddd;border-radius:8px;font-size:12px;color:#666}
+.btn-pri.ativo,.btn-sec.ativo{background:#0d9488;color:#fff;border-color:#0d9488}
+th{text-align:left;padding:9px 12px;color:#666;font-weight:500;font-size:12px;border-bottom:1px solid #eee}
+td{padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0}
+tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600}
+input[type=text],input[type=number],input[type=time],select{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:7px;font-size:12px;background:#fff;color:#1a1a1a}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER -->
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+  <div>
+    <div style="font-weight:600;font-size:16px;color:#0d9488">FarmaClub — Calculadora de Frete</div>
+    <div style="font-size:11px;color:#888;margin-top:3px">Precificação dinâmica · modelo Uber · frete separado do produto</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-pri ativo" id="btn-simular" onclick="setModo('simular')">Simular entrega</button>
+    <button class="btn-sec" id="btn-config" onclick="setModo('config')">⚙ Configurar zonas</button>
+  </div>
+</div>
+
+<!-- MODO SIMULAR -->
+<div id="modo-simular">
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:16px">
+
+    <!-- MAPA -->
+    <div>
+      <div class="card">
+        <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:12px;letter-spacing:.5px">BAIRROS DE ITAPERUNA — clique para selecionar destino</div>
+        <div style="position:relative;background:#f0f9f8;border-radius:10px;overflow:hidden">
+          <svg id="mapa-svg" width="100%" viewBox="0 0 500 380" style="display:block"></svg>
+        </div>
+        <!-- LEGENDA -->
+        <div style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap">
+          <div style="font-size:11px;color:#888;font-weight:500">Zonas:</div>
+          <div style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#0d9488;display:inline-block"></span>Z1 · Centro (base)</div>
+          <div style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#0891b2;display:inline-block"></span>Z2 · Próximo (1–3km)</div>
+          <div style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#d97706;display:inline-block"></span>Z3 · Intermediário (3–6km)</div>
+          <div style="font-size:11px;display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#dc2626;display:inline-block"></span>Z4 · Distante (6km+)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAINEL CÁLCULO -->
+    <div style="display:flex;flex-direction:column;gap:12px">
+
+      <div class="card">
+        <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;letter-spacing:.5px">FARMÁCIA DE ORIGEM</div>
+        <select id="sel-farmacia" onchange="calcFrete()">
+          <option value="centro">São João — Centro</option>
+          <option value="parque_noel">Vida & Saúde — Parque Noel</option>
+          <option value="sao_cristovao">Farmácia Popular — S. Cristóvão</option>
+          <option value="morro_crica">Drogaria Esperança — Morro do Crica</option>
+          <option value="meudon">Boa Saúde — Meudon</option>
+          <option value="boa_sorte">Drog. Central — Boa Sorte</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;letter-spacing:.5px">BAIRRO DO CLIENTE</div>
+        <div id="destino-display" style="font-size:13px;color:#aaa">← Clique em um bairro no mapa</div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:10px;letter-spacing:.5px">CONDIÇÕES DA ENTREGA</div>
+        <div style="display:grid;gap:10px">
+          <div>
+            <div style="font-size:11px;color:#666;margin-bottom:4px">Horário do pedido</div>
+            <input type="time" id="inp-hora" value="14:00" onchange="calcFrete()">
+          </div>
+          <div>
+            <div style="font-size:11px;color:#666;margin-bottom:4px">Valor total dos produtos (R$)</div>
+            <input type="number" id="inp-valor" value="85.00" min="0" step="0.01" onchange="calcFrete()">
+          </div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:#666">
+            <input type="checkbox" id="chk-fragil" onchange="calcFrete()" style="width:14px;height:14px;accent-color:#0d9488">
+            Produto frágil/refrigerado (+R$ 2,00)
+          </label>
+        </div>
+      </div>
+
+      <div class="card" id="resultado-frete">
+        <div style="font-size:12px;color:#aaa;text-align:center;padding:10px 0">Selecione origem e destino para calcular</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODO CONFIG -->
+<div id="modo-config" style="display:none">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:2px">Parâmetros globais</div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px">🚀 Taxa base (bandeirada)</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="sl-base" min="1" max="8" step="0.5" value="3" oninput="atualizarConfig()">
+          <span id="vl-base" style="font-weight:700;color:#0d9488;min-width:52px;font-size:14px">R$ 3,00</span>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:6px">Cobrada em qualquer entrega. Cobre saída do motoboy.</div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px">📍 Valor por km rodado</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="sl-km" min="0.5" max="4" step="0.1" value="1.5" oninput="atualizarConfig()">
+          <span id="vl-km" style="font-weight:700;color:#0d9488;min-width:64px;font-size:14px">R$ 1,50/km</span>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:6px">Igual ao Uber: cobre combustível + desgaste do moto.</div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px">🔥 Multiplicador horário de pico</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="sl-pico" min="1" max="2.5" step="0.1" value="1.4" oninput="atualizarConfig()">
+          <span id="vl-pico" style="font-weight:700;color:#d97706;min-width:36px;font-size:14px">1.4×</span>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:6px">Pico: 11h–13h e 18h–20h. Aparece no app do cliente.</div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:600;margin-bottom:10px">🎁 Frete grátis acima de</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input type="range" id="sl-gratis" min="0" max="300" step="10" value="150" oninput="atualizarConfig()">
+          <span id="vl-gratis" style="font-weight:700;color:#16a34a;min-width:72px;font-size:14px">R$ 150,00</span>
+        </div>
+        <div style="font-size:11px;color:#888;margin-top:6px">Zero = desativado. Aumenta ticket médio naturalmente.</div>
+      </div>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:600;color:#16a34a;margin-bottom:8px">✅ Princípio: preço do produto nunca muda</div>
+        <div style="font-size:12px;color:#555;line-height:1.7">
+          O frete é cobrado <strong>separado</strong> e transparente.<br>
+          O cliente vê: "Produtos R$ 85,00 + Entrega R$ 6,00".<br>
+          Igual Uber — ninguém se sente enganado.<br>
+          A farmácia nunca perde margem de produto.
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px">Bairros, zonas e fretes base</div>
+      <div class="card" style="padding:0;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse">
+          <thead style="background:#f8f8f8">
+            <tr>
+              <th>Bairro</th>
+              <th style="text-align:center">Zona</th>
+              <th style="text-align:right">Dist. km</th>
+              <th style="text-align:right">Frete base</th>
+              <th style="text-align:right">Com pico</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-zonas"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const T="#0d9488",AM="#d97706",RD="#dc2626",GN="#16a34a",BL="#0891b2";
+const cfg={base:3,km:1.5,pico:1.4,gratis:150,fragil:2};
+let destinoSel=null;
+
+const bairros=[
+  {id:"centro",      nome:"Centro",        zona:1,dist:0,  cx:240,cy:190},
+  {id:"parque_noel", nome:"Parque Noel",   zona:2,dist:1.8,cx:310,cy:120},
+  {id:"nossa_sra",   nome:"N.S. Aparecida",zona:2,dist:2.1,cx:155,cy:125},
+  {id:"sao_cristovao",nome:"S. Cristóvão", zona:2,dist:2.4,cx:345,cy:215},
+  {id:"morro_crica", nome:"Morro do Crica",zona:2,dist:2.8,cx:135,cy:210},
+  {id:"santa_clara", nome:"Santa Clara",   zona:2,dist:1.5,cx:270,cy:250},
+  {id:"meudon",      nome:"Meudon",        zona:3,dist:4.2,cx:380,cy:155},
+  {id:"boa_sorte",   nome:"Boa Sorte",     zona:3,dist:3.8,cx:100,cy:270},
+  {id:"espirito_santo",nome:"Esp. Santo",  zona:3,dist:3.5,cx:290,cy:310},
+  {id:"jd_querido",  nome:"Jd. Querido",   zona:3,dist:4.8,cx:200,cy: 75},
+  {id:"vivendas",    nome:"Vivendas",      zona:3,dist:3.2,cx: 70,cy:160},
+  {id:"goytacazes",  nome:"Goytacazes",    zona:4,dist:7.5,cx:415,cy:270},
+  {id:"italva",      nome:"Italva",        zona:4,dist:9.0,cx:440,cy:90},
+  {id:"batatal",     nome:"Batatal",       zona:4,dist:6.8,cx: 40,cy:100},
+  {id:"laje_muriae", nome:"Laje Muriaé",   zona:4,dist:8.2,cx: 40,cy:320},
+  {id:"rib_grande",  nome:"Rib. Grande",   zona:4,dist:5.8,cx:330,cy:340},
+];
+
+const farmOrigens={centro:"centro",parque_noel:"parque_noel",sao_cristovao:"sao_cristovao",morro_crica:"morro_crica",meudon:"meudon",boa_sorte:"boa_sorte"};
+const zCol={1:T,2:BL,3:AM,4:RD};
+const zR={1:26,2:21,3:18,4:15};
+
+function distEntre(a,b){
+  const ba=bairros.find(x=>x.id===a),bb=bairros.find(x=>x.id===b);
+  if(!ba||!bb) return 0;
+  const dx=ba.cx-bb.cx,dy=ba.cy-bb.cy;
+  return Math.max(0.3,+(Math.sqrt(dx*dx+dy*dy)/37).toFixed(1));
+}
+
+function renderMapa(){
+  const svg=document.getElementById("mapa-svg");
+  const farmId=farmOrigens[document.getElementById("sel-farmacia").value]||"centro";
+
+  let els="";
+  // Círculos de zona (referência)
+  const centro=bairros.find(b=>b.id==="centro");
+  [75,140,210].forEach((r,i)=>{
+    const col=[BL,AM,RD][i];
+    els+=`<circle cx="${centro.cx}" cy="${centro.cy}" r="${r}" fill="none" stroke="${col}" stroke-opacity=".12" stroke-width="1" stroke-dasharray="5 3"/>`;
+  });
+
+  bairros.forEach(b=>{
+    const sel=destinoSel===b.id;
+    const origem=farmId===b.id;
+    const col=zCol[b.zona];
+    const r=zR[b.zona];
+    const op=sel?1:origem?.85:.55;
+    const sw=sel?3:origem?2:.5;
+    const sc=sel||origem?"#fff":col;
+    const nm=b.nome.length>10?b.nome.split(" ")[0]:b.nome;
+    els+=`<g onclick="selBairro('${b.id}')" style="cursor:pointer">
+      <circle cx="${b.cx}" cy="${b.cy}" r="${r+4}" fill="transparent"/>
+      <circle cx="${b.cx}" cy="${b.cy}" r="${r}" fill="${col}" opacity="${op}" stroke="${sc}" stroke-width="${sw}"/>
+      ${origem?`<circle cx="${b.cx}" cy="${b.cy}" r="${r+6}" fill="none" stroke="${T}" stroke-width="2" stroke-dasharray="3 2" opacity=".6"/>`:""}
+      <text x="${b.cx}" y="${b.cy}" text-anchor="middle" dominant-baseline="central" style="font-size:9px;fill:white;font-weight:600;pointer-events:none">${nm}</text>
+    </g>`;
+  });
+
+  svg.innerHTML=els;
+}
+
+window.selBairro=function(id){
+  destinoSel=id;
+  const b=bairros.find(x=>x.id===id);
+  document.getElementById("destino-display").innerHTML=`<span style="font-weight:600;color:#0d9488">${b.nome}</span> <span style="font-size:11px;color:#888">· Zona ${b.zona} · ${b.dist}km do centro</span>`;
+  renderMapa();
+  calcFrete();
+};
+
+function calcFrete(){
+  if(!destinoSel) return;
+  const farmId=farmOrigens[document.getElementById("sel-farmacia").value]||"centro";
+  const hora=document.getElementById("inp-hora").value;
+  const valor=parseFloat(document.getElementById("inp-valor").value)||0;
+  const fragil=document.getElementById("chk-fragil").checked;
+  const h=parseInt(hora.split(":")[0]);
+  const ePico=(h>=11&&h<=13)||(h>=18&&h<=20);
+  const mult=ePico?cfg.pico:1;
+  const dist=distEntre(farmId,destinoSel);
+  const bDest=bairros.find(b=>b.id===destinoSel);
+
+  let fBase=cfg.base+cfg.km*dist;
+  if(fragil) fBase+=cfg.fragil;
+  const fPico=+(fBase*mult).toFixed(2);
+  const fCliente=cfg.gratis>0&&valor>=cfg.gratis?0:fPico;
+  const tempo=Math.round(8+dist*3.2+(ePico?6:0));
+
+  document.getElementById("resultado-frete").innerHTML=`
+    <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:10px;letter-spacing:.5px">CÁLCULO DO FRETE</div>
+    <div style="display:grid;gap:4px;margin-bottom:12px;font-size:12px;color:#666">
+      <div style="display:flex;justify-content:space-between"><span>Taxa base</span><span>R$ ${cfg.base.toFixed(2)}</span></div>
+      <div style="display:flex;justify-content:space-between"><span>${dist} km × R$ ${cfg.km.toFixed(2)}/km</span><span>R$ ${(cfg.km*dist).toFixed(2)}</span></div>
+      ${fragil?`<div style="display:flex;justify-content:space-between"><span>Produto frágil</span><span>R$ ${cfg.fragil.toFixed(2)}</span></div>`:""}
+      ${ePico?`<div style="display:flex;justify-content:space-between;color:${AM}"><span>🔥 Pico ${mult}× (${hora})</span><span>+R$ ${(fPico-fBase).toFixed(2)}</span></div>`:""}
+    </div>
+    ${fCliente===0?`
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:12px;text-align:center">
+      <div style="font-weight:700;color:#16a34a;font-size:14px">🎉 FRETE GRÁTIS</div>
+      <div style="font-size:11px;color:#16a34a;margin-top:3px">Pedido ≥ R$ ${cfg.gratis.toFixed(2)}</div>
+    </div>`:`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid #eee;border-bottom:1px solid #eee;margin-bottom:12px">
+      <span style="font-weight:600;font-size:13px">Frete cobrado</span>
+      <span style="font-size:20px;font-weight:700;color:${T}">R$ ${fCliente.toFixed(2)}</span>
+    </div>`}
+    <div style="background:#f8f8f8;border-radius:8px;padding:12px">
+      <div style="font-size:11px;color:#888;font-weight:600;margin-bottom:8px;letter-spacing:.3px">COMO O CLIENTE VÊ NO APP</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:#666">🛒 Produtos</span>
+        <span style="font-weight:600">R$ ${valor.toFixed(2)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px">
+        <span style="color:#666">🛵 Entrega (~${tempo} min)${ePico?" 🔥":""}</span>
+        <span style="font-weight:600;color:${fCliente===0?"#16a34a":T}">${fCliente===0?"Grátis":"R$ "+fCliente.toFixed(2)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;border-top:1px solid #e5e5e5;padding-top:8px">
+        <span>Total</span>
+        <span style="color:${T}">R$ ${(valor+fCliente).toFixed(2)}</span>
+      </div>
+    </div>
+    <div style="margin-top:10px;font-size:11px;color:#888;text-align:center">Farmácia: preço do produto = R$ ${valor.toFixed(2)} · sem alteração ✓</div>`;
+}
+
+function renderTabelaZonas(){
+  document.getElementById("tbody-zonas").innerHTML=bairros.map(b=>{
+    const fBase=+(cfg.base+cfg.km*b.dist).toFixed(2);
+    const fPico=+(fBase*cfg.pico).toFixed(2);
+    const col=zCol[b.zona];
+    return`<tr>
+      <td style="font-weight:500">${b.nome}</td>
+      <td style="text-align:center"><span class="badge" style="background:${col}22;color:${col}">Z${b.zona}</span></td>
+      <td style="text-align:right;color:#666">${b.dist} km</td>
+      <td style="text-align:right;font-weight:600;color:${T}">R$ ${fBase.toFixed(2)}</td>
+      <td style="text-align:right;color:${AM}">R$ ${fPico.toFixed(2)}</td>
+    </tr>`;}).join("");
+}
+
+function atualizarConfig(){
+  cfg.base=parseFloat(document.getElementById("sl-base").value);
+  cfg.km=parseFloat(document.getElementById("sl-km").value);
+  cfg.pico=parseFloat(document.getElementById("sl-pico").value);
+  cfg.gratis=parseFloat(document.getElementById("sl-gratis").value);
+  document.getElementById("vl-base").textContent="R$ "+cfg.base.toFixed(2);
+  document.getElementById("vl-km").textContent="R$ "+cfg.km.toFixed(2)+"/km";
+  document.getElementById("vl-pico").textContent=cfg.pico.toFixed(1)+"×";
+  document.getElementById("vl-gratis").textContent=cfg.gratis===0?"Desativado":"R$ "+cfg.gratis.toFixed(2);
+  renderTabelaZonas();
+  calcFrete();
+}
+
+window.setModo=function(m){
+  document.getElementById("modo-simular").style.display=m==="simular"?"block":"none";
+  document.getElementById("modo-config").style.display=m==="config"?"block":"none";
+  ["simular","config"].forEach(x=>{
+    const b=document.getElementById("btn-"+x);
+    b.className=x===m?"btn-pri ativo":"btn-sec";
+  });
+  if(m==="config") renderTabelaZonas();
+};
+
+window.atualizarConfig=atualizarConfig;
+renderMapa();
+</script>
+</body>
+</html>

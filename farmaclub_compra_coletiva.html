@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FarmaClub — Compra Coletiva</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:14px;display:flex;min-height:100vh}
+button,input,select,textarea{font-family:inherit}
+input,select,textarea{background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:7px;padding:7px 10px;font-size:12px;width:100%}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#0d9488}
+
+#sidebar{width:200px;background:#fff;border-right:1px solid #e8e8e8;padding:18px 10px;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo-title{font-size:14px;font-weight:700;color:#0d9488;padding:0 8px}
+.logo-sub{font-size:10px;color:#aaa;padding:0 8px;margin-top:2px;margin-bottom:20px;line-height:1.4}
+.nav-sec{font-size:10px;color:#bbb;font-weight:600;letter-spacing:.6px;padding:10px 10px 4px;text-transform:uppercase}
+.nav-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:8px;border:none;border-left:3px solid transparent;background:transparent;color:#666;font-size:12px;text-align:left;cursor:pointer;margin-bottom:2px;transition:all .12s}
+.nav-btn:hover{background:#f5f5f5;color:#1a1a1a}
+.nav-btn.ativo{background:#0d9488;color:#fff;border-left-color:#0d9488}
+.nav-sym{font-size:11px;width:14px;flex-shrink:0;opacity:.7}
+
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#topbar{padding:12px 22px;background:#fff;border-bottom:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+#content{padding:20px 22px;flex:1;overflow:auto}
+
+.card{background:#fff;border-radius:12px;border:1px solid #e8e8e8;padding:16px}
+.kpi{background:#f8f8f8;border-radius:10px;padding:14px 16px}
+.kpi-lbl{font-size:11px;color:#888;margin-bottom:5px}
+.kpi-val{font-size:20px;font-weight:700}
+.kpi-sub{font-size:11px;color:#aaa;margin-top:3px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sec-tit{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+
+.tbl-wrap{border:1px solid #e8e8e8;border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 12px;color:#888;font-weight:500;font-size:11px;background:#f8f8f8;border-bottom:1px solid #eee;white-space:nowrap}
+td{padding:8px 12px;font-size:12px;border-bottom:1px solid #f5f5f5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.alert{border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.btn-pri{padding:8px 18px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.btn-sec{padding:8px 14px;background:#fff;border:1px solid #ddd;border-radius:8px;font-size:12px;color:#555;cursor:pointer}
+.btn-sm{padding:5px 11px;font-size:11px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
+.tab-group{display:flex;gap:4px;margin-bottom:14px;background:#f3f3f3;border-radius:8px;padding:3px}
+.tab-btn{padding:6px 14px;border:none;background:transparent;border-radius:6px;font-size:12px;color:#666;cursor:pointer;font-weight:500}
+.tab-btn.ativo{background:#fff;color:#0d9488;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.prog-wrap{height:5px;background:#eee;border-radius:3px;overflow:hidden}
+.prog-bar{height:100%;border-radius:3px}
+
+.fornecedor-card{border:1px solid #e8e8e8;border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s}
+.fornecedor-card:hover{border-color:#0d9488}
+.fornecedor-card.melhor{border-color:#0d9488;border-width:2px;background:#f0fdf8}
+.economia-badge{background:#f0fdf4;border:1px solid #bbf7d0;color:#15803d;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;display:inline-flex;align-items:center;gap:5px}
+.step{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;margin-bottom:6px}
+.step-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.qty-ctrl{display:flex;align-items:center;gap:6px}
+.qty-btn{width:24px;height:24px;border:1px solid #ddd;border-radius:5px;background:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:600;line-height:1}
+.qty-inp{width:52px;text-align:center;padding:3px 4px;height:24px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live{animation:pulse 1.8s ease-in-out infinite;color:#0d9488}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="logo-title">Compra Coletiva</div>
+  <div class="logo-sub">FarmaClub · Poder de negociação coletivo</div>
+
+  <div class="nav-sec">Compras</div>
+  <button class="nav-btn ativo" data-tab="dashboard" onclick="setTab('dashboard')"><span class="nav-sym">▣</span>Dashboard</button>
+  <button class="nav-btn" data-tab="necessidades" onclick="setTab('necessidades')"><span class="nav-sym">◈</span>Necessidades</button>
+  <button class="nav-btn" data-tab="cotacao" onclick="setTab('cotacao')"><span class="nav-sym">◆</span>Cotação</button>
+  <button class="nav-btn" data-tab="pedido" onclick="setTab('pedido')"><span class="nav-sym">◉</span>Gerar Pedido</button>
+
+  <div class="nav-sec">Controle</div>
+  <button class="nav-btn" data-tab="historico" onclick="setTab('historico')"><span class="nav-sym">◷</span>Histórico</button>
+  <button class="nav-btn" data-tab="fornecedores" onclick="setTab('fornecedores')"><span class="nav-sym">◧</span>Fornecedores</button>
+  <button class="nav-btn" data-tab="economia" onclick="setTab('economia')"><span class="nav-sym">★</span>Economia Gerada</button>
+
+  <div style="margin-top:auto;padding-top:14px;border-top:1px solid #eee">
+    <div style="font-size:10px;color:#aaa;padding:0 8px;line-height:1.8">
+      <span class="live">●</span> 6 farmácias conectadas<br>
+      Próxima cotação: 20/03
+    </div>
+  </div>
+</div>
+
+<div id="main">
+  <div id="topbar">
+    <div>
+      <div id="tab-title" style="font-weight:600;font-size:14px">Dashboard</div>
+      <div id="tab-sub" style="font-size:11px;color:#aaa">Central de compras coletivas · FarmaClub Itaperuna</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:11px;background:#e6faf8;color:#0d9488;border:1px solid #b2ece7;border-radius:20px;padding:4px 12px;display:flex;align-items:center;gap:5px">
+        <span class="live">●</span> Estoque das farmácias: sincronizado
+      </div>
+      <button class="btn-pri" onclick="setTab('cotacao')">🛒 Nova cotação</button>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+const T="#0d9488",AM="#d97706",RD="#dc2626",GN="#16a34a",BL="#2563eb",PU="#7c3aed";
+const fmt=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:2});
+const fmtD=s=>new Date(s+"T12:00").toLocaleDateString("pt-BR");
+const pct=(a,b)=>b===0?0:+((a/b)*100).toFixed(1);
+
+// ═══ DADOS ═══
+const farmacias=["São João","Vida & Saúde","Farmácia Popular","Drog. Esperança","Boa Saúde","Drog. Central"];
+
+const produtos=[
+  {id:1,ean:"7896004004532",nome:"Dipirona 500mg 20cp",lab:"EMS",categoria:"Analgesicos",unidade:"cx",estoqueTotal:{sj:84,vs:61,fp:42,de:78,bs:29,dc:55},estoqueMin:{sj:20,vs:20,fp:20,de:20,bs:20,dc:20},custoAtual:4.20,ultimaCompra:"2026-02-10",compraMensal:420},
+  {id:2,ean:"7896714240118",nome:"Amoxicilina 500mg 21cp",lab:"Medley",categoria:"Antibioticos",unidade:"cx",estoqueTotal:{sj:31,vs:18,fp:12,de:25,bs:14,dc:22},estoqueMin:{sj:15,vs:15,fp:15,de:15,bs:10,dc:10},custoAtual:9.80,ultimaCompra:"2026-02-15",compraMensal:180},
+  {id:3,ean:"7896523240065",nome:"Omeprazol 20mg 28cp",lab:"Aché",categoria:"Gastro",unidade:"cx",estoqueTotal:{sj:55,vs:38,fp:20,de:44,bs:18,dc:30},estoqueMin:{sj:20,vs:20,fp:10,de:20,bs:10,dc:10},custoAtual:5.60,ultimaCompra:"2026-02-20",compraMensal:280},
+  {id:4,ean:"7896658010077",nome:"Losartana 50mg 30cp",lab:"EMS",categoria:"Cardiovasc.",unidade:"cx",estoqueTotal:{sj:12,vs:8,fp:5,de:11,bs:6,dc:9},estoqueMin:{sj:20,vs:15,fp:15,de:20,bs:10,dc:10},custoAtual:7.20,ultimaCompra:"2026-02-05",compraMensal:150},
+  {id:5,ean:"7891047944513",nome:"Metformina 850mg 30cp",lab:"Merck",categoria:"Diabetes",unidade:"cx",estoqueTotal:{sj:44,vs:30,fp:22,de:38,bs:15,dc:25},estoqueMin:{sj:15,vs:15,fp:10,de:15,bs:10,dc:10},custoAtual:3.80,ultimaCompra:"2026-02-18",compraMensal:210},
+  {id:6,ean:"7896714270048",nome:"Ibuprofeno 600mg 20cp",lab:"Medley",categoria:"Anti-inflam.",unidade:"cx",estoqueTotal:{sj:67,vs:45,fp:31,de:58,bs:22,dc:40},estoqueMin:{sj:25,vs:20,fp:15,de:25,bs:15,dc:15},custoAtual:6.10,ultimaCompra:"2026-02-22",compraMensal:310},
+  {id:7,ean:"7891058006824",nome:"Vitamina C 1g 10cp",lab:"EMS",categoria:"Vitaminas",unidade:"cx",estoqueTotal:{sj:102,vs:78,fp:45,de:90,bs:35,dc:60},estoqueMin:{sj:30,vs:25,fp:20,de:30,bs:15,dc:20},custoAtual:2.10,ultimaCompra:"2026-01-28",compraMensal:480},
+  {id:8,ean:"7896523405055",nome:"Simeticona 40mg 50cp",lab:"Aché",categoria:"Gastro",unidade:"cx",estoqueTotal:{sj:29,vs:20,fp:14,de:25,bs:10,dc:18},estoqueMin:{sj:10,vs:10,fp:10,de:10,bs:5,dc:5},custoAtual:4.90,ultimaCompra:"2026-02-12",compraMensal:140},
+];
+
+const fornecedores=[
+  {id:"farmanobre",nome:"Distribuidora Farmanobre",cidade:"Campos/RJ",avaliacao:4.8,prazo:"3–5 dias úteis",pagamento:"30/60/90 dias",desconto:"3% acima de R$5k",ativo:true,
+    precos:{1:3.85,2:8.90,3:5.10,4:6.60,5:3.45,6:5.55,7:1.92,8:4.50}},
+  {id:"ems_dist",nome:"EMS Distribuidora Oficial",cidade:"São Paulo/SP",avaliacao:4.6,prazo:"5–7 dias úteis",pagamento:"28/56 dias",desconto:"2% acima de R$8k",ativo:true,
+    precos:{1:3.70,2:9.20,3:5.40,4:6.30,5:3.60,6:5.70,7:1.85,8:4.70}},
+  {id:"vital",nome:"Distribuidora Vital",cidade:"Niterói/RJ",avaliacao:4.2,prazo:"2–4 dias úteis",pagamento:"30 dias",desconto:"5% acima de R$3k",ativo:true,
+    precos:{1:3.95,2:9.10,3:5.25,4:6.80,5:3.55,6:5.80,7:1.98,8:4.60}},
+  {id:"medfarma",nome:"MedFarma Atacado",cidade:"Rio de Janeiro/RJ",avaliacao:3.9,prazo:"4–6 dias úteis",pagamento:"30/60 dias",desconto:"4% acima de R$6k",ativo:false,
+    precos:{1:4.00,2:9.50,3:5.60,4:7.00,5:3.70,6:6.00,7:2.05,8:4.80}},
+];
+
+const pedidoAtual={items:{},fornecedorSel:null};
+
+const historico=[
+  {id:"PC-042",data:"2026-02-15",fornecedor:"Farmanobre",produtos:6,qtdTotal:850,valorTotal:9240,economia:1380,status:"entregue",farmacias:6},
+  {id:"PC-041",data:"2026-01-20",fornecedor:"EMS Distribuidora",produtos:4,qtdTotal:620,valorTotal:6180,economia:920,status:"entregue",farmacias:5},
+  {id:"PC-040",data:"2025-12-18",fornecedor:"Farmanobre",produtos:8,qtdTotal:1100,valorTotal:11800,economia:1750,status:"entregue",farmacias:6},
+  {id:"PC-039",data:"2025-11-22",fornecedor:"Vital",produtos:5,qtdTotal:740,valorTotal:7600,economia:1040,status:"entregue",farmacias:4},
+];
+
+// ═══ HELPERS ═══
+function badge(t,c){return`<span class="badge" style="background:${c}22;color:${c}">${t}</span>`}
+function dot(st){const c={entregue:GN,pendente:AM,enviado:BL,cancelado:RD,regular:GN,critico:RD};return`<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#666"><span style="width:6px;height:6px;border-radius:50%;background:${c[st]||"#999"}"></span>${st}</span>`}
+function btnPri(t,fn=""){return`<button class="btn-pri" ${fn?`onclick="${fn}"`:""}>${t}</button>`}
+function btnSec(t,fn=""){return`<button class="btn-sec" ${fn?`onclick="${fn}"`:""}>${t}</button>`}
+function estStatus(e,min){return e<=min?"critico":e<=min*1.5?"baixo":"ok"}
+function estCor(st){return{critico:RD,baixo:AM,ok:GN}[st]||GN}
+
+function calcNecessidade(p){
+  const keys=["sj","vs","fp","de","bs","dc"];
+  let total=0;
+  keys.forEach(k=>{
+    const falta=Math.max(0,(p.estoqueMin[k]*2)-p.estoqueTotal[k]);
+    total+=falta;
+  });
+  const extra=Math.ceil(p.compraMensal*0.3);
+  return total+extra;
+}
+
+// ═══ DASHBOARD ═══
+function renderDashboard(){
+  const criticos=produtos.filter(p=>{
+    const keys=["sj","vs","fp","de","bs","dc"];
+    return keys.some(k=>p.estoqueTotal[k]<=p.estoqueMin[k]);
+  });
+  const econTotal=historico.reduce((s,h)=>s+h.economia,0)+5090;
+  const proxCotacao=new Date("2026-03-20");
+  const diasProx=Math.round((proxCotacao-new Date())/86400000);
+
+  const alertas=criticos.slice(0,4).map(p=>{
+    const keys=["sj","vs","fp","de","bs","dc"];
+    const farmsCrit=["São João","Vida & Saúde","Popular","Esperança","Boa Saúde","Central"].filter((_,i)=>p.estoqueTotal[keys[i]]<=p.estoqueMin[keys[i]]);
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f5f5f5">
+      <div>
+        <div style="font-size:12px;font-weight:500">${p.nome}</div>
+        <div style="font-size:11px;color:#aaa">${farmsCrit.join(", ")} — estoque crítico</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:600;color:${RD};font-size:12px">${calcNecessidade(p)} un</div>
+        <div style="font-size:10px;color:#aaa">necessidade</div>
+      </div>
+    </div>`;}).join("");
+
+  return`
+    <div class="grid4">
+      <div class="kpi"><div class="kpi-lbl">Produtos em alerta</div><div class="kpi-val" style="color:${RD}">${criticos.length}</div><div class="kpi-sub">estoque crítico em ≥1 farmácia</div></div>
+      <div class="kpi"><div class="kpi-lbl">Próxima cotação</div><div class="kpi-val" style="color:${T}">${diasProx}d</div><div class="kpi-sub">20/03/2026 · programada</div></div>
+      <div class="kpi"><div class="kpi-lbl">Economia acumulada 2026</div><div class="kpi-val" style="color:${GN}">${fmt(econTotal)}</div><div class="kpi-sub">vs compra individual</div></div>
+      <div class="kpi"><div class="kpi-lbl">Pedidos entregues</div><div class="kpi-val">${historico.length}</div><div class="kpi-sub">todos concluídos</div></div>
+    </div>
+
+    <div class="grid2" style="margin-bottom:18px">
+      <div class="card">
+        <div class="sec-tit">Alertas de estoque — necessidade urgente ${btnPri("Cotar agora","setTab('cotacao')")}</div>
+        ${alertas}
+        ${criticos.length>4?`<div style="font-size:11px;color:#aaa;padding:8px 0">+${criticos.length-4} outros produtos</div>`:""}
+      </div>
+      <div class="card">
+        <div class="sec-tit">Economia por pedido coletivo</div>
+        <div style="position:relative;height:200px"><canvas id="cht-econ"></canvas></div>
+        <div style="margin-top:10px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px;font-size:12px;color:#14532d">
+          <strong>Poder de compra coletiva:</strong> sozinhas, as 6 farmácias pagariam ~18% a mais. Juntas, negociam volume e prazo.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-tit">Estoque consolidado — visão por produto <span style="font-size:11px;color:#aaa;font-weight:400">todas as farmácias</span></div>
+      <div class="tbl-wrap" style="border:none">
+        <table>
+          <thead><tr>
+            <th>Produto</th>
+            ${farmacias.map(f=>`<th style="text-align:center">${f.split(" ")[0]}</th>`).join("")}
+            <th style="text-align:center">Total</th>
+            <th style="text-align:right">Necessidade</th>
+            <th style="text-align:right">Custo atual</th>
+          </tr></thead>
+          <tbody>
+            ${produtos.map(p=>{
+              const keys=["sj","vs","fp","de","bs","dc"];
+              const total=keys.reduce((s,k)=>s+p.estoqueTotal[k],0);
+              const nec=calcNecessidade(p);
+              return`<tr>
+                <td><div style="font-weight:500">${p.nome}</div><div style="font-size:10px;color:#aaa">${p.lab} · ${p.categoria}</div></td>
+                ${keys.map(k=>{const st=estStatus(p.estoqueTotal[k],p.estoqueMin[k]);return`<td style="text-align:center"><span style="font-weight:600;color:${estCor(st)}">${p.estoqueTotal[k]}</span></td>`;}).join("")}
+                <td style="text-align:center;font-weight:600">${total}</td>
+                <td style="text-align:right;font-weight:600;color:${nec>0?AM:"#aaa"}">${nec>0?nec+"un":"—"}</td>
+                <td style="text-align:right;color:#666">${fmt(p.custoAtual)}</td>
+              </tr>`;}).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ═══ NECESSIDADES ═══
+function renderNecessidades(){
+  const keys=["sj","vs","fp","de","bs","dc"];
+  const rows=produtos.map((p,i)=>{
+    const nec=calcNecessidade(p);
+    const total=keys.reduce((s,k)=>s+p.estoqueTotal[k],0);
+    const pctEst=Math.min(100,pct(total,keys.reduce((s,k)=>s+p.estoqueMin[k]*2,0)));
+    return`<tr>
+      <td>
+        <div style="font-weight:500">${p.nome}</div>
+        <div style="font-size:10px;color:#aaa">${p.ean} · ${p.lab}</div>
+      </td>
+      <td>${badge(p.categoria,"#6b7280")}</td>
+      <td style="text-align:center">
+        <span style="font-weight:600;color:${nec>100?RD:nec>50?AM:GN}">${nec}</span>
+        <div style="font-size:10px;color:#aaa">unidades</div>
+      </td>
+      <td>
+        <div style="width:90px">
+          <div class="prog-wrap"><div class="prog-bar" style="width:${pctEst}%;background:${pctEst<50?RD:pctEst<80?AM:GN}"></div></div>
+          <div style="font-size:10px;color:#aaa;margin-top:3px">${pctEst.toFixed(0)}% estoque</div>
+        </div>
+      </td>
+      <td style="text-align:center">${fmt(p.custoAtual)}</td>
+      <td style="text-align:right;font-weight:600;color:${T}">${fmt(nec*p.custoAtual)}</td>
+      <td>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="ajustNec(${p.id},-10)">−</button>
+          <input class="qty-inp" id="nec-${p.id}" type="number" value="${nec}" min="0" step="10">
+          <button class="qty-btn" onclick="ajustNec(${p.id},10)">+</button>
+        </div>
+      </td>
+      <td>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer">
+          <input type="checkbox" id="chk-${p.id}" ${nec>0?"checked":""} style="width:14px;height:14px;accent-color:#0d9488">
+          <span style="font-size:11px;color:#666">incluir</span>
+        </label>
+      </td>
+    </tr>`;}).join("");
+
+  const totalEst=produtos.reduce((s,p)=>s+calcNecessidade(p)*p.custoAtual,0);
+
+  return`
+    <div class="grid3" style="margin-bottom:16px">
+      <div class="kpi"><div class="kpi-lbl">Valor estimado da compra</div><div class="kpi-val" style="color:${T}">${fmt(totalEst)}</div><div class="kpi-sub">todos os produtos necessários</div></div>
+      <div class="kpi"><div class="kpi-lbl">Produtos para cotar</div><div class="kpi-val">${produtos.filter(p=>calcNecessidade(p)>0).length}</div><div class="kpi-sub">de ${produtos.length} cadastrados</div></div>
+      <div class="kpi"><div class="kpi-lbl">Economia estimada</div><div class="kpi-val" style="color:${GN}">${fmt(totalEst*0.16)}</div><div class="kpi-sub">~16% vs compra individual</div></div>
+    </div>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#1d4ed8">
+      <strong>Como funciona:</strong> o sistema consolidou a necessidade de <strong>todas as 6 farmácias</strong>. Você compra tudo junto, distribui depois. Cada farmácia recebe a sua parte e o custo é rateado proporcionalmente.
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600">Ajuste as quantidades se necessário</div>
+      <div style="display:flex;gap:8px">
+        ${btnSec("Resetar quantidades")}
+        ${btnPri("Enviar para cotação →","setTab('cotacao')")}
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Produto</th><th>Categoria</th><th style="text-align:center">Necessidade</th><th>Estoque atual</th><th style="text-align:center">Custo atual</th><th style="text-align:right">Valor total</th><th>Qtd final</th><th>Incluir</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+}
+window.ajustNec=function(id,delta){
+  const el=document.getElementById("nec-"+id);
+  if(el) el.value=Math.max(0,parseInt(el.value||0)+delta);
+};
+
+// ═══ COTAÇÃO ═══
+let fornSel="farmanobre";
+function renderCotacao(){
+  const fornAtivos=fornecedores.filter(f=>f.ativo);
+
+  const tabelaPrecos=`
+    <div class="tbl-wrap" style="margin-top:14px">
+      <table>
+        <thead><tr>
+          <th>Produto</th>
+          <th style="text-align:center">Qtd</th>
+          ${fornAtivos.map(f=>`<th style="text-align:right;white-space:normal">${f.nome.split(" ")[0]}<br><span style="font-weight:400;color:#aaa;font-size:10px">${f.cidade.split("/")[0]}</span></th>`).join("")}
+          <th style="text-align:right">Melhor preço</th>
+          <th style="text-align:right">Economia</th>
+        </tr></thead>
+        <tbody>
+          ${produtos.map(p=>{
+            const nec=calcNecessidade(p);
+            if(nec===0) return "";
+            const precos=fornAtivos.map(f=>f.precos[p.id]||p.custoAtual);
+            const melhor=Math.min(...precos);
+            const economia=+(( p.custoAtual - melhor)*nec).toFixed(2);
+            return`<tr>
+              <td><div style="font-weight:500">${p.nome}</div></td>
+              <td style="text-align:center;font-weight:600">${nec}</td>
+              ${fornAtivos.map(f=>{
+                const pr=f.precos[p.id]||p.custoAtual;
+                const isMelhor=pr===melhor;
+                return`<td style="text-align:right;font-weight:${isMelhor?"700":"400"};color:${isMelhor?GN:"#333"};background:${isMelhor?"#f0fdf4":"transparent"}">
+                  ${fmt(pr)}${isMelhor?` <span style="font-size:9px;color:${GN}">✓</span>`:""}
+                </td>`;}).join("")}
+              <td style="text-align:right;font-weight:700;color:${GN}">${fmt(melhor)}</td>
+              <td style="text-align:right;font-weight:600;color:${economia>0?T:"#aaa"}">${economia>0?fmt(economia):"—"}</td>
+            </tr>`;}).join("")}
+        </tbody>
+        <tfoot style="background:#f8f8f8">
+          <tr>
+            ${fornAtivos.map((f,i)=>{
+              if(i===0) return`<td colspan="2" style="padding:9px 12px;font-weight:700">Total do pedido</td>`;
+              return"";
+            }).join("")}
+            ${fornAtivos.map(f=>{
+              const total=produtos.reduce((s,p)=>{const nec=calcNecessidade(p);return s+(f.precos[p.id]||p.custoAtual)*nec;},0);
+              const isSel=f.id===fornSel;
+              return`<td style="text-align:right;padding:9px 12px;font-weight:700;color:${isSel?T:"#333"};background:${isSel?"#e6faf8":"transparent"}" colspan="${fornAtivos.indexOf(f)===0?3:1}">${fmt(total)}</td>`;
+            }).join("")}
+            <td style="padding:9px 12px"></td>
+            <td style="text-align:right;padding:9px 12px;font-weight:700;color:${GN}">${fmt(produtos.reduce((s,p)=>{const nec=calcNecessidade(p);const melhor=Math.min(...fornAtivos.map(f=>f.precos[p.id]||p.custoAtual));return s+(p.custoAtual-melhor)*nec;},0))}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+
+  const fornCards=fornAtivos.map(f=>{
+    const totalForn=produtos.reduce((s,p)=>{const nec=calcNecessidade(p);return s+(f.precos[p.id]||p.custoAtual)*nec;},0);
+    const totalAtual=produtos.reduce((s,p)=>{const nec=calcNecessidade(p);return s+p.custoAtual*nec;},0);
+    const econForn=totalAtual-totalForn;
+    const pctEcon=pct(econForn,totalAtual);
+    const isMelhor=f.id===fornSel;
+    const isSel=f.id===fornSel;
+    return`<div class="fornecedor-card ${isMelhor?"melhor":""}" onclick="selForn('${f.id}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-weight:600;font-size:13px">${f.nome} ${isMelhor?`<span style="font-size:10px;background:#0d948822;color:#0d9488;border-radius:4px;padding:1px 6px">✓ menor preço</span>`:""}</div>
+          <div style="font-size:11px;color:#aaa;margin-top:2px">${f.cidade} · ★ ${f.avaliacao}</div>
+        </div>
+        <input type="radio" name="forn" ${isSel?"checked":""} style="width:16px;height:16px;accent-color:#0d9488;cursor:pointer">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:#f8f8f8;border-radius:7px;padding:8px">
+          <div style="font-size:10px;color:#aaa">Total pedido</div>
+          <div style="font-weight:700;color:${T}">${fmt(totalForn)}</div>
+        </div>
+        <div style="background:#f0fdf4;border-radius:7px;padding:8px">
+          <div style="font-size:10px;color:#aaa">Economia</div>
+          <div style="font-weight:700;color:${GN}">${fmt(econForn)} <span style="font-size:10px">(${pctEcon}%)</span></div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#666;line-height:1.7">
+        📦 Prazo: ${f.prazo}<br>
+        💳 Pagamento: ${f.pagamento}<br>
+        🏷 Desconto: ${f.desconto}
+      </div>
+    </div>`;
+  }).join("");
+
+  return`
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#92400e">
+      <strong>Comparando ${fornAtivos.length} fornecedores</strong> para ${produtos.filter(p=>calcNecessidade(p)>0).length} produtos. Preços atualizados manualmente. Em produção, integração por EDI ou portal B2B do fornecedor.
+    </div>
+    <div class="sec-tit">Comparativo de fornecedores</div>
+    <div style="display:grid;grid-template-columns:repeat(${fornAtivos.length},1fr);gap:12px;margin-bottom:18px">
+      ${fornCards}
+    </div>
+    <div class="sec-tit">Tabela de preços por produto</div>
+    ${tabelaPrecos}
+    <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:10px">
+      ${btnSec("Solicitar nova cotação")}
+      ${btnPri("Gerar pedido com fornecedor selecionado →","setTab('pedido')")}
+    </div>`;
+}
+window.selForn=function(id){fornSel=id;renderContent()};
+
+// ═══ PEDIDO ═══
+function renderPedido(){
+  const forn=fornecedores.find(f=>f.id===fornSel)||fornecedores[0];
+  const totalPedido=produtos.reduce((s,p)=>{const nec=calcNecessidade(p);return s+(forn.precos[p.id]||p.custoAtual)*nec;},0);
+  const totalAtual=produtos.reduce((s,p)=>{const nec=calcNecessidade(p);return s+p.custoAtual*nec;},0);
+  const economia=totalAtual-totalPedido;
+
+  const itens=produtos.filter(p=>calcNecessidade(p)>0).map((p,i,a)=>{
+    const nec=calcNecessidade(p);
+    const pr=forn.precos[p.id]||p.custoAtual;
+    // Rateio por estoque crítico relativo
+    const keys=["sj","vs","fp","de","bs","dc"];
+    const labels=["São João","Vida & Saúde","Popular","Esperança","Boa Saúde","Central"];
+    const faltas=keys.map(k=>Math.max(0,(p.estoqueMin[k]*2)-p.estoqueTotal[k]));
+    const totalFalta=faltas.reduce((s,v)=>s+v,0)||1;
+    const rateio=labels.map((lab,i)=>({farm:lab,qtd:Math.round((faltas[i]/totalFalta)*nec)})).filter(r=>r.qtd>0);
+
+    return`<tr>
+      <td><div style="font-weight:500">${p.nome}</div><div style="font-size:10px;color:#aaa">${p.ean}</div></td>
+      <td style="text-align:center;font-weight:600">${nec}</td>
+      <td style="text-align:right">${fmt(pr)}</td>
+      <td style="text-align:right;font-weight:700;color:${T}">${fmt(pr*nec)}</td>
+      <td style="font-size:11px;color:#666">${rateio.map(r=>`${r.farm}: ${r.qtd}`).join(" · ")}</td>
+    </tr>`;}).join("");
+
+  return`
+    <div class="grid2" style="margin-bottom:18px">
+      <div class="card">
+        <div class="sec-tit">Pedido de compra — ${forn.nome}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+          ${[["Fornecedor",forn.nome],["Cidade",forn.cidade],["Prazo de entrega",forn.prazo],["Condições",forn.pagamento],["Desconto",forn.desconto],["Data do pedido","16/03/2026"]].map(([k,v])=>`
+            <div style="background:#f8f8f8;border-radius:7px;padding:9px">
+              <div style="font-size:10px;color:#aaa;margin-bottom:2px">${k}</div>
+              <div style="font-size:12px;font-weight:500">${v}</div>
+            </div>`).join("")}
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #eee">
+          <span style="font-weight:600">Total do pedido</span>
+          <span style="font-weight:700;font-size:16px;color:${T}">${fmt(totalPedido)}</span>
+        </div>
+        <div class="economia-badge" style="margin-top:6px;display:flex">💰 Economia vs compra individual: ${fmt(economia)} (${pct(economia,totalAtual).toFixed(1)}%)</div>
+      </div>
+
+      <div class="card">
+        <div class="sec-tit">Rateio por farmácia</div>
+        ${farmacias.map(f=>{
+          const fatia=totalPedido/6;
+          return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f5f5f5">
+            <span style="font-size:12px">${f}</span>
+            <div style="text-align:right">
+              <div style="font-weight:600;color:${T}">${fmt(fatia)}</div>
+              <div style="font-size:10px;color:#aaa">cobrado do proprietário</div>
+            </div>
+          </div>`;}).join("")}
+        <div style="margin-top:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;font-size:11px;color:#1d4ed8">
+          O rateio proporcional real é calculado pela quantidade destinada a cada farmácia. Este é o valor estimado dividido igualmente.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-tit">Itens do pedido <span style="font-size:11px;font-weight:400;color:#aaa">com rateio por farmácia</span></div>
+      <div class="tbl-wrap" style="border:none">
+        <table><thead><tr>
+          <th>Produto</th><th style="text-align:center">Qtd total</th><th style="text-align:right">Preço unit.</th><th style="text-align:right">Total</th><th>Distribuição</th>
+        </tr></thead><tbody>${itens}</tbody>
+        <tfoot style="background:#f8f8f8">
+          <tr>
+            <td style="padding:9px 12px;font-weight:700" colspan="3">TOTAL GERAL</td>
+            <td style="text-align:right;padding:9px 12px;font-weight:700;color:${T};font-size:14px">${fmt(totalPedido)}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+        </table>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px">
+        ${btnSec("Salvar rascunho")}
+        ${btnSec("Imprimir PDF")}
+        ${btnPri("✓ Confirmar e enviar ao fornecedor")}
+      </div>
+    </div>`;
+}
+
+// ═══ HISTÓRICO ═══
+function renderHistorico(){
+  const econTotal=historico.reduce((s,h)=>s+h.economia,0);
+  const rows=historico.map((h,i)=>`<tr>
+    <td style="font-weight:600;color:${T}">${h.id}</td>
+    <td>${fmtD(h.data)}</td>
+    <td>${h.fornecedor}</td>
+    <td style="text-align:center">${h.produtos}</td>
+    <td style="text-align:center">${h.qtdTotal}</td>
+    <td style="font-weight:600">${fmt(h.valorTotal)}</td>
+    <td style="font-weight:600;color:${GN}">${fmt(h.economia)}</td>
+    <td style="text-align:center">${h.farmacias}</td>
+    <td>${dot(h.status)}</td>
+    <td><button class="btn-sm" style="background:#f5f5f5;color:#555">Ver detalhes</button></td>
+  </tr>`).join("");
+
+  return`
+    <div class="grid4" style="margin-bottom:18px">
+      <div class="kpi"><div class="kpi-lbl">Pedidos realizados</div><div class="kpi-val">${historico.length}</div><div class="kpi-sub">todos entregues</div></div>
+      <div class="kpi"><div class="kpi-lbl">Volume total comprado</div><div class="kpi-val">${fmt(historico.reduce((s,h)=>s+h.valorTotal,0))}</div><div class="kpi-sub">valor bruto</div></div>
+      <div class="kpi"><div class="kpi-lbl">Economia total gerada</div><div class="kpi-val" style="color:${GN}">${fmt(econTotal)}</div><div class="kpi-sub">vs compra individual</div></div>
+      <div class="kpi"><div class="kpi-lbl">Economia média/pedido</div><div class="kpi-val" style="color:${T}">${fmt(econTotal/historico.length)}</div><div class="kpi-sub">por pedido coletivo</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Pedido</th><th>Data</th><th>Fornecedor</th><th style="text-align:center">Produtos</th><th style="text-align:center">Unidades</th><th>Valor</th><th>Economia</th><th style="text-align:center">Farmácias</th><th>Status</th><th>Ação</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+}
+
+// ═══ FORNECEDORES ═══
+function renderFornecedores(){
+  const rows=fornecedores.map((f,i)=>`<tr style="opacity:${f.ativo?1:.6}">
+    <td><div style="font-weight:600">${f.nome}</div></td>
+    <td>${f.cidade}</td>
+    <td style="text-align:center">★ ${f.avaliacao}</td>
+    <td>${f.prazo}</td>
+    <td>${f.pagamento}</td>
+    <td>${f.desconto}</td>
+    <td>${f.ativo?badge("ativo",GN):badge("inativo","#999")}</td>
+    <td><div style="display:flex;gap:5px">
+      <button class="btn-sm" style="background:${T};color:#fff">Editar</button>
+      <button class="btn-sm" style="background:#f5f5f5;color:#555">Preços</button>
+    </div></td>
+  </tr>`).join("");
+
+  return`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:13px;font-weight:600">${fornecedores.length} fornecedores · ${fornecedores.filter(f=>f.ativo).length} ativos</div>
+      ${btnPri("+ Cadastrar fornecedor")}
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Fornecedor</th><th>Cidade</th><th style="text-align:center">Avaliação</th><th>Prazo entrega</th><th>Condições pagto</th><th>Desconto volume</th><th>Status</th><th>Ações</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <div class="sec-tit">Como cadastrar um novo fornecedor</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        ${[
+          {n:"1. Dados cadastrais",d:"CNPJ, razão social, representante comercial, cidade, contato."},
+          {n:"2. Tabela de preços",d:"Importe a tabela em Excel ou cadastre produto a produto com o EAN."},
+          {n:"3. Condições comerciais",d:"Prazo, desconto por volume, forma de pagamento e política de devolução."},
+        ].map(s=>`<div style="background:#f8f8f8;border-radius:8px;padding:12px">
+          <div style="font-weight:600;font-size:12px;margin-bottom:5px;color:${T}">${s.n}</div>
+          <div style="font-size:11px;color:#666;line-height:1.6">${s.d}</div>
+        </div>`).join("")}
+      </div>
+    </div>`;
+}
+
+// ═══ ECONOMIA ═══
+function renderEconomia(){
+  const econMes=[1380,920,1750,1040,1290,1480];
+  const meses=["Out","Nov","Dez","Jan","Fev","Mar"];
+  const total=econMes.reduce((s,v)=>s+v,0);
+
+  return`
+    <div class="grid3" style="margin-bottom:18px">
+      <div class="kpi"><div class="kpi-lbl">Economia total 6 meses</div><div class="kpi-val" style="color:${GN}">${fmt(total)}</div><div class="kpi-sub">compra coletiva vs individual</div></div>
+      <div class="kpi"><div class="kpi-lbl">Média de desconto</div><div class="kpi-val" style="color:${T}">15,8%</div><div class="kpi-sub">por pedido coletivo</div></div>
+      <div class="kpi"><div class="kpi-lbl">Economia por farmácia</div><div class="kpi-val">${fmt(total/6)}</div><div class="kpi-sub">em 6 meses (média)</div></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="sec-tit">Economia mensal</div>
+        <div style="position:relative;height:220px"><canvas id="cht-econMes"></canvas></div>
+        <div class="economia-badge" style="margin-top:12px">💰 Total gerado: ${fmt(total)}</div>
+      </div>
+      <div class="card">
+        <div class="sec-tit">Economia por farmácia · 6 meses</div>
+        ${farmacias.map((f,i)=>{
+          const econ=[1380,920,1750,1040,1290,1480][i]||800;
+          const pctE=pct(econ,total);
+          return`<div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+              <span style="font-size:12px">${f}</span>
+              <span style="font-weight:600;color:${GN}">${fmt(econ)}</span>
+            </div>
+            <div class="prog-wrap"><div class="prog-bar" style="width:${pctE}%;background:${T}"></div></div>
+          </div>`;}).join("")}
+        <div style="margin-top:14px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;font-size:12px;color:#14532d">
+          <strong>Argumento para o dono da farmácia:</strong> em 6 meses, a compra coletiva economizou em média <strong>${fmt(total/6)}</strong> por farmácia — muito mais do que a comissão mensal de 10%.
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══ CHARTS ═══
+function initCharts(){
+  setTimeout(()=>{
+    const econEl=document.getElementById("cht-econ");
+    const econMesEl=document.getElementById("cht-econMes");
+    if(econEl&&!econEl._c){
+      econEl._c=new Chart(econEl,{type:"bar",data:{
+        labels:historico.map(h=>h.id),
+        datasets:[
+          {label:"Valor pago",data:historico.map(h=>h.valorTotal),backgroundColor:T+"99",borderRadius:4,barThickness:28},
+          {label:"Economia",data:historico.map(h=>h.economia),backgroundColor:GN+"99",borderRadius:4,barThickness:28}
+        ]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:"rgba(0,0,0,.05)"},ticks:{font:{size:10},callback:v=>"R$"+v/1000+"k"}}}}});
+    }
+    if(econMesEl&&!econMesEl._c){
+      econMesEl._c=new Chart(econMesEl,{type:"bar",data:{
+        labels:["Out","Nov","Dez","Jan","Fev","Mar"],
+        datasets:[{data:[1380,920,1750,1040,1290,1480],backgroundColor:GN+"bb",borderRadius:4,barThickness:36}]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:"rgba(0,0,0,.05)"},ticks:{font:{size:10},callback:v=>"R$"+v}}}}});
+    }
+  },80);
+}
+
+// ═══ NAV ═══
+const titulos={
+  dashboard:["Dashboard","Central de compras coletivas · FarmaClub Itaperuna"],
+  necessidades:["Necessidades de Compra","Consolidado de todas as farmácias"],
+  cotacao:["Cotação de Preços","Comparativo entre fornecedores"],
+  pedido:["Gerar Pedido","Pedido consolidado com rateio por farmácia"],
+  historico:["Histórico de Pedidos","Todos os pedidos coletivos realizados"],
+  fornecedores:["Fornecedores","Cadastro e condições comerciais"],
+  economia:["Economia Gerada","Seu diferencial competitivo em números"],
+};
+const renders={dashboard:renderDashboard,necessidades:renderNecessidades,cotacao:renderCotacao,pedido:renderPedido,historico:renderHistorico,fornecedores:renderFornecedores,economia:renderEconomia};
+
+let tabAtual="dashboard";
+function setTab(t){
+  tabAtual=t;
+  document.querySelectorAll(".nav-btn").forEach(b=>b.className="nav-btn"+(b.dataset.tab===t?" ativo":""));
+  const [titulo,sub]=titulos[t]||[t,""];
+  document.getElementById("tab-title").textContent=titulo;
+  document.getElementById("tab-sub").textContent=sub;
+  renderContent();
+}
+function renderContent(){
+  document.getElementById("content").innerHTML=(renders[tabAtual]||renderDashboard)();
+  if(["dashboard","economia"].includes(tabAtual)) initCharts();
+}
+window.setTab=setTab;
+renderContent();
+</script>
+</body>
+</html>

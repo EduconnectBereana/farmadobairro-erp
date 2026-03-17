@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>FarmaClub — ERP Contabilidade</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:14px;display:flex;min-height:100vh}
+button,input,select,textarea{font-family:inherit}
+input,select,textarea{background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:7px;padding:7px 10px;font-size:12px;width:100%}
+input:focus,select:focus{outline:none;border-color:#0d9488}
+
+/* SIDEBAR */
+#sidebar{width:200px;background:#fff;border-right:1px solid #e8e8e8;padding:18px 10px;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{padding:0 8px;margin-bottom:20px}
+.logo-title{font-size:14px;font-weight:700;color:#0d9488}
+.logo-sub{font-size:10px;color:#aaa;margin-top:2px;line-height:1.4}
+.nav-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:8px;border:none;border-left:3px solid transparent;background:transparent;color:#666;font-size:12px;text-align:left;cursor:pointer;margin-bottom:2px;transition:all .12s}
+.nav-btn:hover{background:#f5f5f5;color:#1a1a1a}
+.nav-btn.ativo{background:#0d9488;color:#fff;border-left-color:#0d9488}
+.nav-sym{font-size:11px;opacity:.7;width:14px;flex-shrink:0}
+.nav-divider{font-size:10px;color:#bbb;font-weight:600;letter-spacing:.6px;padding:10px 10px 4px;text-transform:uppercase}
+.status-pill{display:flex;align-items:center;gap:5px;font-size:10px;color:#666;padding:0 8px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#topbar{padding:12px 22px;background:#fff;border-bottom:1px solid #e8e8e8;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+#content{padding:20px 22px;flex:1;overflow:auto}
+
+/* CARDS */
+.card{background:#fff;border-radius:12px;border:1px solid #e8e8e8;padding:16px}
+.kpi{background:#f8f8f8;border-radius:10px;padding:14px 16px}
+.kpi-lbl{font-size:11px;color:#888;margin-bottom:5px}
+.kpi-val{font-size:20px;font-weight:700}
+.kpi-sub{font-size:11px;color:#aaa;margin-top:3px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sec-tit{font-size:13px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+
+/* TABLE */
+.tbl-wrap{border:1px solid #e8e8e8;border-radius:10px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 12px;color:#888;font-weight:500;font-size:11px;background:#f8f8f8;border-bottom:1px solid #eee;white-space:nowrap}
+td{padding:8px 12px;font-size:12px;border-bottom:1px solid #f5f5f5}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+
+/* BADGES / STATUS */
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:500}
+.status-dot{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#666}
+.status-dot::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor;display:inline-block}
+
+/* ALERT BANNERS */
+.alert{border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe}
+.alert-warn{background:#fffbeb;border:1px solid #fde68a}
+.alert-danger{background:#fef2f2;border:1px solid #fecaca}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0}
+
+/* FORM */
+.form-row{display:grid;gap:8px;margin-bottom:8px}
+.form-row.cols2{grid-template-columns:1fr 1fr}
+.form-row.cols3{grid-template-columns:1fr 1fr 1fr}
+.form-lbl{font-size:11px;color:#888;margin-bottom:3px}
+.btn-pri{padding:8px 18px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.btn-sec{padding:8px 14px;background:#fff;border:1px solid #ddd;border-radius:8px;font-size:12px;color:#555;cursor:pointer}
+.btn-sm{padding:5px 11px;font-size:11px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
+
+/* PROGRESS */
+.prog-wrap{height:6px;background:#eee;border-radius:3px;overflow:hidden;margin-top:4px}
+.prog-bar{height:100%;border-radius:3px;transition:width .4s}
+
+/* TABS */
+.tab-group{display:flex;gap:4px;margin-bottom:14px;background:#f3f3f3;border-radius:8px;padding:3px}
+.tab-btn{padding:6px 14px;border:none;background:transparent;border-radius:6px;font-size:12px;color:#666;cursor:pointer;transition:all .1s;font-weight:500}
+.tab-btn.ativo{background:#fff;color:#0d9488;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+
+/* TIMELINE */
+.timeline-item{display:flex;gap:14px;margin-bottom:14px}
+.tl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.tl-line{width:2px;background:#eee;flex-shrink:0;margin:14px 4px 0}
+
+/* SYNC BADGE */
+.sync-live{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#0d9488;background:#e6faf8;padding:3px 10px;border-radius:20px;border:1px solid #b2ece7}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.pulse{animation:pulse 1.8s ease-in-out infinite}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="logo">
+    <div class="logo-title">Contabilidade</div>
+    <div class="logo-sub">FarmaClub · Itaperuna/RJ<br>Oliveira & Associados</div>
+  </div>
+
+  <div class="nav-divider">Fiscal</div>
+  <button class="nav-btn ativo" data-tab="dashboard" onclick="setTab('dashboard')"><span class="nav-sym">▣</span>Dashboard</button>
+  <button class="nav-btn" data-tab="obrigacoes" onclick="setTab('obrigacoes')"><span class="nav-sym">◷</span>Obrigações</button>
+  <button class="nav-btn" data-tab="impostos" onclick="setTab('impostos')"><span class="nav-sym">◆</span>Impostos</button>
+  <button class="nav-btn" data-tab="dre" onclick="setTab('dre')"><span class="nav-sym">◉</span>DRE</button>
+
+  <div class="nav-divider">Farmácias</div>
+  <button class="nav-btn" data-tab="farmacias" onclick="setTab('farmacias')"><span class="nav-sym">◈</span>Visão por CNPJ</button>
+  <button class="nav-btn" data-tab="documentos" onclick="setTab('documentos')"><span class="nav-sym">◧</span>Documentos</button>
+  <button class="nav-btn" data-tab="folha" onclick="setTab('folha')"><span class="nav-sym">◑</span>Folha & RH</button>
+
+  <div class="nav-divider">Mury · Central</div>
+  <button class="nav-btn" data-tab="consolidado" onclick="setTab('consolidado')"><span class="nav-sym">★</span>Consolidado</button>
+  <button class="nav-btn" data-tab="irpj" onclick="setTab('irpj')"><span class="nav-sym">◫</span>IRPJ / IR</button>
+  <button class="nav-btn" data-tab="mensagens" onclick="setTab('mensagens')"><span class="nav-sym">✉</span>Mensagens</button>
+
+  <div style="margin-top:auto;padding-top:14px;border-top:1px solid #eee">
+    <div class="status-pill"><span class="dot" style="background:#16a34a"></span>Sincronizado · agora</div>
+    <div class="status-pill" style="margin-top:5px"><span class="dot" style="background:#0d9488"></span>6 CNPJs ativos</div>
+    <div style="font-size:10px;color:#bbb;padding:8px 8px 0">v1.0 · 16/03/2026</div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <div>
+      <div id="tab-title" style="font-weight:600;font-size:14px">Dashboard</div>
+      <div id="tab-sub" style="font-size:11px;color:#aaa">Visão fiscal consolidada · 16 de março de 2026</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div class="sync-live"><span class="pulse">●</span> ERP Farmácias: ao vivo</div>
+      <select style="width:auto;padding:6px 10px;font-size:12px">
+        <option>Março/2026</option><option>Fevereiro/2026</option><option>Janeiro/2026</option>
+      </select>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<script>
+// ═══ DADOS ═══
+const T="#0d9488",AM="#d97706",RD="#dc2626",GN="#16a34a",BL="#2563eb",PU="#7c3aed";
+const fmt=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:2});
+const fmtK=v=>"R$"+(v/1000).toFixed(0)+"k";
+const fmtD=s=>new Date(s+"T12:00").toLocaleDateString("pt-BR");
+const diasP=s=>Math.round((new Date(s+"T12:00")-new Date())/86400000);
+
+const farmacias=[
+  {id:1,cnpj:"12.345.678/0001-90",nome:"Farmácia São João",regime:"Simples Nacional",abertura:"2015-03",faturamento:87600,competencia:"Mar/2026",situacao:"regular",contador:"Carlos Oliveira",aliquota:6.0},
+  {id:2,cnpj:"23.456.789/0001-01",nome:"Farmácia Vida & Saúde",regime:"Simples Nacional",abertura:"2018-07",faturamento:52000,competencia:"Mar/2026",situacao:"regular",contador:"Carlos Oliveira",aliquota:6.0},
+  {id:3,cnpj:"34.567.890/0001-12",nome:"Farmácia Popular",regime:"Simples Nacional",abertura:"2012-11",faturamento:41200,competencia:"Mar/2026",situacao:"pendencia",contador:"Carlos Oliveira",aliquota:6.0},
+  {id:4,cnpj:"45.678.901/0001-23",nome:"Drogaria Esperança",regime:"Simples Nacional",abertura:"2020-03",faturamento:63400,competencia:"Mar/2026",situacao:"regular",contador:"Ana Souza",aliquota:6.0},
+  {id:5,cnpj:"56.789.012/0001-34",nome:"Farmácia Boa Saúde",regime:"Simples Nacional",abertura:"2019-09",faturamento:29800,competencia:"Mar/2026",situacao:"regular",contador:"Ana Souza",aliquota:4.5},
+  {id:6,cnpj:"67.890.123/0001-45",nome:"Drogaria Central",regime:"Simples Nacional",abertura:"2021-06",faturamento:44700,competencia:"Mar/2026",situacao:"regular",contador:"Ana Souza",aliquota:6.0},
+];
+
+const obrigacoes=[
+  {id:1,nome:"DAS — Simples Nacional (Mar)",cnpj:"Todas (6 CNPJs)",venc:"2026-04-20",valor:19350,status:"aberto",tipo:"federal",recorrente:true,obs:"Gerado automaticamente pelo faturamento do mês"},
+  {id:2,nome:"SPED Contribuições (Fev)",cnpj:"São João + Esperança",venc:"2026-03-25",valor:0,status:"aberto",tipo:"federal",recorrente:true,obs:"Transmissão até dia 25"},
+  {id:3,nome:"EFD-ICMS/IPI (Fev)",cnpj:"Todas",venc:"2026-03-28",valor:0,status:"aberto",tipo:"estadual",recorrente:true,obs:"Escrituração fiscal digital"},
+  {id:4,nome:"eSocial — Folha Março",cnpj:"Todas (14 funcionários)",venc:"2026-04-07",valor:14200,status:"aberto",tipo:"federal",recorrente:true,obs:"FGTS + INSS patronal incluso"},
+  {id:5,nome:"DCTF Fevereiro",cnpj:"São João",venc:"2026-03-20",valor:0,status:"transmitido",tipo:"federal",recorrente:true,obs:"Transmitido em 14/03/2026"},
+  {id:6,nome:"DEFIS 2025 (anual)",cnpj:"Todas",venc:"2026-03-31",valor:0,status:"aberto",tipo:"federal",recorrente:false,obs:"Declaração anual Simples Nacional"},
+  {id:7,nome:"Alvará Vigilância Sanitária",cnpj:"Farmácia Popular",venc:"2026-04-15",valor:820,status:"aberto",tipo:"municipal",recorrente:false,obs:"Renovação anual CRF"},
+  {id:8,nome:"ISS — Serviços (Mar)",cnpj:"Todas",venc:"2026-04-10",valor:2100,status:"aberto",tipo:"municipal",recorrente:true,obs:"Nota de serviços emitidas no mês"},
+  {id:9,nome:"IRPJ — Estimativa (Mar)",cnpj:"São João + Esperança",venc:"2026-04-30",valor:3800,status:"aberto",tipo:"federal",recorrente:true,obs:"Lucro Presumido — estimativa mensal"},
+  {id:10,nome:"DAS Jan/2026",cnpj:"Todas",venc:"2026-02-20",valor:17400,status:"pago",tipo:"federal",recorrente:true,obs:"Pago em 19/02/2026"},
+  {id:11,nome:"DAS Fev/2026",cnpj:"Todas",venc:"2026-03-20",valor:18200,status:"pago",tipo:"federal",recorrente:true,obs:"Pago em 18/03/2026"},
+];
+
+const impostosSimples=[
+  {sigla:"IRPJ",nome:"Imposto de Renda PJ",aliquota:0.27,base:"faturamento"},
+  {sigla:"CSLL",nome:"Contr. Social Lucro Líquido",aliquota:0.33,base:"faturamento"},
+  {sigla:"COFINS",nome:"Contrib. Financ. Seguridade",aliquota:1.12,base:"faturamento"},
+  {sigla:"PIS/PASEP",nome:"Prog. Integração Social",aliquota:0.23,base:"faturamento"},
+  {sigla:"CPP",nome:"Contrib. Patronal Previdência",aliquota:2.75,base:"faturamento"},
+  {sigla:"ICMS",nome:"Imposto Circulação Mercadorias",aliquota:1.30,base:"faturamento"},
+];
+
+const documentos=[
+  {id:1,tipo:"NF-e",desc:"Entrada Distribuidora Farmanobre",cnpj:"São João",data:"2026-03-10",valor:4820,status:"escriturado",arquivo:"nfe_4521.xml"},
+  {id:2,tipo:"NF-e",desc:"Entrada Distribuidora EMS",cnpj:"São João",data:"2026-03-05",valor:1240,status:"escriturado",arquivo:"nfe_8821.xml"},
+  {id:3,tipo:"NFS-e",desc:"Serviços de consultoria — FarmaClub",cnpj:"Todas",data:"2026-03-01",valor:8760,status:"pendente",arquivo:"—"},
+  {id:4,tipo:"Recibo",desc:"Aluguel — João Imóveis",cnpj:"São João",data:"2026-03-01",valor:2800,status:"escriturado",arquivo:"rec_alug_mar.pdf"},
+  {id:5,tipo:"DARF",desc:"Simples Nacional Fev/2026",cnpj:"Todas",data:"2026-03-18",valor:18200,status:"pago",arquivo:"darf_fev26.pdf"},
+  {id:6,tipo:"GPS",desc:"INSS/FGTS Fevereiro",cnpj:"Todas",data:"2026-03-07",valor:5400,status:"pago",arquivo:"gps_fev26.pdf"},
+  {id:7,tipo:"NF-e",desc:"Entrada Distribuidora Vital",cnpj:"Esperança",data:"2026-03-12",valor:3100,status:"aguardando XML",arquivo:"—"},
+];
+
+const folha=[
+  {farmacia:"São João",func:4,bruto:8400,inss:756,fgts:672,liquido:7644,status:"fechada"},
+  {farmacia:"Vida & Saúde",func:2,bruto:4200,inss:378,fgts:336,liquido:3822,status:"aberta"},
+  {farmacia:"Farmácia Popular",func:2,bruto:3800,inss:342,fgts:304,liquido:3458,status:"aberta"},
+  {farmacia:"Drog. Esperança",func:3,bruto:6300,inss:567,fgts:504,liquido:5733,status:"fechada"},
+  {farmacia:"Boa Saúde",func:2,bruto:4200,inss:378,fgts:336,liquido:3822,status:"aberta"},
+  {farmacia:"Drog. Central",func:2,bruto:4200,inss:378,fgts:336,liquido:3822,status:"aberta"},
+];
+
+const mensagens=[
+  {de:"Carlos Oliveira (contador)",para:"São João",data:"2026-03-15 14:32",assunto:"DAS Março — dados confirmados",msg:"Confirmei os dados do faturamento de março. DAS calculado em R$ 5.256,00. Prazo até 20/04. Enviarei o DARF até sexta.",lida:true,urgente:false},
+  {de:"Sistema FarmaClub",para:"Todas",data:"2026-03-14 09:00",assunto:"NF-e Distribuidora Vital — XML pendente",msg:"A nota fiscal da Distribuidora Vital (R$ 3.100,00) foi registrada manualmente mas o XML ainda não foi importado. Por favor solicitar ao fornecedor para escrituração.",lida:false,urgente:true},
+  {de:"Ana Souza (contadora)",para:"Boa Saúde",data:"2026-03-12 11:15",assunto:"DEFIS 2025 — documentos necessários",msg:"Para a DEFIS anual preciso dos extratos bancários de Jan a Dez/2025 e do livro caixa. Prazo final 31/03. Favor enviar até 25/03.",lida:false,urgente:true},
+  {de:"Mury (FarmaClub)",para:"Todos contadores",data:"2026-03-10 16:00",assunto:"Relatório março — envio em 01/04",msg:"Lembrando que o relatório consolidado de março para os donos das farmácias será enviado no dia 01/04. Precisarei do DRE individualizado de cada CNPJ.",lida:true,urgente:false},
+];
+
+// ═══ HELPERS ═══
+function dot(st,map={}){
+  const c={pendente:AM,aberto:AM,transmitido:GN,pago:GN,fechada:GN,regular:GN,pendencia:RD,escriturado:GN,"aguardando XML":RD,aberta:AM,...map};
+  return`<span class="status-dot" style="color:${c[st]||"#999"}">${st}</span>`;
+}
+function badge(t,c){return`<span class="badge" style="background:${c}22;color:${c}">${t}</span>`}
+function btnPri(t,fn=""){return`<button class="btn-pri" ${fn?`onclick="${fn}"`:""}>${t}</button>`}
+function btnSec(t,fn=""){return`<button class="btn-sec" ${fn?`onclick="${fn}"`:""}>${t}</button>`}
+function progress(pct,c=T){return`<div class="prog-wrap"><div class="prog-bar" style="width:${Math.min(100,pct)}%;background:${c}"></div></div>`}
+
+// ═══ DASHBOARD ═══
+function renderDashboard(){
+  const fatTotal=farmacias.reduce((s,f)=>s+f.faturamento,0);
+  const dasTotal=obrigacoes.filter(o=>o.nome.includes("DAS")&&o.status==="aberto").reduce((s,o)=>s+o.valor,0);
+  const venceSemana=obrigacoes.filter(o=>o.status!=="pago"&&o.status!=="transmitido"&&diasP(o.venc)<=7&&diasP(o.venc)>=0).length;
+  const pendDocs=documentos.filter(d=>d.status==="pendente"||d.status==="aguardando XML").length;
+
+  const timelineItems=[
+    {data:"20/04",desc:"DAS — Simples Nacional (Mar)",valor:fmt(19350),urgente:true},
+    {data:"31/03",desc:"DEFIS 2025 — Declaração anual",valor:"—",urgente:true},
+    {data:"28/03",desc:"EFD-ICMS/IPI — Fevereiro",valor:"—",urgente:false},
+    {data:"25/03",desc:"SPED Contribuições (Fev)",valor:"—",urgente:false},
+    {data:"20/03",desc:"DCTF Fevereiro — São João",valor:"transmitido",urgente:false},
+  ].map(i=>`
+    <div class="timeline-item">
+      <div style="display:flex;flex-direction:column;align-items:center">
+        <div class="tl-dot" style="background:${i.urgente?RD:T}"></div>
+        <div class="tl-line"></div>
+      </div>
+      <div style="flex:1;padding-bottom:4px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:12px;font-weight:500">${i.desc}</div>
+            <div style="font-size:11px;color:#999;margin-top:2px">Vence ${i.data}${i.urgente?" · <span style='color:"+RD+"'>urgente</span>":""}</div>
+          </div>
+          <div style="font-size:12px;font-weight:600;color:${i.urgente?RD:T};white-space:nowrap;margin-left:10px">${i.valor}</div>
+        </div>
+      </div>
+    </div>`).join("");
+
+  const tribRows=impostosSimples.map(imp=>{
+    const val=+(fatTotal*imp.aliquota/100).toFixed(2);
+    return`<tr>
+      <td><strong style="font-weight:600">${imp.sigla}</strong></td>
+      <td style="color:#666">${imp.nome}</td>
+      <td style="text-align:right;color:#888">${imp.aliquota.toFixed(2)}%</td>
+      <td style="text-align:right;font-weight:600;color:${T}">${fmt(val)}</td>
+    </tr>`;}).join("");
+  const totalTrib=+(fatTotal*6.0/100).toFixed(2);
+
+  return`
+    <div class="grid4">
+      <div class="kpi"><div class="kpi-lbl">Faturamento consolidado</div><div class="kpi-val" style="color:${T}">${fmtK(fatTotal)}</div><div class="kpi-sub">6 farmácias · Março/2026</div></div>
+      <div class="kpi"><div class="kpi-lbl">Carga tributária (mês)</div><div class="kpi-val" style="color:${AM}">${fmt(totalTrib)}</div><div class="kpi-sub">≈ 6,0% Simples Nacional</div></div>
+      <div class="kpi"><div class="kpi-lbl">Obrigações vencem em 7d</div><div class="kpi-val" style="color:${venceSemana>0?RD:"#1a1a1a"}">${venceSemana}</div><div class="kpi-sub">das ${obrigacoes.filter(o=>o.status==="aberto").length} em aberto</div></div>
+      <div class="kpi"><div class="kpi-lbl">Documentos pendentes</div><div class="kpi-val" style="color:${pendDocs>0?AM:"#1a1a1a"}">${pendDocs}</div><div class="kpi-sub">escrituração / XML</div></div>
+    </div>
+
+    <div class="grid2" style="margin-bottom:18px">
+      <div class="card">
+        <div class="sec-tit">Próximas obrigações <span style="font-size:11px;color:#aaa;font-weight:400">30 dias</span></div>
+        ${timelineItems}
+      </div>
+      <div class="card">
+        <div class="sec-tit">Composição do DAS — Março</div>
+        <table style="width:100%;margin-bottom:10px">${tribRows}</table>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #eee">
+          <span style="font-weight:600">Total DAS estimado</span>
+          <span style="font-weight:700;font-size:15px;color:${T}">${fmt(totalTrib)}</span>
+        </div>
+        <div style="font-size:11px;color:#aaa">Alíquota efetiva média: 6,0% · Anexo I (Comércio)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-tit">Faturamento por farmácia — Março/2026</div>
+      <div style="position:relative;height:180px"><canvas id="cht-fat"></canvas></div>
+    </div>`;
+}
+
+// ═══ OBRIGAÇÕES ═══
+let filtObrg="todas";
+function renderObrigacoes(){
+  const tipoCor={federal:BL,estadual:PU,municipal:T};
+  const filtBtns=["todas","federal","estadual","municipal","pago"].map(f=>`
+    <button class="tab-btn ${filtObrg===f?"ativo":""}" onclick="setFiltObrg('${f}')">${f.charAt(0).toUpperCase()+f.slice(1)}</button>`).join("");
+
+  const list=(filtObrg==="pago"?obrigacoes.filter(o=>o.status==="pago"||o.status==="transmitido"):
+    filtObrg==="todas"?obrigacoes.filter(o=>o.status!=="pago"&&o.status!=="transmitido"):
+    obrigacoes.filter(o=>o.tipo===filtObrg&&o.status!=="pago"&&o.status!=="transmitido"));
+
+  const rows=list.map((o,i)=>{
+    const d=diasP(o.venc);
+    const dCor=d<0?RD:d<=7?RD:d<=15?AM:GN;
+    return`<tr>
+      <td><div style="font-weight:500">${o.nome}</div><div style="font-size:10px;color:#aaa;margin-top:2px">${o.obs}</div></td>
+      <td style="font-size:11px;color:#888">${o.cnpj}</td>
+      <td>${badge(o.tipo,tipoCor[o.tipo]||T)}</td>
+      <td style="color:${dCor};font-weight:600;white-space:nowrap">${d<0?"VENCIDO":d===0?"Hoje":d+" dias"}</td>
+      <td style="white-space:nowrap">${fmtD(o.venc)}</td>
+      <td style="font-weight:600;text-align:right">${o.valor>0?fmt(o.valor):"—"}</td>
+      <td>${dot(o.status)}</td>
+      <td><div style="display:flex;gap:5px">
+        ${o.status==="aberto"?`<button class="btn-sm" style="background:${T};color:#fff" onclick="marcarPago(${o.id})">✓ Pagar</button>`:""}
+        <button class="btn-sm" style="background:#f5f5f5;color:#555">Ver</button>
+      </div></td>
+    </tr>`;}).join("")||`<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px">Nenhuma obrigação neste filtro</td></tr>`;
+
+  const vencendo=obrigacoes.filter(o=>o.status==="aberto"&&diasP(o.venc)<=7&&diasP(o.venc)>=0);
+  return`
+    ${vencendo.length>0?`<div class="alert alert-danger">
+      <div style="font-size:12px;color:#dc2626"><strong>⚠ ${vencendo.length} obrigação${vencendo.length>1?"ões":""} vence${vencendo.length>1?"m":""} em até 7 dias:</strong> ${vencendo.map(o=>o.nome).join(" · ")}</div>
+      ${btnPri("Ver urgentes","setFiltObrg('todas')")}
+    </div>`:""}
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div class="tab-group">${filtBtns}</div>
+      ${btnPri("+ Nova obrigação")}
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Obrigação</th><th>CNPJ / Empresa</th><th>Tipo</th><th>Prazo</th><th>Vencimento</th><th style="text-align:right">Valor</th><th>Status</th><th>Ação</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+}
+window.setFiltObrg=function(f){filtObrg=f;renderContent()};
+window.marcarPago=function(id){
+  const o=obrigacoes.find(x=>x.id===id);
+  if(o){o.status="pago";renderContent();}
+};
+
+// ═══ IMPOSTOS ═══
+function renderImpostos(){
+  const fat=farmacias.reduce((s,f)=>s+f.faturamento,0);
+  return`
+    <div class="alert alert-info" style="margin-bottom:16px">
+      <div style="font-size:12px;color:#1d4ed8"><strong>Regime tributário:</strong> Simples Nacional · Anexo I (Comércio) · Faixa 3 · Alíquota efetiva 6,0%</div>
+    </div>
+    <div class="grid2" style="margin-bottom:18px">
+      <div class="card">
+        <div class="sec-tit">DAS — Simples Nacional · Março</div>
+        ${impostosSimples.map(imp=>{
+          const val=+(fat*imp.aliquota/100).toFixed(2);
+          const pct=(imp.aliquota/6.0)*100;
+          return`<div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <div>
+                <span style="font-weight:600;font-size:12px">${imp.sigla}</span>
+                <span style="font-size:11px;color:#aaa;margin-left:6px">${imp.nome}</span>
+              </div>
+              <div style="text-align:right">
+                <span style="font-size:12px;font-weight:600;color:${T}">${fmt(val)}</span>
+                <span style="font-size:10px;color:#aaa;margin-left:4px">${imp.aliquota.toFixed(2)}%</span>
+              </div>
+            </div>
+            ${progress(pct,T)}
+          </div>`;}).join("")}
+        <div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid #eee;margin-top:4px">
+          <span style="font-weight:700">TOTAL DAS MARÇO</span>
+          <span style="font-weight:700;font-size:16px;color:${T}">${fmt(+(fat*0.06).toFixed(2))}</span>
+        </div>
+        <div style="font-size:11px;color:#aaa">Vencimento: 20/04/2026 · 1 DARF unificado</div>
+      </div>
+
+      <div class="card">
+        <div class="sec-tit">Histórico de pagamentos</div>
+        <div style="position:relative;height:220px;margin-bottom:10px"><canvas id="cht-das"></canvas></div>
+        <div style="background:#f8f8f8;border-radius:8px;padding:12px">
+          <div style="font-size:11px;color:#888;margin-bottom:8px;font-weight:600">ACUMULADO 2026</div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span>Janeiro</span><span style="font-weight:600">${fmt(17400)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+            <span>Fevereiro</span><span style="font-weight:600">${fmt(18200)}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;border-top:1px solid #eee;padding-top:6px">
+            <span>Total pago 2026</span><span style="color:${GN}">${fmt(35600)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-tit">Outros tributos e contribuições</div>
+      ${[
+        {nome:"FGTS (todas as farmácias)",base:"Folha de pagamento",val:2700,venc:"07/04/2026",status:"aberto"},
+        {nome:"INSS Patronal",base:"Folha de pagamento",val:1890,venc:"07/04/2026",status:"aberto"},
+        {nome:"ISS Municipal",base:"Notas de serviço emitidas",val:2100,venc:"10/04/2026",status:"aberto"},
+        {nome:"ICMS — Antecipação ST",base:"Entrada de mercadorias",val:890,venc:"20/04/2026",status:"aberto"},
+      ].map((t,i,a)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:${i<a.length-1?"1px solid #f0f0f0":"none"}">
+          <div>
+            <div style="font-size:12px;font-weight:500">${t.nome}</div>
+            <div style="font-size:11px;color:#aaa">Base: ${t.base} · Vence ${t.venc}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-weight:700;color:${AM}">${fmt(t.val)}</span>
+            ${dot(t.status)}
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
+
+// ═══ DRE ═══
+function renderDRE(){
+  const fat=farmacias.reduce((s,f)=>s+f.faturamento,0);
+  const cmv=fat*0.48;
+  const lucBruto=fat-cmv;
+  const desp={folha:31100,aluguel:12600,comissaoFR:31900,energia:3200,outros:4800};
+  const totDesp=Object.values(desp).reduce((s,v)=>s+v,0);
+  const ebitda=lucBruto-totDesp;
+  const impostos=fat*0.06;
+  const lucLiq=ebitda-impostos;
+  const margBruta=((lucBruto/fat)*100).toFixed(1);
+  const margLiq=((lucLiq/fat)*100).toFixed(1);
+
+  function linhaDRE(label,val,indent=false,negrito=false,cor=""){
+    const isNeg=val<0;
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px ${indent?"24px":"0"} 7px 0;border-bottom:1px solid #f5f5f5">
+      <span style="font-size:${negrito?"13":"12"}px;font-weight:${negrito?"700":"400"};color:${cor||"#333"}">${label}</span>
+      <span style="font-size:${negrito?"13":"12"}px;font-weight:${negrito?"700":"500"};color:${cor||(isNeg?RD:"#333")}">${isNeg?"("+fmt(-val)+")":fmt(val)}</span>
+    </div>`;
+  }
+
+  return`
+    <div class="grid3" style="margin-bottom:18px">
+      <div class="kpi"><div class="kpi-lbl">Faturamento bruto</div><div class="kpi-val" style="color:${T}">${fmtK(fat)}</div><div class="kpi-sub">Março/2026</div></div>
+      <div class="kpi"><div class="kpi-lbl">Margem bruta</div><div class="kpi-val" style="color:${GN}">${margBruta}%</div><div class="kpi-sub">Após CMV</div></div>
+      <div class="kpi"><div class="kpi-lbl">Margem líquida</div><div class="kpi-val" style="color:${lucLiq>0?T:RD}">${margLiq}%</div><div class="kpi-sub">Lucro líquido / faturamento</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="sec-tit">DRE Consolidado · Março/2026 <span style="font-size:11px;color:#aaa;font-weight:400">6 farmácias</span></div>
+        ${linhaDRE("RECEITA BRUTA DE VENDAS",fat,false,true,T)}
+        ${linhaDRE("(−) Deduções e devoluções",-(fat*0.02),true)}
+        ${linhaDRE("= RECEITA LÍQUIDA",fat*0.98,false,true)}
+        ${linhaDRE("(−) CMV — Custo das mercadorias",-cmv,true)}
+        ${linhaDRE("= LUCRO BRUTO",lucBruto,false,true,GN)}
+        <div style="margin:8px 0 4px;font-size:11px;color:#aaa;font-weight:600;letter-spacing:.5px">DESPESAS OPERACIONAIS</div>
+        ${linhaDRE("Folha de pagamento (14 func.)",-desp.folha,true)}
+        ${linhaDRE("Aluguéis (6 pontos)",-desp.aluguel,true)}
+        ${linhaDRE("Comissão FarmaClub (10%)",-desp.comissaoFR,true)}
+        ${linhaDRE("Energia elétrica",-desp.energia,true)}
+        ${linhaDRE("Outros operacionais",-desp.outros,true)}
+        ${linhaDRE("= EBITDA",ebitda,false,true,ebitda>0?GN:RD)}
+        ${linhaDRE("(−) Impostos (DAS 6,0%)",-impostos,true)}
+        ${linhaDRE("= LUCRO LÍQUIDO",lucLiq,false,true,lucLiq>0?T:RD)}
+        <div style="background:#f8f8f8;border-radius:8px;padding:10px;margin-top:10px">
+          <div style="font-size:11px;color:#888;margin-bottom:4px">Participação da comissão FarmaClub</div>
+          <div style="font-size:12px;color:#555">R$ ${fmt(desp.comissaoFR)} = 10% do faturamento bruto individual de cada farmácia</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sec-tit">DRE por farmácia</div>
+        ${farmacias.map((f,i)=>{
+          const lucLiqF=+(f.faturamento-(f.faturamento*0.48)-(f.faturamento*0.25)-(f.faturamento*0.06)).toFixed(0);
+          const margF=((lucLiqF/f.faturamento)*100).toFixed(1);
+          return`<div style="padding:10px 0;border-bottom:${i<farmacias.length-1?"1px solid #f0f0f0":"none"}">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start">
+              <div>
+                <div style="font-size:12px;font-weight:500">${f.nome}</div>
+                <div style="font-size:11px;color:#aaa">Fat. ${fmt(f.faturamento)}</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-weight:700;color:${lucLiqF>0?T:RD}">${fmt(lucLiqF)}</div>
+                <div style="font-size:10px;color:#aaa">margem ${margF}%</div>
+              </div>
+            </div>
+            ${progress((lucLiqF/f.faturamento)*100,T)}
+          </div>`;}).join("")}
+      </div>
+    </div>`;
+}
+
+// ═══ VISÃO POR CNPJ ═══
+function renderFarmacias(){
+  const rows=farmacias.map((f,i)=>`
+    <tr>
+      <td><div style="font-weight:500">${f.nome}</div><div style="font-size:10px;color:#aaa;margin-top:2px">Abertura: ${f.abertura}</div></td>
+      <td style="font-family:monospace;font-size:11px">${f.cnpj}</td>
+      <td>${badge(f.regime,BL)}</td>
+      <td style="font-weight:600;color:${T}">${fmt(f.faturamento)}</td>
+      <td style="font-weight:600;color:${AM}">${fmt(f.faturamento*f.aliquota/100)}</td>
+      <td>${f.contador}</td>
+      <td>${dot(f.situacao)}</td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn-sm" style="background:${T};color:#fff">DRE</button>
+        <button class="btn-sm" style="background:#f5f5f5;color:#555">Docs</button>
+      </div></td>
+    </tr>`).join("");
+
+  return`
+    <div class="grid3" style="margin-bottom:16px">
+      <div class="kpi"><div class="kpi-lbl">CNPJs gerenciados</div><div class="kpi-val" style="color:${T}">6</div><div class="kpi-sub">todos Simples Nacional</div></div>
+      <div class="kpi"><div class="kpi-lbl">Situação regular</div><div class="kpi-val" style="color:${GN}">5/6</div><div class="kpi-sub">1 pendência</div></div>
+      <div class="kpi"><div class="kpi-lbl">Próxima entrega</div><div class="kpi-val">DEFIS</div><div class="kpi-sub">31/03/2026 · anual</div></div>
+    </div>
+    <div class="alert alert-warn">
+      <div style="font-size:12px;color:#92400e"><strong>⚠ Farmácia Popular:</strong> pendência cadastral no CNPJ. Verificar com contador antes do envio da DEFIS.</div>
+      ${btnPri("Resolver")}
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Empresa</th><th>CNPJ</th><th>Regime</th><th>Fat. Março</th><th>DAS estimado</th><th>Contador</th><th>Situação</th><th>Ações</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+}
+
+// ═══ DOCUMENTOS ═══
+function renderDocumentos(){
+  const tipoCor={"NF-e":T,"NFS-e":BL,"Recibo":GN,"DARF":PU,"GPS":AM};
+  const rows=documentos.map((d,i)=>`
+    <tr>
+      <td>${badge(d.tipo,tipoCor[d.tipo]||T)}</td>
+      <td><div style="font-weight:500">${d.desc}</div></td>
+      <td style="font-size:11px;color:#888">${d.cnpj}</td>
+      <td>${fmtD(d.data)}</td>
+      <td style="font-weight:600;text-align:right">${fmt(d.valor)}</td>
+      <td>${dot(d.status)}</td>
+      <td style="font-size:11px;color:${d.arquivo==="—"?"#aaa":BL}">${d.arquivo}</td>
+      <td><button class="btn-sm" style="background:#f5f5f5;color:#555">${d.arquivo!=="—"?"Abrir":"Upload"}</button></td>
+    </tr>`).join("");
+
+  return`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <div style="font-size:13px;font-weight:600">${documentos.length} documentos · Março/2026</div>
+        <div style="font-size:11px;color:#aaa">${documentos.filter(d=>d.status==="pendente"||d.status==="aguardando XML").length} pendente(s) de ação</div>
+      </div>
+      <div style="display:flex;gap:8px">${btnPri("+ Importar NF-e XML")} ${btnSec("Upload documento")}</div>
+    </div>
+    ${documentos.filter(d=>d.status==="aguardando XML").length>0?`
+    <div class="alert alert-warn">
+      <div style="font-size:12px;color:#92400e">XML da NF-e Distribuidora Vital ainda não recebido. Escrituração incompleta para o mês de março.</div>
+      ${btnPri("Solicitar ao fornecedor")}
+    </div>`:""}
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Tipo</th><th>Descrição</th><th>Empresa</th><th>Data</th><th style="text-align:right">Valor</th><th>Status</th><th>Arquivo</th><th>Ação</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+}
+
+// ═══ FOLHA ═══
+function renderFolha(){
+  const totBruto=folha.reduce((s,f)=>s+f.bruto,0);
+  const totFGTS=folha.reduce((s,f)=>s+f.fgts,0);
+  const totINSS=folha.reduce((s,f)=>s+f.inss,0);
+  const totFunc=folha.reduce((s,f)=>s+f.func,0);
+  const rows=folha.map((f,i)=>`
+    <tr>
+      <td style="font-weight:500">${f.farmacia}</td>
+      <td style="text-align:center">${f.func}</td>
+      <td style="text-align:right;font-weight:600">${fmt(f.bruto)}</td>
+      <td style="text-align:right;color:${AM}">${fmt(f.inss)}</td>
+      <td style="text-align:right;color:${BL}">${fmt(f.fgts)}</td>
+      <td style="text-align:right;font-weight:700;color:${T}">${fmt(f.liquido)}</td>
+      <td>${dot(f.status)}</td>
+      <td><button class="btn-sm" style="background:${f.status==="aberta"?T:"#f5f5f5"};color:${f.status==="aberta"?"#fff":"#555"}">${f.status==="aberta"?"Fechar folha":"Recibo"}</button></td>
+    </tr>`).join("");
+
+  return`
+    <div class="grid4" style="margin-bottom:16px">
+      <div class="kpi"><div class="kpi-lbl">Total de funcionários</div><div class="kpi-val">${totFunc}</div><div class="kpi-sub">6 farmácias</div></div>
+      <div class="kpi"><div class="kpi-lbl">Folha bruta</div><div class="kpi-val" style="color:${T}">${fmt(totBruto)}</div><div class="kpi-sub">Março/2026</div></div>
+      <div class="kpi"><div class="kpi-lbl">FGTS (8%)</div><div class="kpi-val" style="color:${BL}">${fmt(totFGTS)}</div><div class="kpi-sub">recolher até 07/04</div></div>
+      <div class="kpi"><div class="kpi-lbl">INSS (9%)</div><div class="kpi-val" style="color:${AM}">${fmt(totINSS)}</div><div class="kpi-sub">recolher até 07/04</div></div>
+    </div>
+    <div class="tbl-wrap">
+      <table><thead><tr>
+        <th>Farmácia</th><th style="text-align:center">Funcionários</th><th style="text-align:right">Salário bruto</th><th style="text-align:right">INSS</th><th style="text-align:right">FGTS</th><th style="text-align:right">Líquido</th><th>Status</th><th>Ação</th>
+      </tr></thead><tbody>${rows}</tbody>
+      <tfoot style="background:#f8f8f8">
+        <tr>
+          <td colspan="2" style="font-weight:700;padding:9px 12px">Total Março</td>
+          <td style="text-align:right;font-weight:700;padding:9px 12px">${fmt(totBruto)}</td>
+          <td style="text-align:right;font-weight:700;padding:9px 12px;color:${AM}">${fmt(totINSS)}</td>
+          <td style="text-align:right;font-weight:700;padding:9px 12px;color:${BL}">${fmt(totFGTS)}</td>
+          <td style="text-align:right;font-weight:700;padding:9px 12px;color:${T}">${fmt(folha.reduce((s,f)=>s+f.liquido,0))}</td>
+          <td colspan="2"></td>
+        </tr>
+      </tfoot>
+      </table>
+    </div>`;
+}
+
+// ═══ CONSOLIDADO (visão Mury) ═══
+function renderConsolidado(){
+  const fat=farmacias.reduce((s,f)=>s+f.faturamento,0);
+  const comissao=fat*0.10;
+  return`
+    <div class="alert alert-success" style="margin-bottom:16px">
+      <div style="font-size:12px;color:#14532d"><strong>Visão exclusiva Mury — FarmaClub Itaperuna.</strong> Esta tela consolida tudo que você ganha e deve, separado das farmácias parceiras.</div>
+    </div>
+    <div class="grid4" style="margin-bottom:18px">
+      <div class="kpi"><div class="kpi-lbl">Comissão total (10%)</div><div class="kpi-val" style="color:${T}">${fmt(comissao)}</div><div class="kpi-sub">Março/2026</div></div>
+      <div class="kpi"><div class="kpi-lbl">Já recebido</div><div class="kpi-val" style="color:${GN}">${fmt(comissao*0.32)}</div><div class="kpi-sub">2 farmácias pagas</div></div>
+      <div class="kpi"><div class="kpi-lbl">A receber</div><div class="kpi-val" style="color:${AM}">${fmt(comissao*0.68)}</div><div class="kpi-sub">4 farmácias pendentes</div></div>
+      <div class="kpi"><div class="kpi-lbl">IR sobre comissão (est.)</div><div class="kpi-val" style="color:${RD}">${fmt(comissao*0.075)}</div><div class="kpi-sub">7,5% IRPF estimado</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="sec-tit">Comissão por farmácia · Março</div>
+        ${farmacias.map((f,i,a)=>`
+          <div style="padding:9px 0;border-bottom:${i<a.length-1?"1px solid #f0f0f0":"none"};display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:12px;font-weight:500">${f.nome}</div>
+              <div style="font-size:11px;color:#aaa">Fat. ${fmt(f.faturamento)} × 10%</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:700;color:${T}">${fmt(f.faturamento*0.1)}</div>
+              ${dot(f.situacao==="regular"?"pago":"pendente")}
+            </div>
+          </div>`).join("")}
+      </div>
+      <div class="card">
+        <div class="sec-tit">Suas obrigações fiscais pessoais</div>
+        ${[
+          {desc:"CARNÊ-LEÃO · Comissão Março",val:comissao*0.075,venc:"31/03/2026",status:"aberto"},
+          {desc:"IRPF 2025 (declaração anual)",val:0,venc:"30/04/2026",status:"aberto"},
+          {desc:"Pró-labore mensal (estimado)",val:3500,venc:"—",status:"aberto"},
+          {desc:"INSS sobre pró-labore (11%)",val:385,venc:"20/04/2026",status:"aberto"},
+        ].map((o,i,a)=>`
+          <div style="padding:9px 0;border-bottom:${i<a.length-1?"1px solid #f0f0f0":"none"};display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:12px;font-weight:500">${o.desc}</div>
+              <div style="font-size:11px;color:#aaa">Vence: ${o.venc}</div>
+            </div>
+            <div style="text-align:right">
+              ${o.val>0?`<div style="font-weight:700;color:${AM}">${fmt(o.val)}</div>`:"<div style='font-size:11px;color:#aaa'>calcular</div>"}
+              ${dot(o.status)}
+            </div>
+          </div>`).join("")}
+        <div style="background:#fef3c7;border-radius:8px;padding:10px;margin-top:12px">
+          <div style="font-size:11px;color:#92400e;font-weight:600;margin-bottom:4px">⚠ Atenção fiscal</div>
+          <div style="font-size:11px;color:#78350f;line-height:1.6">
+            Receber comissão como PF gera carnê-leão obrigatório. Considere abrir um CNPJ para a FarmaClub — pode reduzir a carga tributária em até 40%. Consulte seu contador.
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══ IRPJ ═══
+function renderIRPJ(){
+  return`
+    <div class="alert alert-info" style="margin-bottom:16px">
+      <div style="font-size:12px;color:#1d4ed8">No Simples Nacional, o IRPJ já está <strong>embutido no DAS</strong>. Esta seção é para acompanhamento e simulação de migração para Lucro Presumido.</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="sec-tit">IRPJ embutido no DAS (atual)</div>
+        <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:14px">
+          No Simples Nacional Anexo I:<br>
+          · IRPJ = 0,27% do faturamento bruto<br>
+          · CSLL = 0,33% do faturamento bruto<br>
+          · Total IR+CSLL = 0,60% sobre cada real faturado<br>
+        </div>
+        ${farmacias.map(f=>`
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:12px">
+            <span>${f.nome}</span>
+            <span style="font-weight:600;color:${T}">${fmt(+(f.faturamento*0.006).toFixed(2))}</span>
+          </div>`).join("")}
+        <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;border-top:1px solid #eee">
+          <span>Total IRPJ+CSLL Março</span>
+          <span style="color:${T}">${fmt(+(farmacias.reduce((s,f)=>s+f.faturamento,0)*0.006).toFixed(2))}</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-tit">Simulação Lucro Presumido</div>
+        <div style="background:#f8f8f8;border-radius:8px;padding:12px;margin-bottom:12px">
+          <div style="font-size:11px;color:#888;margin-bottom:6px">Se migrasse para Lucro Presumido:</div>
+          ${[
+            {item:"Base de cálculo (32% do fat.)",val:farmacias.reduce((s,f)=>s+f.faturamento,0)*0.32},
+            {item:"IRPJ (15%)",val:farmacias.reduce((s,f)=>s+f.faturamento,0)*0.32*0.15},
+            {item:"CSLL (9%)",val:farmacias.reduce((s,f)=>s+f.faturamento,0)*0.32*0.09},
+            {item:"PIS (0,65%)",val:farmacias.reduce((s,f)=>s+f.faturamento,0)*0.0065},
+            {item:"COFINS (3%)",val:farmacias.reduce((s,f)=>s+f.faturamento,0)*0.03},
+          ].map(x=>`<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#666">${x.item}</span><span style="font-weight:600">${fmt(+x.val.toFixed(2))}</span></div>`).join("")}
+          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;border-top:1px solid #e0e0e0;padding-top:8px;margin-top:6px">
+            <span>Total mensal LP</span>
+            <span style="color:${RD}">${fmt(+(farmacias.reduce((s,f)=>s+f.faturamento,0)*0.0972).toFixed(2))}</span>
+          </div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px">
+          <div style="font-size:12px;color:#14532d;font-weight:600;margin-bottom:4px">✓ Conclusão: Simples Nacional é melhor</div>
+          <div style="font-size:11px;color:#166534;line-height:1.6">
+            No faturamento atual, o Simples representa ~6,0% enquanto o Lucro Presumido chegaria a ~9,7%. Reavalie somente se o faturamento superar R$ 4,8M/ano.
+          </div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══ MENSAGENS ═══
+function renderMensagens(){
+  return`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div><span style="font-size:13px;font-weight:600">${mensagens.length} mensagens</span> <span style="font-size:12px;color:#aaa">· ${mensagens.filter(m=>!m.lida).length} não lidas</span></div>
+      ${btnPri("+ Nova mensagem")}
+    </div>
+    <div style="display:grid;gap:10px">
+      ${mensagens.map(m=>`
+        <div class="card" style="border-left:3px solid ${m.urgente?RD:m.lida?"#eee":T};opacity:${m.lida?.85:1}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+            <div>
+              <div style="font-size:13px;font-weight:${m.lida?"500":"700"}">${m.assunto} ${m.urgente?`<span style="font-size:10px;background:${RD}22;color:${RD};border-radius:4px;padding:1px 7px">urgente</span>`:""}</div>
+              <div style="font-size:11px;color:#888;margin-top:2px">De: ${m.de} → Para: ${m.para}</div>
+            </div>
+            <div style="font-size:11px;color:#aaa;white-space:nowrap;margin-left:12px">${m.data}</div>
+          </div>
+          <div style="font-size:12px;color:#555;line-height:1.6;background:#f8f8f8;border-radius:7px;padding:10px">${m.msg}</div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            ${btnSec("Responder")} ${!m.lida?btnPri("Marcar como lida"):""}
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
+
+// ═══ CHARTS ═══
+function initCharts(){
+  setTimeout(()=>{
+    const fatEl=document.getElementById("cht-fat");
+    const dasEl=document.getElementById("cht-das");
+    if(fatEl&&!fatEl._c){
+      fatEl._c=new Chart(fatEl,{type:"bar",data:{
+        labels:farmacias.map(f=>f.nome.replace("Farmácia ","").replace("Drogaria ","")),
+        datasets:[
+          {label:"Faturamento",data:farmacias.map(f=>f.faturamento),backgroundColor:T+"bb",borderRadius:4,barThickness:24},
+          {label:"DAS (6%)",data:farmacias.map(f=>+(f.faturamento*0.06).toFixed(0)),backgroundColor:AM+"bb",borderRadius:4,barThickness:24}
+        ]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:"rgba(0,0,0,.05)"},ticks:{font:{size:10},callback:v=>"R$"+v/1000+"k"}}}}});
+    }
+    if(dasEl&&!dasEl._c){
+      dasEl._c=new Chart(dasEl,{type:"line",data:{
+        labels:["Out","Nov","Dez","Jan","Fev","Mar"],
+        datasets:[{label:"DAS",data:[14200,15800,18900,17400,18200,19350],borderColor:T,backgroundColor:T+"22",fill:true,borderWidth:2,pointRadius:3,tension:.3}]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{size:10}}},y:{grid:{color:"rgba(0,0,0,.05)"},ticks:{font:{size:10},callback:v=>"R$"+v/1000+"k"}}}}});
+    }
+  },80);
+}
+
+// ═══ NAV ═══
+const titulos={
+  dashboard:["Dashboard","Visão fiscal consolidada · 16 de março de 2026"],
+  obrigacoes:["Obrigações Fiscais","Calendário tributário · 6 CNPJs"],
+  impostos:["Impostos","DAS, FGTS, INSS, ISS · Março/2026"],
+  dre:["DRE — Resultado","Demonstrativo de resultado · consolidado e individual"],
+  farmacias:["Visão por CNPJ","Situação fiscal de cada farmácia parceira"],
+  documentos:["Documentos","NF-e, recibos, DARFs, escrituração"],
+  folha:["Folha de Pagamento & RH","14 funcionários · 6 farmácias"],
+  consolidado:["Mury · Visão Pessoal","Suas comissões, IR e obrigações pessoais"],
+  irpj:["IRPJ / IR Empresarial","Análise tributária e simulações"],
+  mensagens:["Mensagens","Canal direto com contadores e parceiros"],
+};
+
+const renders={dashboard:renderDashboard,obrigacoes:renderObrigacoes,impostos:renderImpostos,dre:renderDRE,farmacias:renderFarmacias,documentos:renderDocumentos,folha:renderFolha,consolidado:renderConsolidado,irpj:renderIRPJ,mensagens:renderMensagens};
+
+let tabAtual="dashboard";
+function setTab(t){
+  tabAtual=t;
+  document.querySelectorAll(".nav-btn").forEach(b=>{
+    b.className="nav-btn"+(b.dataset.tab===t?" ativo":"");
+  });
+  const [titulo,sub]=titulos[t]||[t,""];
+  document.getElementById("tab-title").textContent=titulo;
+  document.getElementById("tab-sub").textContent=sub;
+  renderContent();
+}
+function renderContent(){
+  document.getElementById("content").innerHTML=(renders[tabAtual]||renderDashboard)();
+  if(tabAtual==="dashboard"||tabAtual==="impostos") initCharts();
+}
+window.setTab=setTab;
+renderContent();
+</script>
+</body>
+</html>

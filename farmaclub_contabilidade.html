@@ -10,16 +10,16 @@
 body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:14px;display:flex;min-height:100vh}
 button,input,select,textarea{font-family:inherit}
 input,select,textarea{background:#fff;color:#1a1a1a;border:1px solid #ddd;border-radius:7px;padding:7px 10px;font-size:12px;width:100%}
-input:focus,select:focus{outline:none;border-color:#0d9488}
+input:focus,select:focus{outline:none;border-color:#3BAA35}
 
 /* SIDEBAR */
 #sidebar{width:200px;background:#fff;border-right:1px solid #e8e8e8;padding:18px 10px;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
 .logo{padding:0 8px;margin-bottom:20px}
-.logo-title{font-size:14px;font-weight:700;color:#0d9488}
+.logo-title{font-size:14px;font-weight:700;color:#3BAA35}
 .logo-sub{font-size:10px;color:#aaa;margin-top:2px;line-height:1.4}
 .nav-btn{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:8px;border:none;border-left:3px solid transparent;background:transparent;color:#666;font-size:12px;text-align:left;cursor:pointer;margin-bottom:2px;transition:all .12s}
 .nav-btn:hover{background:#f5f5f5;color:#1a1a1a}
-.nav-btn.ativo{background:#0d9488;color:#fff;border-left-color:#0d9488}
+.nav-btn.ativo{background:#3BAA35;color:#fff;border-left-color:#3BAA35}
 .nav-sym{font-size:11px;opacity:.7;width:14px;flex-shrink:0}
 .nav-divider{font-size:10px;color:#bbb;font-weight:600;letter-spacing:.6px;padding:10px 10px 4px;text-transform:uppercase}
 .status-pill{display:flex;align-items:center;gap:5px;font-size:10px;color:#666;padding:0 8px}
@@ -66,8 +66,10 @@ tr:hover td{background:#fafafa}
 .form-row{display:grid;gap:8px;margin-bottom:8px}
 .form-row.cols2{grid-template-columns:1fr 1fr}
 .form-row.cols3{grid-template-columns:1fr 1fr 1fr}
-.form-lbl{font-size:11px;color:#888;margin-bottom:3px}
-.btn-pri{padding:8px 18px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+.form-lbl{font-size:11px;color:#888;margin-bottom:4px;font-weight:500;display:block}
+input,select,textarea{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:12px;background:#fff;color:#1a1a1a;outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:#3BAA35}
+.btn-pri{padding:8px 18px;background:#3BAA35;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
 .btn-sec{padding:8px 14px;background:#fff;border:1px solid #ddd;border-radius:8px;font-size:12px;color:#555;cursor:pointer}
 .btn-sm{padding:5px 11px;font-size:11px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
 
@@ -78,7 +80,7 @@ tr:hover td{background:#fafafa}
 /* TABS */
 .tab-group{display:flex;gap:4px;margin-bottom:14px;background:#f3f3f3;border-radius:8px;padding:3px}
 .tab-btn{padding:6px 14px;border:none;background:transparent;border-radius:6px;font-size:12px;color:#666;cursor:pointer;transition:all .1s;font-weight:500}
-.tab-btn.ativo{background:#fff;color:#0d9488;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.tab-btn.ativo{background:#fff;color:#3BAA35;box-shadow:0 1px 3px rgba(0,0,0,.1)}
 
 /* TIMELINE */
 .timeline-item{display:flex;gap:14px;margin-bottom:14px}
@@ -86,7 +88,7 @@ tr:hover td{background:#fafafa}
 .tl-line{width:2px;background:#eee;flex-shrink:0;margin:14px 4px 0}
 
 /* SYNC BADGE */
-.sync-live{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#0d9488;background:#e6faf8;padding:3px 10px;border-radius:20px;border:1px solid #b2ece7}
+.sync-live{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#3BAA35;background:#e6faf8;padding:3px 10px;border-radius:20px;border:1px solid #b2ece7}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .pulse{animation:pulse 1.8s ease-in-out infinite}
 </style>
@@ -107,6 +109,7 @@ tr:hover td{background:#fafafa}
   <button class="nav-btn" data-tab="dre" onclick="setTab('dre')"><span class="nav-sym">◉</span>DRE</button>
 
   <div class="nav-divider">Farmácias</div>
+  <button class="nav-btn" data-tab="cadastro" onclick="setTab('cadastro')"><span class="nav-sym">＋</span>Cadastro</button>
   <button class="nav-btn" data-tab="farmacias" onclick="setTab('farmacias')"><span class="nav-sym">◈</span>Visão por CNPJ</button>
   <button class="nav-btn" data-tab="documentos" onclick="setTab('documentos')"><span class="nav-sym">◧</span>Documentos</button>
   <button class="nav-btn" data-tab="folha" onclick="setTab('folha')"><span class="nav-sym">◑</span>Folha & RH</button>
@@ -118,7 +121,7 @@ tr:hover td{background:#fafafa}
 
   <div style="margin-top:auto;padding-top:14px;border-top:1px solid #eee">
     <div class="status-pill"><span class="dot" style="background:#16a34a"></span>Sincronizado · agora</div>
-    <div class="status-pill" style="margin-top:5px"><span class="dot" style="background:#0d9488"></span>6 CNPJs ativos</div>
+    <div class="status-pill" style="margin-top:5px"><span class="dot" style="background:#3BAA35"></span>6 CNPJs ativos</div>
     <div style="font-size:10px;color:#bbb;padding:8px 8px 0">v1.0 · 16/03/2026</div>
   </div>
 </div>
@@ -142,7 +145,7 @@ tr:hover td{background:#fafafa}
 
 <script>
 // ═══ DADOS ═══
-const T="#0d9488",AM="#d97706",RD="#dc2626",GN="#16a34a",BL="#2563eb",PU="#7c3aed";
+const T="#3BAA35",AM="#d97706",RD="#dc2626",GN="#16a34a",BL="#2563eb",PU="#7c3aed";
 const fmt=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL",minimumFractionDigits:2});
 const fmtK=v=>"R$"+(v/1000).toFixed(0)+"k";
 const fmtD=s=>new Date(s+"T12:00").toLocaleDateString("pt-BR");
@@ -481,35 +484,310 @@ function renderDRE(){
 }
 
 // ═══ VISÃO POR CNPJ ═══
+// ═══ CADASTRO DE FARMÁCIAS (novo módulo completo) ═══
+let cadFarms = (typeof FARMACLUB !== "undefined" && FARMACLUB.farmacias)
+  ? JSON.parse(JSON.stringify(FARMACLUB.farmacias))
+  : [
+    {id:1,ativo:true,aberto:true,nome:"Farmácia São João",razao_social:"São João Farmácia Ltda",cnpj:"12.345.678/0001-90",ie:"123.456.78-9",crf:"CRF-RJ 12345",responsavel:"João Carlos Oliveira",telefone:"(22) 3822-1234",email:"saojao@email.com",endereco:"Rua Getúlio Vargas, 342",bairro:"Centro",cep:"28300-000",lat:-21.2062,lng:-41.8878,horario:"Seg–Sex 8h–20h · Sáb 8h–18h",regime:"Simples Nacional",abertura:"01/03/2024",contador:"Oliveira & Associados",faturamento:87600,comissao_pct:10,situacao:"regular",obs:"Farmácia âncora — ponto de consolidação da compra coletiva"},
+    {id:2,ativo:true,aberto:true,nome:"Vida & Saúde",razao_social:"Vida e Saúde Farmácia Ltda",cnpj:"23.456.789/0001-01",ie:"234.567.89-0",crf:"CRF-RJ 23456",responsavel:"Maria Aparecida Santos",telefone:"(22) 3822-5678",email:"vidasaude@email.com",endereco:"Av. Amaro Soares, 88",bairro:"Parque Noel",cep:"28300-000",lat:-21.1980,lng:-41.8820,horario:"Seg–Sáb 7h–22h",regime:"Simples Nacional",abertura:"15/06/2023",contador:"Oliveira & Associados",faturamento:52000,comissao_pct:10,situacao:"regular",obs:""},
+    {id:3,ativo:true,aberto:false,nome:"Farmácia Popular",razao_social:"Popular Farmácia Ltda",cnpj:"34.567.890/0001-12",ie:"345.678.90-1",crf:"CRF-RJ 34567",responsavel:"Carlos Eduardo Lima",telefone:"(22) 3822-9012",email:"popular@email.com",endereco:"Rua 7 de Setembro, 201",bairro:"São Cristóvão",cep:"28300-000",lat:-21.2120,lng:-41.8950,horario:"Seg–Sex 8h–19h",regime:"Simples Nacional",abertura:"10/01/2024",contador:"Oliveira & Associados",faturamento:41200,comissao_pct:10,situacao:"pendente",obs:"Pendência cadastral CNPJ — verificar antes da DEFIS"},
+    {id:4,ativo:true,aberto:true,nome:"Drogaria Esperança",razao_social:"Esperança Drogaria Ltda",cnpj:"45.678.901/0001-23",ie:"456.789.01-2",crf:"CRF-RJ 45678",responsavel:"Ana Paula Ferreira",telefone:"(22) 3822-3456",email:"esperanca@email.com",endereco:"Av. Principal, 10",bairro:"Morro do Crica",cep:"28300-000",lat:-21.2150,lng:-41.8820,horario:"Seg–Sex 8h–20h",regime:"Simples Nacional",abertura:"20/08/2023",contador:"Oliveira & Associados",faturamento:63400,comissao_pct:10,situacao:"regular",obs:""},
+    {id:5,ativo:true,aberto:true,nome:"Farmácia Boa Saúde",razao_social:"Boa Saúde Farmácia Ltda",cnpj:"56.789.012/0001-34",ie:"567.890.12-3",crf:"CRF-RJ 56789",responsavel:"Roberto Alves",telefone:"(22) 3822-7890",email:"boasaude@email.com",endereco:"Rua das Flores, 55",bairro:"Meudon",cep:"28300-000",lat:-21.1950,lng:-41.8780,horario:"Seg–Sex 8h–20h",regime:"Simples Nacional",abertura:"05/11/2023",contador:"Oliveira & Associados",faturamento:29800,comissao_pct:10,situacao:"regular",obs:""},
+    {id:6,ativo:true,aberto:false,nome:"Drogaria Central",razao_social:"Central Drogaria Ltda",cnpj:"67.890.123/0001-45",ie:"678.901.23-4",crf:"CRF-RJ 67890",responsavel:"Fernanda Lima",telefone:"(22) 3822-2345",email:"central@email.com",endereco:"Rua Central, 120",bairro:"Boa Sorte",cep:"28300-000",lat:-21.2200,lng:-41.8900,horario:"Seg–Sex 8h–19h",regime:"Simples Nacional",abertura:"12/04/2024",contador:"Oliveira & Associados",faturamento:44700,comissao_pct:10,situacao:"regular",obs:""},
+  ];
+
+let editandoId = null;
+
+function renderCadastro(){
+  const reg = cadFarms.find(f=>f.id===editandoId);
+  const isNovo = !reg;
+  const f = reg || {id:0,ativo:true,aberto:true,nome:"",razao_social:"",cnpj:"",ie:"",crf:"",responsavel:"",telefone:"",email:"",endereco:"",bairro:"",cep:"",lat:"",lng:"",horario:"",regime:"Simples Nacional",abertura:"",contador:"Oliveira & Associados",faturamento:0,comissao_pct:10,situacao:"regular",obs:""};
+
+  const listaHTML = cadFarms.map(x=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f5f5f5;cursor:pointer" onclick="editarFarm(${x.id})">
+      <div style="width:9px;height:9px;border-radius:50%;background:${x.situacao==='regular'?GN:AM};flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px">${x.nome}</div>
+        <div style="font-size:11px;color:#888">${x.cnpj} · ${x.bairro}</div>
+      </div>
+      <div style="display:flex;gap:5px">
+        <button class="btn-sm" style="background:${T};color:#fff" onclick="event.stopPropagation();editarFarm(${x.id})">Editar</button>
+        <button class="btn-sm" style="background:#fef2f2;color:${RD}" onclick="event.stopPropagation();excluirFarm(${x.id})">Excluir</button>
+      </div>
+    </div>`).join("");
+
+  return`
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:16px;align-items:start">
+
+      <!-- LISTA DE FARMÁCIAS -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-weight:600;font-size:13px">Farmácias cadastradas (${cadFarms.length})</div>
+          <button class="btn-sm" style="background:${T};color:#fff" onclick="novaFarm()">+ Nova</button>
+        </div>
+        ${listaHTML}
+      </div>
+
+      <!-- FORMULÁRIO -->
+      <div class="card">
+        <div style="font-weight:600;font-size:14px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+          ${isNovo?"➕ Nova farmácia":"✏️ Editando: <span style='color:"+T+"'>"+f.nome+"</span>"}
+          ${!isNovo?`<button class="btn-sm" style="background:#f5f5f5;color:#555;margin-left:auto" onclick="cancelarEdicao()">Cancelar</button>`:""}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+          <!-- DADOS COMERCIAIS -->
+          <div style="grid-column:1/-1">
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0">📋 Dados comerciais</div>
+          </div>
+          <div>
+            <label class="form-lbl">Nome comercial *</label>
+            <input type="text" id="f-nome" value="${f.nome}" placeholder="Ex: Farmácia São João">
+          </div>
+          <div>
+            <label class="form-lbl">Razão social *</label>
+            <input type="text" id="f-razao" value="${f.razao_social}" placeholder="Ex: São João Farmácia Ltda">
+          </div>
+          <div>
+            <label class="form-lbl">CNPJ *</label>
+            <input type="text" id="f-cnpj" value="${f.cnpj}" placeholder="XX.XXX.XXX/XXXX-XX">
+          </div>
+          <div>
+            <label class="form-lbl">Inscrição Estadual</label>
+            <input type="text" id="f-ie" value="${f.ie||""}" placeholder="XXX.XXX.XX-X">
+          </div>
+          <div>
+            <label class="form-lbl">CRF do Responsável Técnico</label>
+            <input type="text" id="f-crf" value="${f.crf||""}" placeholder="CRF-RJ XXXXX">
+          </div>
+          <div>
+            <label class="form-lbl">Nome do responsável técnico</label>
+            <input type="text" id="f-resp" value="${f.responsavel||""}" placeholder="Nome completo">
+          </div>
+          <div>
+            <label class="form-lbl">Regime tributário</label>
+            <select id="f-regime">
+              <option ${f.regime==="Simples Nacional"?"selected":""}>Simples Nacional</option>
+              <option ${f.regime==="Lucro Presumido"?"selected":""}>Lucro Presumido</option>
+              <option ${f.regime==="MEI"?"selected":""}>MEI</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-lbl">Data de abertura</label>
+            <input type="text" id="f-abertura" value="${f.abertura||""}" placeholder="DD/MM/AAAA">
+          </div>
+
+          <!-- CONTATO -->
+          <div style="grid-column:1/-1">
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;margin-top:8px">📞 Contato</div>
+          </div>
+          <div>
+            <label class="form-lbl">Telefone / WhatsApp</label>
+            <input type="text" id="f-tel" value="${f.telefone||""}" placeholder="(22) 99999-9999">
+          </div>
+          <div>
+            <label class="form-lbl">E-mail</label>
+            <input type="text" id="f-email" value="${f.email||""}" placeholder="farmacia@email.com">
+          </div>
+
+          <!-- ENDEREÇO -->
+          <div style="grid-column:1/-1">
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;margin-top:8px">📍 Endereço (usado pelo frete)</div>
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="form-lbl">Logradouro e número *</label>
+            <input type="text" id="f-end" value="${f.endereco||""}" placeholder="Rua das Flores, 150">
+          </div>
+          <div>
+            <label class="form-lbl">Bairro *</label>
+            <input type="text" id="f-bairro" value="${f.bairro||""}" placeholder="Centro">
+          </div>
+          <div>
+            <label class="form-lbl">CEP</label>
+            <input type="text" id="f-cep" value="${f.cep||""}" placeholder="28300-000">
+          </div>
+          <div>
+            <label class="form-lbl">Latitude GPS *</label>
+            <input type="text" id="f-lat" value="${f.lat||""}" placeholder="-21.2062 (do Google Maps)">
+          </div>
+          <div>
+            <label class="form-lbl">Longitude GPS *</label>
+            <input type="text" id="f-lng" value="${f.lng||""}" placeholder="-41.8878 (do Google Maps)">
+          </div>
+          <div style="grid-column:1/-1;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;font-size:11px;color:#1d4ed8">
+            💡 Para pegar as coordenadas GPS: abra <strong>maps.google.com</strong>, pesquise o endereço da farmácia, clique com o botão direito no local exato → os dois números que aparecem são Lat e Lng.
+          </div>
+
+          <!-- OPERACIONAL -->
+          <div style="grid-column:1/-1">
+            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;margin-top:8px">⚙ Operacional</div>
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="form-lbl">Horário de funcionamento</label>
+            <input type="text" id="f-horario" value="${f.horario||""}" placeholder="Seg–Sex 8h–20h · Sáb 8h–18h">
+          </div>
+          <div>
+            <label class="form-lbl">Contador responsável</label>
+            <input type="text" id="f-contador" value="${f.contador||""}" placeholder="Nome do escritório">
+          </div>
+          <div>
+            <label class="form-lbl">Comissão FarmaClub (%)</label>
+            <input type="number" id="f-com" value="${f.comissao_pct||10}" min="0" max="100" step="0.5">
+          </div>
+          <div>
+            <label class="form-lbl">Faturamento mensal estimado (R$)</label>
+            <input type="number" id="f-fat" value="${f.faturamento||0}" min="0" step="100">
+          </div>
+          <div>
+            <label class="form-lbl">Situação cadastral</label>
+            <select id="f-sit">
+              <option value="regular" ${f.situacao==="regular"?"selected":""}>Regular</option>
+              <option value="pendente" ${f.situacao==="pendente"?"selected":""}>Pendente</option>
+              <option value="suspensa" ${f.situacao==="suspensa"?"selected":""}>Suspensa</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-lbl">Aberta agora?</label>
+            <select id="f-aberto">
+              <option value="true" ${f.aberto?"selected":""}>Sim — aberta</option>
+              <option value="false" ${!f.aberto?"selected":""}>Não — fechada</option>
+            </select>
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="form-lbl">Observações internas</label>
+            <textarea id="f-obs" rows="2" style="width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:12px;resize:vertical;font-family:inherit">${f.obs||""}</textarea>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:18px">
+          <button class="btn-pri" onclick="salvarFarm()" style="flex:1">
+            ${isNovo?"✓ Cadastrar farmácia":"✓ Salvar alterações"}
+          </button>
+          ${!isNovo?`<button style="padding:10px 18px;background:#fef2f2;color:${RD};border:1px solid #fecaca;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit" onclick="excluirFarm(${f.id})">Excluir</button>`:""}
+        </div>
+        <div id="msg-cad" style="margin-top:10px;font-size:12px;text-align:center"></div>
+      </div>
+    </div>`;
+}
+
+window.editarFarm = function(id){
+  editandoId = id;
+  renderContent();
+  setTab("cadastro");
+};
+
+window.novaFarm = function(){
+  editandoId = null;
+  renderContent();
+};
+
+window.cancelarEdicao = function(){
+  editandoId = null;
+  renderContent();
+};
+
+window.excluirFarm = function(id){
+  const f = cadFarms.find(x=>x.id===id);
+  if(!f) return;
+  if(!confirm(`Excluir "${f.nome}" do cadastro?\n\nEssa ação remove a farmácia de todos os módulos.`)) return;
+  cadFarms = cadFarms.filter(x=>x.id!==id);
+  editandoId = null;
+  renderContent();
+};
+
+window.salvarFarm = function(){
+  const nome = document.getElementById("f-nome").value.trim();
+  const cnpj = document.getElementById("f-cnpj").value.trim();
+  const endereco = document.getElementById("f-end").value.trim();
+  const bairro = document.getElementById("f-bairro").value.trim();
+  const lat = parseFloat(document.getElementById("f-lat").value);
+  const lng = parseFloat(document.getElementById("f-lng").value);
+
+  if(!nome||!cnpj||!endereco||!bairro){
+    document.getElementById("msg-cad").innerHTML=`<span style="color:${RD}">⚠ Preencha os campos obrigatórios: Nome, CNPJ, Endereço e Bairro.</span>`;
+    return;
+  }
+  if(isNaN(lat)||isNaN(lng)){
+    document.getElementById("msg-cad").innerHTML=`<span style="color:${AM}">⚠ Coordenadas GPS inválidas. Preencha Latitude e Longitude.</span>`;
+    return;
+  }
+
+  const dados = {
+    id: editandoId || (Math.max(...cadFarms.map(x=>x.id),0)+1),
+    ativo: true,
+    aberto: document.getElementById("f-aberto").value === "true",
+    nome,
+    razao_social: document.getElementById("f-razao").value.trim(),
+    cnpj,
+    ie: document.getElementById("f-ie").value.trim(),
+    crf: document.getElementById("f-crf").value.trim(),
+    responsavel: document.getElementById("f-resp").value.trim(),
+    telefone: document.getElementById("f-tel").value.trim(),
+    email: document.getElementById("f-email").value.trim(),
+    endereco,
+    bairro,
+    cep: document.getElementById("f-cep").value.trim(),
+    endereco_completo: `${endereco} — ${bairro}, Itaperuna/RJ`,
+    lat, lng,
+    horario: document.getElementById("f-horario").value.trim(),
+    regime: document.getElementById("f-regime").value,
+    abertura: document.getElementById("f-abertura").value.trim(),
+    contador: document.getElementById("f-contador").value.trim(),
+    faturamento: parseFloat(document.getElementById("f-fat").value)||0,
+    comissao_pct: parseFloat(document.getElementById("f-com").value)||10,
+    situacao: document.getElementById("f-sit").value,
+    obs: document.getElementById("f-obs").value.trim(),
+    nota: 5.0,
+    cor: "#3BAA35",
+  };
+
+  if(editandoId){
+    const idx = cadFarms.findIndex(x=>x.id===editandoId);
+    if(idx>=0) cadFarms[idx] = dados;
+  } else {
+    cadFarms.push(dados);
+  }
+
+  // Atualizar FARMACLUB global se disponível
+  if(typeof FARMACLUB !== "undefined") FARMACLUB.farmacias = cadFarms;
+
+  editandoId = dados.id;
+  renderContent();
+  document.getElementById("msg-cad").innerHTML=`<span style="color:${GN}">✓ ${editandoId?"Alterações salvas":"Farmácia cadastrada"} com sucesso!</span>`;
+};
+
+// ═══ VISÃO POR CNPJ (tabela simplificada) ═══
 function renderFarmacias(){
-  const rows=farmacias.map((f,i)=>`
+  const rows=cadFarms.map((f,i)=>`
     <tr>
-      <td><div style="font-weight:500">${f.nome}</div><div style="font-size:10px;color:#aaa;margin-top:2px">Abertura: ${f.abertura}</div></td>
+      <td><div style="font-weight:500">${f.nome}</div><div style="font-size:10px;color:#aaa;margin-top:2px">Abertura: ${f.abertura||"—"}</div></td>
       <td style="font-family:monospace;font-size:11px">${f.cnpj}</td>
-      <td>${badge(f.regime,BL)}</td>
-      <td style="font-weight:600;color:${T}">${fmt(f.faturamento)}</td>
-      <td style="font-weight:600;color:${AM}">${fmt(f.faturamento*f.aliquota/100)}</td>
-      <td>${f.contador}</td>
-      <td>${dot(f.situacao)}</td>
+      <td>${badge(f.regime||"Simples Nacional",BL)}</td>
+      <td style="font-weight:600;color:${T}">${fmt(f.faturamento||0)}</td>
+      <td style="font-weight:600;color:${AM}">${fmt((f.faturamento||0)*(f.comissao_pct||10)/100)}</td>
+      <td>${f.contador||"—"}</td>
+      <td>${dot(f.situacao||"regular")}</td>
       <td><div style="display:flex;gap:5px">
-        <button class="btn-sm" style="background:${T};color:#fff">DRE</button>
-        <button class="btn-sm" style="background:#f5f5f5;color:#555">Docs</button>
+        <button class="btn-sm" style="background:${T};color:#fff" onclick="editarFarm(${f.id})">Editar</button>
+        <button class="btn-sm" style="background:#f5f5f5;color:#555">DRE</button>
       </div></td>
     </tr>`).join("");
 
+  const pendentes=cadFarms.filter(f=>f.situacao==="pendente");
   return`
     <div class="grid3" style="margin-bottom:16px">
-      <div class="kpi"><div class="kpi-lbl">CNPJs gerenciados</div><div class="kpi-val" style="color:${T}">6</div><div class="kpi-sub">todos Simples Nacional</div></div>
-      <div class="kpi"><div class="kpi-lbl">Situação regular</div><div class="kpi-val" style="color:${GN}">5/6</div><div class="kpi-sub">1 pendência</div></div>
-      <div class="kpi"><div class="kpi-lbl">Próxima entrega</div><div class="kpi-val">DEFIS</div><div class="kpi-sub">31/03/2026 · anual</div></div>
+      <div class="kpi"><div class="kpi-lbl">CNPJs gerenciados</div><div class="kpi-val" style="color:${T}">${cadFarms.length}</div><div class="kpi-sub">todos Simples Nacional</div></div>
+      <div class="kpi"><div class="kpi-lbl">Situação regular</div><div class="kpi-val" style="color:${GN}">${cadFarms.filter(f=>f.situacao==="regular").length}/${cadFarms.length}</div><div class="kpi-sub">${pendentes.length} pendência(s)</div></div>
+      <div class="kpi"><div class="kpi-lbl">Faturamento total</div><div class="kpi-val">${fmtK(cadFarms.reduce((s,f)=>s+(f.faturamento||0),0))}</div><div class="kpi-sub">Março/2026</div></div>
     </div>
-    <div class="alert alert-warn">
-      <div style="font-size:12px;color:#92400e"><strong>⚠ Farmácia Popular:</strong> pendência cadastral no CNPJ. Verificar com contador antes do envio da DEFIS.</div>
-      ${btnPri("Resolver")}
+    ${pendentes.length?`<div class="alert alert-warn"><div style="font-size:12px;color:#92400e"><strong>⚠ ${pendentes.map(f=>f.nome).join(", ")}:</strong> pendência cadastral. Verificar antes da DEFIS.</div><button class="btn-sm" style="background:${AM};color:#fff" onclick="editarFarm(${pendentes[0].id})">Resolver</button></div>`:""}
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <button class="btn-pri" style="width:auto;padding:8px 16px" onclick="setTab('cadastro');novaFarm()">+ Cadastrar nova farmácia</button>
     </div>
     <div class="tbl-wrap">
       <table><thead><tr>
-        <th>Empresa</th><th>CNPJ</th><th>Regime</th><th>Fat. Março</th><th>DAS estimado</th><th>Contador</th><th>Situação</th><th>Ações</th>
+        <th>Empresa</th><th>CNPJ</th><th>Regime</th><th>Fat. Março</th><th>Comissão</th><th>Contador</th><th>Situação</th><th>Ações</th>
       </tr></thead><tbody>${rows}</tbody></table>
     </div>`;
 }
@@ -762,7 +1040,7 @@ const titulos={
   mensagens:["Mensagens","Canal direto com contadores e parceiros"],
 };
 
-const renders={dashboard:renderDashboard,obrigacoes:renderObrigacoes,impostos:renderImpostos,dre:renderDRE,farmacias:renderFarmacias,documentos:renderDocumentos,folha:renderFolha,consolidado:renderConsolidado,irpj:renderIRPJ,mensagens:renderMensagens};
+const renders={dashboard:renderDashboard,obrigacoes:renderObrigacoes,impostos:renderImpostos,dre:renderDRE,cadastro:renderCadastro,farmacias:renderFarmacias,documentos:renderDocumentos,folha:renderFolha,consolidado:renderConsolidado,irpj:renderIRPJ,mensagens:renderMensagens};
 
 let tabAtual="dashboard";
 function setTab(t){

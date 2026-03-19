@@ -58,6 +58,8 @@ tr:hover td{background:#fafafa}
   <div class="nav-sec">Gestão</div>
   <button class="nav-btn" data-tab="clientes" onclick="setTab('clientes')"><span style="font-size:10px">◑</span> Clientes</button>
   <button class="nav-btn" data-tab="relatorios" onclick="setTab('relatorios')"><span style="font-size:10px">★</span> Relatórios</button>
+  <div class="nav-sec" style="color:#1A5FA8;margin-top:4px">⚖ Judicial</div>
+  <button class="nav-btn" data-tab="judicial" onclick="setTab('judicial')" style="border-left-color:#1A5FA8"><span style="font-size:10px">📋</span> Orçamento Judicial</button>
   <div style="margin-top:auto;padding-top:12px;border-top:1px solid #eee;font-size:10px;color:#aaa;padding-left:8px;line-height:1.8">
     <span style="color:#3BAA35">●</span> FarmaClub: online<br>
     CNPJ: 12.345.678/0001-90<br>
@@ -144,7 +146,7 @@ function renderPDV(){
     <div style="display:grid;grid-template-columns:1fr 300px;gap:16px">
       <div>
         <div class="card" style="margin-bottom:14px">
-          <div style="font-size:12px;font-weight:600;margin-bottom:10px">Buscar produto</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:12px;font-weight:600">Buscar produto</div><button onclick="setTab('judicial')" style="font-size:11px;padding:5px 10px;background:#1A5FA8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:inherit">⚖ Orçamento Judicial</button></div>
           <input id="buscaPDV" type="text" placeholder="Nome ou código EAN..." onkeyup="pdvBusca(this.value)">
           <div id="pdvRes" style="margin-top:10px;display:grid;gap:6px"></div>
         </div>
@@ -660,7 +662,542 @@ function initCharts(){
   },80);
 }
 
-const renders={dashboard:renderDashboard,pdv:renderPDV,estoque:renderEstoque,precificacao:renderPrecificacao,nfe:renderNFE,financeiro:renderFinanceiro,clientes:renderClientes,relatorios:renderRelatorios};
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO JUDICIAL — Orçamento para Ação Judicial de Medicamentos
+// Paciente recebe verba do Estado e paga em espécie na farmácia
+// ══════════════════════════════════════════════════════════
+
+// Lista de medicamentos judiciais mais comuns no RJ
+const MED_JUDICIAIS = [
+  {nome:"Adalimumabe 40mg inj (Humira/similar)",cod:"L04AB04",unid:"seringa",preco:2800},
+  {nome:"Bevacizumabe 100mg/4ml inj",cod:"L01XC07",unid:"frasco",preco:1200},
+  {nome:"Dasatinibe 50mg comp",cod:"L01EA02",unid:"comp",preco:180},
+  {nome:"Deferasirox 500mg comp disp",cod:"V03AC03",unid:"comp",preco:45},
+  {nome:"Enzalutamida 40mg caps",cod:"L02BB04",unid:"caps",preco:320},
+  {nome:"Etanercepte 50mg inj (Enbrel/similar)",cod:"L04AB01",unid:"seringa",preco:2200},
+  {nome:"Everolimo 5mg comp",cod:"L01EG02",unid:"comp",preco:280},
+  {nome:"Fingolimode 0,5mg caps",cod:"L04AA27",unid:"caps",preco:420},
+  {nome:"Imatinibe 400mg comp",cod:"L01EA01",unid:"comp",preco:95},
+  {nome:"Infliximabe 100mg inj",cod:"L04AB02",unid:"frasco",preco:3500},
+  {nome:"Insulina Glargina 100UI/ml (Lantus/similar)",cod:"A10AE04",unid:"caneta",preco:180},
+  {nome:"Insulina Lispro 100UI/ml",cod:"A10AB04",unid:"frasco",preco:95},
+  {nome:"Ivacaftor/Lumacaftor 125/200mg",cod:"R07AX30",unid:"comp",preco:8500},
+  {nome:"Lenalidomida 25mg caps",cod:"L04AX04",unid:"caps",preco:780},
+  {nome:"Metilfenidato 10mg comp (Ritalina/similar)",cod:"N06BA04",unid:"comp",preco:2.50},
+  {nome:"Micofenolato de Mofetila 500mg comp",cod:"L04AA06",unid:"comp",preco:8},
+  {nome:"Natalizumabe 300mg inj",cod:"L04AA23",unid:"frasco",preco:9800},
+  {nome:"Nivolumabe 100mg inj",cod:"L01FF01",unid:"frasco",preco:12000},
+  {nome:"Olanzapina 10mg comp",cod:"N05AH03",unid:"comp",preco:3.50},
+  {nome:"Pembrolizumabe 100mg inj",cod:"L01FF02",unid:"frasco",preco:18000},
+  {nome:"Pirfenidona 267mg caps",cod:"L04AX05",unid:"caps",preco:85},
+  {nome:"Quetiapina 300mg comp",cod:"N05AH04",unid:"comp",preco:12},
+  {nome:"Rivastigmina 9,5mg/24h patch",cod:"N06DA03",unid:"adesivo",preco:65},
+  {nome:"Rituximabe 500mg inj",cod:"L01FA01",unid:"frasco",preco:4200},
+  {nome:"Sirolimo 1mg comp",cod:"L04AA10",unid:"comp",preco:18},
+  {nome:"Sorafenibe 200mg comp",cod:"L01EK01",unid:"comp",preco:380},
+  {nome:"Sunitinibe 50mg caps",cod:"L01EK01",unid:"caps",preco:1200},
+  {nome:"Tacrolimo 1mg caps",cod:"L04AD02",unid:"caps",preco:12},
+  {nome:"Talidomida 100mg caps",cod:"L04AX02",unid:"caps",preco:28},
+  {nome:"Trastuzumabe 440mg inj",cod:"L01FD01",unid:"frasco",preco:5200},
+];
+
+// Estado do módulo judicial
+let judItens = [];
+let judPaciente = {nome:"", cpf:"", processo:"", vara:"Vara da Fazenda Pública — Itaperuna/RJ", validade:30};
+let judEtapa = "orcamento"; // orcamento | aprovado | historico
+
+function renderJudicial(){
+  const farmInfo = {
+    nome: "Farmácia São João",
+    cnpj: "12.345.678/0001-90",
+    crf: "CRF-RJ 12345",
+    responsavel: "João Carlos Oliveira",
+    endereco: "Rua Getúlio Vargas, 342 — Centro, Itaperuna/RJ",
+    telefone: "(22) 3822-1234"
+  };
+
+  const total = judItens.reduce((s,i)=>s+(i.preco*i.qtd),0);
+  const dataValidade = new Date();
+  dataValidade.setDate(dataValidade.getDate() + judPaciente.validade);
+  const dtVal = dataValidade.toLocaleDateString("pt-BR");
+  const dtHoje = new Date().toLocaleDateString("pt-BR");
+
+  // Busca na rede (simulated)
+  const redeDisponivel = [
+    {farm:"Vida & Saúde", bairro:"Parque Noel", dist:"1.8km"},
+    {farm:"Drogaria Esperança", bairro:"M. do Crica", dist:"2.8km"},
+  ];
+
+  return `
+    <!-- CABEÇALHO JUDICIAL -->
+    <div style="background:linear-gradient(135deg,#1A5FA8,#1450a0);border-radius:12px;padding:16px 20px;margin-bottom:16px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:16px;font-weight:700">⚖ Orçamento Judicial de Medicamentos</div>
+        <div style="font-size:12px;opacity:.8;margin-top:3px">Para ações judiciais de fornecimento de medicamentos · Fórum de Itaperuna/RJ</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="judEtapa='orcamento';renderContent()" style="padding:7px 14px;border-radius:8px;border:2px solid rgba(255,255,255,${judEtapa==='orcamento'?'1':'.4'});background:${judEtapa==='orcamento'?'rgba(255,255,255,.2)':'transparent'};color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Novo orçamento</button>
+        <button onclick="judEtapa='aprovado';renderContent()" style="padding:7px 14px;border-radius:8px;border:2px solid rgba(255,255,255,${judEtapa==='aprovado'?'1':'.4'});background:${judEtapa==='aprovado'?'rgba(255,255,255,.2)':'transparent'};color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Aprovado — Finalizar venda</button>
+        <button onclick="judEtapa='historico';renderContent()" style="padding:7px 14px;border-radius:8px;border:2px solid rgba(255,255,255,${judEtapa==='historico'?'1':'.4'});background:${judEtapa==='historico'?'rgba(255,255,255,.2)':'transparent'};color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Histórico</button>
+      </div>
+    </div>
+
+    ${judEtapa === "historico" ? renderJudHistorico() : judEtapa === "aprovado" ? renderJudAprovado(total, farmInfo, dtHoje) : renderJudOrcamento(total, farmInfo, dtHoje, dtVal, redeDisponivel)}
+  `;
+}
+
+function renderJudOrcamento(total, farmInfo, dtHoje, dtVal, redeDisponivel){
+  const itensHTML = judItens.length === 0
+    ? `<div style="text-align:center;padding:24px;color:#aaa;font-size:13px">Nenhum medicamento adicionado ainda.<br>Use a busca abaixo para adicionar.</div>`
+    : judItens.map((it,i)=>`
+        <tr style="border-bottom:1px solid #f5f5f5">
+          <td style="padding:8px 10px;font-size:12px">
+            <div style="font-weight:500">${it.nome}</div>
+            <div style="font-size:10px;color:#888">${it.cod}</div>
+          </td>
+          <td style="padding:8px 6px;text-align:center">
+            <div style="display:flex;align-items:center;gap:4px;justify-content:center">
+              <button onclick="judQtd(${i},-1)" style="width:22px;height:22px;border:1px solid #ddd;border-radius:4px;background:#f5f5f5;cursor:pointer;font-size:13px;line-height:1">−</button>
+              <span style="font-weight:600;min-width:24px;text-align:center">${it.qtd}</span>
+              <button onclick="judQtd(${i},1)" style="width:22px;height:22px;border:1px solid #ddd;border-radius:4px;background:#f5f5f5;cursor:pointer;font-size:13px;line-height:1">+</button>
+            </div>
+          </td>
+          <td style="padding:8px 6px;text-align:center;font-size:11px;color:#888">${it.unid}</td>
+          <td style="padding:8px 10px;text-align:right;font-size:12px">${fmt(it.preco)}</td>
+          <td style="padding:8px 10px;text-align:right;font-weight:700;color:#1A5FA8">${fmt(it.preco*it.qtd)}</td>
+          <td style="padding:6px 8px"><button onclick="judRemover(${i})" style="background:#fef2f2;color:#dc2626;border:none;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:11px">✕</button></td>
+        </tr>`).join("");
+
+  return `
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start">
+
+      <!-- COLUNA ESQUERDA -->
+      <div>
+
+        <!-- DADOS DO PACIENTE -->
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:#1A5FA8">👤 Dados do paciente</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Nome completo *</label>
+              <input type="text" id="jud-nome" value="${judPaciente.nome}" placeholder="Nome do paciente"
+                oninput="judPaciente.nome=this.value"
+                style="width:100%;padding:9px;border:1px solid #ddd;border-radius:7px;font-size:12px">
+            </div>
+            <div>
+              <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">CPF *</label>
+              <input type="text" id="jud-cpf" value="${judPaciente.cpf}" placeholder="000.000.000-00"
+                oninput="judPaciente.cpf=this.value"
+                style="width:100%;padding:9px;border:1px solid #ddd;border-radius:7px;font-size:12px">
+            </div>
+            <div>
+              <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Número do processo (opcional)</label>
+              <input type="text" id="jud-proc" value="${judPaciente.processo}" placeholder="Ex: 0001234-56.2024.8.19.0000"
+                oninput="judPaciente.processo=this.value"
+                style="width:100%;padding:9px;border:1px solid #ddd;border-radius:7px;font-size:12px">
+            </div>
+            <div>
+              <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Vara / Fórum</label>
+              <input type="text" id="jud-vara" value="${judPaciente.vara}"
+                oninput="judPaciente.vara=this.value"
+                style="width:100%;padding:9px;border:1px solid #ddd;border-radius:7px;font-size:12px">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Validade do orçamento: <strong style="color:#1A5FA8">${judPaciente.validade} dias</strong> (vence em ${dtVal})</label>
+            <input type="range" min="7" max="60" value="${judPaciente.validade}"
+              oninput="judPaciente.validade=parseInt(this.value);renderContent()"
+              style="width:100%;accent-color:#1A5FA8">
+          </div>
+        </div>
+
+        <!-- BUSCA RÁPIDA -->
+        <div class="card" style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;color:#1A5FA8">🔍 Adicionar medicamento</div>
+          <div style="position:relative;margin-bottom:10px">
+            <input type="text" id="jud-busca" placeholder="Buscar por nome, princípio ativo ou código..."
+              oninput="judBuscar(this.value)"
+              style="width:100%;padding:10px 12px;border:1.5px solid #1A5FA8;border-radius:8px;font-size:13px;outline:none">
+            <div id="jud-ac" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:100;max-height:240px;overflow-y:auto;margin-top:3px"></div>
+          </div>
+          <div style="font-size:11px;color:#888;margin-bottom:8px">Medicamentos judiciais mais solicitados em Itaperuna:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${["Insulina Glargina","Adalimumabe","Rituximabe","Fingolimode","Tacrolimo","Metilfenidato","Etanercepte","Natalizumabe"].map(n=>`
+              <button onclick="judAtalho('${n}')"
+                style="padding:5px 10px;border:1px solid #bfdbfe;background:#eff6ff;color:#1A5FA8;border-radius:20px;font-size:11px;cursor:pointer;font-family:inherit">${n}</button>`).join("")}
+          </div>
+        </div>
+
+        <!-- LISTA DE ITENS -->
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:#1A5FA8">💊 Medicamentos do orçamento</div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse">
+              <thead style="background:#f8f8f8">
+                <tr>
+                  <th style="padding:8px 10px;text-align:left;font-size:11px;color:#888;font-weight:500">Medicamento</th>
+                  <th style="padding:8px 6px;text-align:center;font-size:11px;color:#888;font-weight:500">Qtd</th>
+                  <th style="padding:8px 6px;text-align:center;font-size:11px;color:#888;font-weight:500">Unid</th>
+                  <th style="padding:8px 10px;text-align:right;font-size:11px;color:#888;font-weight:500">Unit.</th>
+                  <th style="padding:8px 10px;text-align:right;font-size:11px;color:#888;font-weight:500">Total</th>
+                  <th style="padding:8px;font-size:11px;color:#888;font-weight:500"></th>
+                </tr>
+              </thead>
+              <tbody>${itensHTML}</tbody>
+              ${judItens.length>0?`<tfoot><tr>
+                <td colspan="4" style="padding:10px;font-weight:700;text-align:right;border-top:2px solid #e0e0e0;font-size:13px">TOTAL DO ORÇAMENTO</td>
+                <td style="padding:10px;font-weight:700;color:#1A5FA8;font-size:16px;border-top:2px solid #e0e0e0;text-align:right">${fmt(total)}</td>
+                <td style="border-top:2px solid #e0e0e0"></td>
+              </tr></tfoot>`:""}
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUNA DIREITA: preview + ações -->
+      <div>
+
+        <!-- PRÉVIA DO DOCUMENTO -->
+        <div class="card" style="margin-bottom:14px;border:2px solid #1A5FA8">
+          <div style="font-size:12px;font-weight:700;color:#1A5FA8;margin-bottom:12px;letter-spacing:.5px;text-transform:uppercase">📄 Prévia do orçamento</div>
+          <div style="background:#f8faff;border-radius:8px;padding:14px;font-size:11px;line-height:1.9;border:1px solid #e0eaff">
+            <div style="text-align:center;font-weight:700;font-size:13px;margin-bottom:8px">${farmInfo.nome}</div>
+            <div style="text-align:center;color:#555;margin-bottom:10px;font-size:10px">
+              CNPJ: ${farmInfo.cnpj} · ${farmInfo.crf}<br>
+              ${farmInfo.endereco}<br>
+              Fone: ${farmInfo.telefone}
+            </div>
+            <div style="text-align:center;font-weight:700;border-top:1px solid #ddd;border-bottom:1px solid #ddd;padding:6px;margin-bottom:10px">
+              ORÇAMENTO DE MEDICAMENTOS<br>
+              <span style="font-size:10px;font-weight:400">Para fins judiciais</span>
+            </div>
+            <div style="margin-bottom:8px">
+              <strong>Paciente:</strong> ${judPaciente.nome||"—"}<br>
+              <strong>CPF:</strong> ${judPaciente.cpf||"—"}<br>
+              ${judPaciente.processo?`<strong>Processo:</strong> ${judPaciente.processo}<br>`:""}
+              <strong>Vara:</strong> ${judPaciente.vara}<br>
+              <strong>Data:</strong> ${dtHoje} · <strong>Validade:</strong> ${dtVal}
+            </div>
+            <div style="border-top:1px dashed #ddd;padding-top:8px;margin-bottom:8px">
+              ${judItens.length===0?`<em style="color:#aaa">Adicione medicamentos ao orçamento</em>`:
+                judItens.map(it=>`
+                  <div style="display:flex;justify-content:space-between">
+                    <span>${it.qtd}x ${it.nome.substring(0,32)}...</span>
+                    <span style="font-weight:600">${fmt(it.preco*it.qtd)}</span>
+                  </div>`).join("")}
+            </div>
+            ${judItens.length>0?`
+              <div style="border-top:1px solid #ddd;padding-top:6px;display:flex;justify-content:space-between;font-weight:700;font-size:13px">
+                <span>TOTAL</span><span style="color:#1A5FA8">${fmt(total)}</span>
+              </div>
+              <div style="margin-top:10px;font-size:10px;color:#888;text-align:center">
+                Assinatura do responsável: _______________________<br>
+                ${farmInfo.responsavel} · ${farmInfo.crf}
+              </div>`:""}
+          </div>
+        </div>
+
+        <!-- CONSULTA NA REDE -->
+        ${judItens.length>0?`
+        <div class="card" style="margin-bottom:14px;border:1px solid #bbf7d0">
+          <div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:8px">🔗 Consulta na rede FarmaClub</div>
+          <div style="font-size:11px;color:#555;margin-bottom:8px">Se não tiver estoque suficiente, outras farmácias parceiras podem suprir:</div>
+          ${redeDisponivel.map(r=>`
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f5f5f5;font-size:12px">
+              <span style="color:#16a34a">✓</span>
+              <div style="flex:1"><strong>${r.farm}</strong> · ${r.bairro}</div>
+              <span style="color:#888">${r.dist}</span>
+              <button style="font-size:10px;padding:3px 8px;background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;border-radius:5px;cursor:pointer">Solicitar</button>
+            </div>`).join("")}
+          <div style="font-size:10px;color:#888;margin-top:8px;line-height:1.5">A nota fiscal sai desta farmácia. A transferência entre parceiras é registrada internamente no sistema.</div>
+        </div>`:""}
+
+        <!-- AÇÕES -->
+        <div style="display:grid;gap:8px">
+          <button onclick="judImprimir()" ${judItens.length===0||!judPaciente.nome?"disabled":""} 
+            style="padding:12px;background:${judItens.length>0&&judPaciente.nome?'#1A5FA8':'#ccc'};color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:${judItens.length>0&&judPaciente.nome?'pointer':'not-allowed'};font-family:inherit">
+            🖨️ Imprimir orçamento
+          </button>
+          <button onclick="judSalvar()" ${judItens.length===0||!judPaciente.nome?"disabled":""}
+            style="padding:12px;background:transparent;border:2px solid #1A5FA8;color:#1A5FA8;border-radius:8px;font-size:13px;font-weight:700;cursor:${judItens.length>0&&judPaciente.nome?'pointer':'not-allowed'};font-family:inherit">
+            💾 Salvar rascunho
+          </button>
+          <button onclick="judLimpar()"
+            style="padding:10px;background:transparent;border:1px solid #ddd;color:#888;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">
+            ✕ Limpar e novo orçamento
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderJudAprovado(total, farmInfo, dtHoje){
+  return `
+    <div class="card" style="border:2px solid #16a34a">
+      <div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:14px">✅ Orçamento aprovado — Finalizar venda judicial</div>
+      <div style="background:#f0fdf4;border-radius:8px;padding:14px;margin-bottom:14px;font-size:12px;color:#166534;line-height:1.7">
+        <strong>Como proceder:</strong><br>
+        1. O paciente chega com o dinheiro em espécie (valor aprovado pelo fórum)<br>
+        2. Confira se o valor bate com o orçamento aprovado<br>
+        3. Separe os medicamentos do estoque (ou solicite à rede FarmaClub)<br>
+        4. Registre a venda abaixo — ela ficará marcada como "Venda Judicial" no financeiro<br>
+        5. Entregue os medicamentos e o comprovante ao paciente
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Nome do paciente</label>
+          <input type="text" value="${judPaciente.nome}" placeholder="Nome completo"
+            oninput="judPaciente.nome=this.value"
+            style="width:100%;padding:9px;border:1px solid #ddd;border-radius:7px;font-size:12px">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">CPF do paciente</label>
+          <input type="text" value="${judPaciente.cpf}" placeholder="000.000.000-00"
+            oninput="judPaciente.cpf=this.value"
+            style="width:100%;padding:9px;border:1px solid #ddd;border-radius:7px;font-size:12px">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Nº do processo</label>
+          <input type="text" value="${judPaciente.processo}"
+            oninput="judPaciente.processo=this.value"
+            style="width:100%;padding:9px;border:1px solid #ddd;border-radius:7px;font-size:12px">
+        </div>
+        <div>
+          <label style="font-size:11px;color:#888;display:block;margin-bottom:3px">Valor recebido em espécie (R$)</label>
+          <input type="number" id="jud-recebido" placeholder="0,00" step="0.01"
+            style="width:100%;padding:9px;border:1.5px solid #16a34a;border-radius:7px;font-size:13px;font-weight:600">
+        </div>
+      </div>
+      ${judItens.length>0?`
+        <div style="background:#f8f8f8;border-radius:8px;padding:12px;margin-bottom:14px">
+          ${judItens.map(it=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid #eee">
+            <span>${it.qtd}x ${it.nome}</span>
+            <span style="font-weight:600">${fmt(it.preco*it.qtd)}</span>
+          </div>`).join("")}
+          <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding-top:8px">
+            <span>Total do orçamento</span>
+            <span style="color:#1A5FA8">${fmt(total)}</span>
+          </div>
+        </div>
+        <button onclick="judFinalizarVenda()" style="width:100%;padding:14px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">
+          ✅ Confirmar venda judicial — ${fmt(total)}
+        </button>`:`
+        <div style="text-align:center;padding:20px;color:#aaa">
+          Nenhum medicamento no orçamento. Vá em "Novo orçamento" e adicione os medicamentos.
+        </div>`}
+    </div>`;
+}
+
+function renderJudHistorico(){
+  const historico = JSON.parse(localStorage.getItem("jud_historico")||"[]");
+  if(!historico.length) return `
+    <div class="card" style="text-align:center;padding:40px;color:#aaa">
+      <div style="font-size:32px;margin-bottom:10px">📋</div>
+      <div>Nenhum orçamento judicial salvo ainda.</div>
+    </div>`;
+  return `
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:14px;color:#1A5FA8">Histórico de orçamentos judiciais</div>
+      ${historico.reverse().map((h,i)=>`
+        <div style="padding:12px 0;border-bottom:${i<historico.length-1?"1px solid #f5f5f5":"none"};display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;border-radius:10px;background:${h.status==='vendido'?"#f0fdf4":"#eff6ff"};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">
+            ${h.status==='vendido'?"✅":"📋"}
+          </div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:13px">${h.paciente}</div>
+            <div style="font-size:11px;color:#888;margin-top:2px">${h.data} · ${h.itens} medicamento(s) · ${fmt(h.total)}</div>
+            ${h.processo?`<div style="font-size:10px;color:#aaa">Processo: ${h.processo}</div>`:""}
+          </div>
+          <div style="text-align:right">
+            <span style="display:inline-block;padding:3px 8px;border-radius:10px;font-size:10px;font-weight:600;background:${h.status==='vendido'?"#f0fdf4":"#eff6ff"};color:${h.status==='vendido'?"#16a34a":"#1A5FA8"}">
+              ${h.status==='vendido'?"Venda efetuada":"Aguardando aprovação"}
+            </span>
+          </div>
+        </div>`).join("")}
+    </div>`;
+}
+
+// HELPERS JUDICIAL
+window.judBuscar = function(q){
+  const ac = document.getElementById("jud-ac");
+  if(!ac) return;
+  if(q.length < 2){ac.style.display="none";return;}
+  const res = MED_JUDICIAIS.filter(m=>m.nome.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if(!res.length){ac.style.display="none";return;}
+  ac.innerHTML = res.map((m,i)=>`
+    <div onclick="judAdicionarMed(${MED_JUDICIAIS.indexOf(m)})"
+      style="padding:10px 14px;cursor:pointer;border-bottom:1px solid #f5f5f5;font-size:12px"
+      onmouseover="this.style.background='#f0f6ff'" onmouseout="this.style.background='#fff'">
+      <div style="font-weight:500">${m.nome}</div>
+      <div style="font-size:10px;color:#888;margin-top:2px">${fmt(m.preco)} / ${m.unid}</div>
+    </div>`).join("");
+  ac.style.display = "block";
+};
+
+window.judAtalho = function(nome){
+  const idx = MED_JUDICIAIS.findIndex(m=>m.nome.includes(nome));
+  if(idx>=0) judAdicionarMed(idx);
+};
+
+window.judAdicionarMed = function(idx){
+  const m = MED_JUDICIAIS[idx];
+  const ex = judItens.findIndex(i=>i.cod===m.cod);
+  if(ex>=0){ judItens[ex].qtd++; }
+  else { judItens.push({...m, qtd:1}); }
+  const ac = document.getElementById("jud-ac");
+  if(ac) ac.style.display="none";
+  const inp = document.getElementById("jud-busca");
+  if(inp) inp.value="";
+  renderContent();
+};
+
+window.judQtd = function(idx, delta){
+  judItens[idx].qtd += delta;
+  if(judItens[idx].qtd <= 0) judItens.splice(idx,1);
+  renderContent();
+};
+
+window.judRemover = function(idx){
+  judItens.splice(idx,1);
+  renderContent();
+};
+
+window.judLimpar = function(){
+  judItens = [];
+  judPaciente = {nome:"", cpf:"", processo:"", vara:"Vara da Fazenda Pública — Itaperuna/RJ", validade:30};
+  renderContent();
+};
+
+window.judSalvar = function(){
+  const historico = JSON.parse(localStorage.getItem("jud_historico")||"[]");
+  historico.push({
+    paciente: judPaciente.nome,
+    cpf: judPaciente.cpf,
+    processo: judPaciente.processo,
+    data: new Date().toLocaleDateString("pt-BR"),
+    itens: judItens.length,
+    total: judItens.reduce((s,i)=>s+i.preco*i.qtd, 0),
+    status: "aguardando",
+    medicamentos: judItens,
+  });
+  localStorage.setItem("jud_historico", JSON.stringify(historico));
+  alert("✓ Orçamento salvo no histórico!");
+};
+
+window.judImprimir = function(){
+  const total = judItens.reduce((s,i)=>s+i.preco*i.qtd, 0);
+  const dtHoje = new Date().toLocaleDateString("pt-BR");
+  const dtVal = new Date();
+  dtVal.setDate(dtVal.getDate() + judPaciente.validade);
+  const dtValStr = dtVal.toLocaleDateString("pt-BR");
+
+  const win = window.open("","_blank","width=800,height=900");
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Orçamento Judicial — ${judPaciente.nome}</title>
+    <style>
+      body{font-family:Arial,sans-serif;font-size:12px;margin:30px;color:#000}
+      h1{font-size:16px;text-align:center;margin:0}
+      h2{font-size:13px;text-align:center;margin:4px 0 0}
+      .center{text-align:center}
+      .bold{font-weight:bold}
+      table{width:100%;border-collapse:collapse;margin-top:14px}
+      th{background:#f0f0f0;padding:8px;text-align:left;border:1px solid #ccc;font-size:11px}
+      td{padding:8px;border:1px solid #ccc;font-size:11px}
+      .total-row{font-weight:bold;font-size:13px}
+      .rodape{margin-top:30px;border-top:1px solid #000;padding-top:16px}
+      .assinatura{margin-top:40px;display:flex;justify-content:space-around}
+      .linha{border-top:1px solid #000;width:220px;text-align:center;padding-top:4px;font-size:10px}
+      @media print{button{display:none}}
+    </style>
+  </head><body>
+    <div class="center">
+      <h1>FARMÁCIA SÃO JOÃO</h1>
+      <div>CNPJ: 12.345.678/0001-90 · CRF-RJ 12345</div>
+      <div>Rua Getúlio Vargas, 342 — Centro, Itaperuna/RJ · (22) 3822-1234</div>
+    </div>
+    <div style="text-align:center;font-weight:bold;font-size:14px;border-top:2px solid #000;border-bottom:2px solid #000;margin:14px 0;padding:8px">
+      ORÇAMENTO DE MEDICAMENTOS PARA FINS JUDICIAIS
+    </div>
+    <div>
+      <span class="bold">Paciente:</span> ${judPaciente.nome} &nbsp;&nbsp;
+      <span class="bold">CPF:</span> ${judPaciente.cpf}<br>
+      ${judPaciente.processo?`<span class="bold">Nº do Processo:</span> ${judPaciente.processo}<br>`:""}
+      <span class="bold">Vara:</span> ${judPaciente.vara}<br>
+      <span class="bold">Data:</span> ${dtHoje} &nbsp;&nbsp;
+      <span class="bold">Válido até:</span> ${dtValStr}
+    </div>
+    <table>
+      <thead><tr>
+        <th>Medicamento</th><th>Qtd</th><th>Unid</th><th>Valor Unit.</th><th>Total</th>
+      </tr></thead>
+      <tbody>
+        ${judItens.map(it=>`<tr>
+          <td>${it.nome}</td>
+          <td style="text-align:center">${it.qtd}</td>
+          <td style="text-align:center">${it.unid}</td>
+          <td style="text-align:right">R$ ${it.preco.toFixed(2).replace(".",",")}</td>
+          <td style="text-align:right">R$ ${(it.preco*it.qtd).toFixed(2).replace(".",",")}</td>
+        </tr>`).join("")}
+        <tr class="total-row">
+          <td colspan="4" style="text-align:right">TOTAL GERAL</td>
+          <td style="text-align:right">R$ ${total.toFixed(2).replace(".",",")}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="rodape">
+      <div style="font-size:10px;color:#555">
+        Este orçamento é válido por ${judPaciente.validade} dias a partir de ${dtHoje}.
+        Os preços podem sofrer variação conforme disponibilidade de estoque.
+        Farmácia parceira da rede FarmaClub Itaperuna.
+      </div>
+    </div>
+    <div class="assinatura">
+      <div class="linha">Assinatura e Carimbo do Responsável Técnico<br>João Carlos Oliveira · CRF-RJ 12345</div>
+      <div class="linha">Assinatura do Paciente ou Responsável</div>
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <button onclick="window.print()" style="padding:10px 30px;font-size:14px;background:#1A5FA8;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Imprimir</button>
+    </div>
+  </body></html>`);
+  win.document.close();
+};
+
+window.judFinalizarVenda = function(){
+  const recebido = parseFloat(document.getElementById("jud-recebido")?.value)||0;
+  const total = judItens.reduce((s,i)=>s+i.preco*i.qtd, 0);
+  if(!judPaciente.nome || !judPaciente.cpf){
+    alert("Preencha o nome e CPF do paciente.");return;
+  }
+  if(recebido < total){
+    alert(`Valor recebido (${fmt(recebido)}) é menor que o total (${fmt(total)}). Verifique.`);return;
+  }
+  const troco = recebido - total;
+  const historico = JSON.parse(localStorage.getItem("jud_historico")||"[]");
+  historico.push({
+    paciente: judPaciente.nome, cpf: judPaciente.cpf,
+    processo: judPaciente.processo,
+    data: new Date().toLocaleDateString("pt-BR"),
+    itens: judItens.length, total, status: "vendido",
+    medicamentos: judItens,
+  });
+  localStorage.setItem("jud_historico", JSON.stringify(historico));
+  alert(`✅ Venda judicial registrada!\n\nTotal: ${fmt(total)}\nRecebido: ${fmt(recebido)}\nTroco: ${fmt(troco)}\n\nA venda foi registrada como "Venda Judicial" no financeiro.`);
+  judItens = [];
+  judPaciente = {nome:"", cpf:"", processo:"", vara:"Vara da Fazenda Pública — Itaperuna/RJ", validade:30};
+  judEtapa = "historico";
+  renderContent();
+};
+
+// Fechar autocomplete
+document.addEventListener("click", e=>{
+  if(!e.target.closest("#jud-busca")) {
+    const ac=document.getElementById("jud-ac");
+    if(ac) ac.style.display="none";
+  }
+});
+
+const renders={dashboard:renderDashboard,pdv:renderPDV,estoque:renderEstoque,precificacao:renderPrecificacao,nfe:renderNFE,financeiro:renderFinanceiro,clientes:renderClientes,relatorios:renderRelatorios,judicial:renderJudicial};
 const titulos={dashboard:"Dashboard",pdv:"PDV — Ponto de Venda",estoque:"Controle de Estoque",precificacao:"Precificação Automática",nfe:"Entrada de Nota Fiscal",financeiro:"Financeiro",clientes:"Clientes",relatorios:"Relatórios & IA"};
 let tabAtual="dashboard";
 

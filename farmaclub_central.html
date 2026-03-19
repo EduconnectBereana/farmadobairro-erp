@@ -3,260 +3,196 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>FarmaClub — Central de Sistemas</title>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>FarmaClub — Sistema de Gestão</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --verde:#3BAA35;
-  --verde2:#2E8A2A;
-  --azul:#1A5FA8;
-  --azul2:#4A9FD4;
-  --vermelho:#E03A3A;
-  --verdeClaro:#6CC04A;
-  --cinza:#F4F4F2;
-  --t:#14152a;
-  --t2:#5a5e7a;
-  --t3:#9a9eb8;
+  --verde:#3BAA35;--verde2:#2E8A2A;--azul:#1A5FA8;
+  --azul2:#4A9FD4;--verm:#E03A3A;--roxo:#7c3aed;
+  --ciano:#0891b2;--am:#d97706;--bg:#f0f2f5;
 }
-body{font-family:'Sora',system-ui,sans-serif;background:var(--cinza);color:var(--t);min-height:100vh}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
 
-/* HEADER */
-.header{background:linear-gradient(135deg,var(--verde) 0%,var(--verde2) 50%,#1E6B1A 100%);padding:40px 24px 48px;text-align:center;position:relative;overflow:hidden}
-.header::before{content:"";position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(255,255,255,.06);right:-80px;top:-120px;pointer-events:none}
-.header::after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,.04);left:-60px;bottom:-80px;pointer-events:none}
-.logo-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:12px;position:relative;z-index:1}
-.logo-img{height:72px;width:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.2))}
-.logo-fallback{font-size:42px;font-weight:800;color:#fff;letter-spacing:-1px}
-.logo-fallback span{color:#ccfbf1}
-.tagline{font-size:16px;color:rgba(255,255,255,.85);position:relative;z-index:1}
-.subtag{font-size:12px;color:rgba(255,255,255,.6);margin-top:6px;position:relative;z-index:1}
-
-/* BADGE ONLINE */
-.online-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);color:#fff;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:600;margin-top:14px;position:relative;z-index:1;border:1px solid rgba(255,255,255,.25)}
+/* ── TOPBAR ── */
+.topbar{background:linear-gradient(135deg,var(--verde),var(--verde2));padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.18);position:sticky;top:0;z-index:100}
+.top-logo{display:flex;align-items:center;gap:10px}
+.top-logo img{height:36px;width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))}
+.top-nome{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.top-nome span{opacity:.75;font-weight:400}
+.top-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;font-size:11px;color:#fff;font-weight:600}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.blink{animation:blink 1.8s infinite}
+.dot-live{width:7px;height:7px;border-radius:50%;background:#7dff7d;animation:blink 1.8s infinite;display:inline-block}
 
-/* GRID */
-.grid{max-width:1100px;margin:0 auto;padding:32px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
-.grid-full{max-width:1100px;margin:0 auto;padding:0 20px 12px;display:grid;grid-template-columns:1fr;gap:18px}
+/* ── CORPO ── */
+.body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px}
 
-/* CARDS */
-.card{background:#fff;border-radius:18px;border:1.5px solid #e8eaf4;padding:26px;text-decoration:none;color:inherit;transition:all .18s;display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
-.card::before{content:"";position:absolute;top:0;left:0;right:0;height:5px;border-radius:18px 18px 0 0;background:var(--cor-card,var(--verde))}
-.card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(20,21,42,.12);border-color:var(--cor-card,var(--verde))}
-.card-ico{font-size:34px;margin-bottom:2px}
-.card-tag{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 10px;border-radius:20px;display:inline-block;width:fit-content;background:var(--cor-card-bg,#e6faf8);color:var(--cor-card,var(--verde))}
-.card-title{font-size:19px;font-weight:700;color:var(--t)}
-.card-desc{font-size:13px;color:var(--t2);line-height:1.6}
-.card-features{list-style:none;display:flex;flex-direction:column;gap:5px;margin-top:2px}
-.card-features li{font-size:12px;color:var(--t2);display:flex;align-items:flex-start;gap:6px}
-.card-features li::before{content:"✓";color:var(--cor-card,var(--verde));font-weight:700;font-size:11px;margin-top:1px;flex-shrink:0}
-.card-btn{margin-top:auto;padding:12px 20px;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;text-align:center;font-family:'Sora',sans-serif;transition:opacity .15s;background:var(--cor-card,var(--verde))}
-.card:hover .card-btn{opacity:.9}
+/* ── SAUDAÇÃO ── */
+.saudacao{text-align:center;margin-bottom:28px}
+.saudacao h1{font-size:22px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.saudacao p{font-size:13px;color:#666}
 
-/* SEÇÃO */
-.sec-label{max-width:1100px;margin:0 auto;padding:0 20px;font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;margin-top:8px;display:flex;align-items:center;gap:10px}
-.sec-label::after{content:"";flex:1;height:1px;background:#e8eaf4}
+/* ── GRID 4x2 ── */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;max-width:820px}
 
-/* FOOTER */
-.footer{background:#fff;border-top:1px solid #e8eaf4;padding:20px 24px;text-align:center;margin-top:24px}
+/* ── CARD DE MÓDULO ── */
+.modulo{background:#fff;border-radius:16px;border:2px solid #e8eaf4;padding:20px 14px 16px;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s,border-color .15s;cursor:pointer}
+.modulo::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--cor)}
+.modulo:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.12);border-color:var(--cor)}
+.modulo:active{transform:scale(.97)}
+.mod-ico{font-size:32px;line-height:1}
+.mod-nome{font-size:13px;font-weight:700;color:#1a1a2e;text-align:center;line-height:1.3}
+.mod-desc{font-size:11px;color:#888;text-align:center;line-height:1.4}
+.mod-tag{font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:2px 8px;border-radius:10px;background:var(--cor-bg);color:var(--cor);margin-top:2px}
 
-/* IDENTIDADE */
-.id-wrap{max-width:1100px;margin:0 auto;padding:0 20px 8px}
-.id-card{background:#fff;border-radius:14px;border:1.5px solid #e8eaf4;padding:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
-.id-logo{height:56px;width:auto}
-.cor-pill{display:inline-block;width:28px;height:28px;border-radius:50%;border:2px solid rgba(0,0,0,.1)}
+/* ── CARD CENTRAL (destaque) ── */
+.modulo.central{grid-column:span 2;flex-direction:row;align-items:center;gap:14px;padding:18px 20px;text-align:left}
+.modulo.central .mod-ico{font-size:38px;flex-shrink:0}
+.modulo.central .mod-nome{font-size:15px}
+.modulo.central .mod-desc{font-size:12px}
 
-/* RESPONSIVO */
-@media(max-width:600px){.logo-img{height:56px}.grid{padding:20px 14px;gap:12px}.card{padding:18px}}
+/* ── RODAPÉ ── */
+.footer{text-align:center;padding:14px;font-size:11px;color:#aaa}
+
+/* ── MOBILE ── */
+@media(max-width:600px){
+  .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .modulo.central{grid-column:span 2;flex-direction:column;text-align:center}
+  .top-nome span{display:none}
+  .saudacao h1{font-size:18px}
+}
+@media(min-width:601px) and (max-width:800px){
+  .grid{grid-template-columns:repeat(4,1fr)}
+}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="logo-wrap">
-    <img class="logo-img" src="farmaclub_logo.png" alt="FarmaClub"
-      onerror="this.style.display='none';document.getElementById('logo-txt').style.display='block'">
-    <div id="logo-txt" style="display:none" class="logo-fallback">Farma<span>Club</span></div>
-  </div>
-  <div class="tagline">O clube das farmácias independentes de Itaperuna/RJ</div>
-  <div class="subtag">Gestão · Tecnologia · Compras Coletivas · Logística</div>
-  <div class="online-badge"><span class="blink">●</span> Sistema operacional · 6 módulos ativos</div>
-</div>
-
-<!-- MÓDULO CENTRAL -->
-<div class="sec-label" style="margin-top:28px">Gestão central — acesso exclusivo do gestor</div>
-<div class="grid-full">
-  <a class="card" href="farmaclub_erp_central.html" target="_blank" style="--cor-card:var(--verde);--cor-card-bg:#e8f5e6">
-    <div>
-      <div class="card-ico">◼</div>
-      <div class="card-tag">Mury — Painel Central</div>
-      <div class="card-title" style="margin-top:8px">ERP Central FarmaClub</div>
-      <div class="card-desc">Painel de controle total do ecossistema. Faturamento consolidado, pedidos ativos, motoboys em campo, repasses e alertas de IA em tempo real.</div>
-    </div>
-    <ul class="card-features">
-      <li>Dashboard com faturamento e comissões de todas as farmácias</li>
-      <li>Controle de pedidos, motoboys e repasses em tempo real</li>
-      <li>IA & Insights com alertas automáticos e oportunidades</li>
-      <li>Relatórios gerenciais e projeções de crescimento</li>
-    </ul>
-    <div class="card-btn">Acessar ERP Central →</div>
-  </a>
-</div>
-
-<!-- FARMÁCIAS -->
-<div class="sec-label">Módulos das farmácias parceiras</div>
-<div class="grid">
-
-  <a class="card" href="farmaclub_erp_farmacia.html" target="_blank" style="--cor-card:var(--azul);--cor-card-bg:#e8f0fb">
-    <div>
-      <div class="card-ico">🏥</div>
-      <div class="card-tag" style="background:#e8f0fb;color:var(--azul)">ERP da Farmácia</div>
-      <div class="card-title" style="margin-top:8px">Sistema da Farmácia</div>
-      <div class="card-desc">ERP completo que o dono da farmácia acessa pelo navegador. PDV, estoque, NF-e, financeiro e relatórios em um link.</div>
-    </div>
-    <ul class="card-features">
-      <li>PDV com leitor de código de barras</li>
-      <li>Estoque com alerta de vencimento e mínimo</li>
-      <li>Entrada de NF-e por XML ou manual</li>
-      <li>DRE, contas a pagar e receber</li>
-    </ul>
-    <div class="card-btn" style="background:var(--azul)">Acessar ERP Farmácia →</div>
-  </a>
-
-  <a class="card" href="farmaclub_compra_coletiva.html" target="_blank" style="--cor-card:#7c3aed;--cor-card-bg:#f3eefe">
-    <div>
-      <div class="card-ico">🤝</div>
-      <div class="card-tag" style="background:#f3eefe;color:#7c3aed">Compra Coletiva</div>
-      <div class="card-title" style="margin-top:8px">Central de Compras</div>
-      <div class="card-desc">O coração do FarmaClub. Consolida as necessidades de todas as farmácias, compara fornecedores e gera o pedido único.</div>
-    </div>
-    <ul class="card-features">
-      <li>Necessidades consolidadas automaticamente</li>
-      <li>Comparativo de até 4 fornecedores lado a lado</li>
-      <li>Rateio automático por farmácia</li>
-      <li>Histórico e economia gerada em R$</li>
-    </ul>
-    <div class="card-btn" style="background:#7c3aed">Acessar Compras →</div>
-  </a>
-
-  <a class="card" href="farmaclub_contabilidade.html" target="_blank" style="--cor-card:#0891b2;--cor-card-bg:#e0f5fb">
-    <div>
-      <div class="card-ico">📊</div>
-      <div class="card-tag" style="background:#e0f5fb;color:#0891b2">Contabilidade</div>
-      <div class="card-title" style="margin-top:8px">ERP Contabilidade</div>
-      <div class="card-desc">Integração direta com o escritório contábil. Obrigações fiscais, DAS, DRE, folha e canal com contadores.</div>
-    </div>
-    <ul class="card-features">
-      <li>Calendário de obrigações com alertas</li>
-      <li>DAS Simples Nacional calculado automaticamente</li>
-      <li>DRE consolidado e por farmácia</li>
-      <li>Visão pessoal do gestor — IR e comissões</li>
-    </ul>
-    <div class="card-btn" style="background:#0891b2">Acessar Contabilidade →</div>
-  </a>
-
-</div>
-
-<!-- APPS E FERRAMENTAS -->
-<div class="sec-label">Apps de campo e ferramentas</div>
-<div class="grid">
-
-  <a class="card" href="farmaclub_app_cliente.html" target="_blank" style="--cor-card:var(--verde);--cor-card-bg:#e8f5e6">
-    <div>
-      <div class="card-ico">📱</div>
-      <div class="card-tag">App do Cliente</div>
-      <div class="card-title" style="margin-top:8px">Marketplace FarmaClub</div>
-      <div class="card-desc">O app que o cliente usa para comprar. Busca por código de barras, carrinho multi-farmácia e rastreamento ao vivo.</div>
-    </div>
-    <ul class="card-features">
-      <li>Scanner de código de barras pela câmera</li>
-      <li>Compra em múltiplas farmácias num pedido</li>
-      <li>Rastreamento ao vivo com nome do motoboy</li>
-      <li>Notificação via WhatsApp automática</li>
-    </ul>
-    <div class="card-btn">Abrir App Cliente →</div>
-  </a>
-
-  <a class="card" href="farmaclub_app_motoboy.html" target="_blank" style="--cor-card:var(--vermelho);--cor-card-bg:#fdeaea">
-    <div>
-      <div class="card-ico">🛵</div>
-      <div class="card-tag" style="background:#fdeaea;color:var(--vermelho)">App do Motoboy</div>
-      <div class="card-title" style="margin-top:8px">App Motoboy Parceiro</div>
-      <div class="card-desc">O app que o motoboy usa em campo. Aceita pedidos, confirma coleta por código de barras e registra entrega.</div>
-    </div>
-    <ul class="card-features">
-      <li>Scanner confirma cada item antes de sair</li>
-      <li>Produto errado? Sistema bloqueia e alerta</li>
-      <li>Ganhos do dia em tempo real</li>
-      <li>Histórico completo de entregas</li>
-    </ul>
-    <div class="card-btn" style="background:var(--vermelho)">Abrir App Motoboy →</div>
-  </a>
-
-  <a class="card" href="farmaclub_frete.html" target="_blank" style="--cor-card:var(--azul2);--cor-card-bg:#e8f4fb">
-    <div>
-      <div class="card-ico">📍</div>
-      <div class="card-tag" style="background:#e8f4fb;color:var(--azul2)">Frete Inteligente</div>
-      <div class="card-title" style="margin-top:8px">Calculadora de Frete</div>
-      <div class="card-desc">Modelo Uber com busca de endereço real. Digita a rua, o sistema localiza e calcula o frete pela distância real em km.</div>
-    </div>
-    <ul class="card-features">
-      <li>Busca de rua via OpenStreetMap</li>
-      <li>Distância real calculada por GPS</li>
-      <li>Multiplicador de horário de pico</li>
-      <li>Frete separado do produto — nunca embutido</li>
-    </ul>
-    <div class="card-btn" style="background:var(--azul2)">Abrir Calculadora →</div>
-  </a>
-
-</div>
-
-<!-- IDENTIDADE VISUAL -->
-<div class="sec-label">Identidade visual</div>
-<div class="id-wrap" style="margin-bottom:24px">
-  <div class="id-card">
-    <img class="id-logo" src="farmaclub_logo.png" alt="FarmaClub"
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="top-logo">
+    <img src="farmaclub_logo.png" alt="FarmaClub"
       onerror="this.style.display='none'">
-    <div style="flex:1">
-      <div style="font-weight:700;font-size:14px;margin-bottom:8px">Paleta oficial FarmaClub</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="cor-pill" style="background:#3BAA35"></span>
-          <span style="font-size:11px;color:#666">#3BAA35<br>Verde Farma</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="cor-pill" style="background:#1A5FA8"></span>
-          <span style="font-size:11px;color:#666">#1A5FA8<br>Azul Club</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="cor-pill" style="background:#6CC04A"></span>
-          <span style="font-size:11px;color:#666">#6CC04A<br>Verde claro</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="cor-pill" style="background:#4A9FD4"></span>
-          <span style="font-size:11px;color:#666">#4A9FD4<br>Azul cápsula</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span class="cor-pill" style="background:#E03A3A"></span>
-          <span style="font-size:11px;color:#666">#E03A3A<br>Vermelho</span>
-        </div>
-      </div>
-    </div>
-    <div style="font-size:11px;color:#aaa;text-align:right">
-      FarmaClub Itaperuna/RJ<br>
-      v1.0 · 2026<br>
-      <span style="color:#3BAA35;font-weight:600">● Online</span>
-    </div>
+    <div class="top-nome">FarmaClub <span>· Itaperuna/RJ</span></div>
   </div>
+  <div class="top-badge">
+    <span class="dot-live"></span>
+    <span id="badge-txt">6 farmácias · online</span>
+  </div>
+</div>
+
+<!-- CORPO -->
+<div class="body">
+
+  <div class="saudacao">
+    <h1>Bem-vindo ao FarmaClub, Mury</h1>
+    <p>Selecione o módulo que deseja acessar</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- LINHA 1 — 4 módulos -->
+
+    <!-- ERP Central — destaque maior -->
+    <a class="modulo" href="farmaclub_erp_central.html"
+      style="--cor:var(--verde);--cor-bg:#e8f5e6">
+      <div class="mod-ico">◼</div>
+      <div class="mod-nome">ERP Central</div>
+      <div class="mod-tag">Painel do Gestor</div>
+      <div class="mod-desc">Dashboard, pedidos, motoboys e repasses</div>
+    </a>
+
+    <a class="modulo" href="farmaclub_erp_farmacia.html"
+      style="--cor:var(--azul);--cor-bg:#e8f0fb">
+      <div class="mod-ico">🏥</div>
+      <div class="mod-nome">ERP Farmácia</div>
+      <div class="mod-tag">Farmácia Parceira</div>
+      <div class="mod-desc">PDV, estoque, NF-e e financeiro</div>
+    </a>
+
+    <a class="modulo" href="farmaclub_compra_coletiva.html"
+      style="--cor:var(--roxo);--cor-bg:#f3eefe">
+      <div class="mod-ico">🤝</div>
+      <div class="mod-nome">Compra Coletiva</div>
+      <div class="mod-tag">Central de Compras</div>
+      <div class="mod-desc">Cotação, pedido consolidado e rateio</div>
+    </a>
+
+    <a class="modulo" href="farmaclub_contabilidade.html"
+      style="--cor:var(--ciano);--cor-bg:#e0f5fb">
+      <div class="mod-ico">📊</div>
+      <div class="mod-nome">Contabilidade</div>
+      <div class="mod-tag">Fiscal & Tributário</div>
+      <div class="mod-desc">DAS, DRE, obrigações e cadastros</div>
+    </a>
+
+    <!-- LINHA 2 — 4 módulos -->
+
+    <a class="modulo" href="farmaclub_app_cliente.html"
+      style="--cor:var(--verde);--cor-bg:#e8f5e6">
+      <div class="mod-ico">📱</div>
+      <div class="mod-nome">App Cliente</div>
+      <div class="mod-tag">Marketplace</div>
+      <div class="mod-desc">Pedidos, carrinho e rastreamento</div>
+    </a>
+
+    <a class="modulo" href="farmaclub_app_motoboy.html"
+      style="--cor:var(--verm);--cor-bg:#fdeaea">
+      <div class="mod-ico">🛵</div>
+      <div class="mod-nome">App Motoboy</div>
+      <div class="mod-tag">Entrega em Campo</div>
+      <div class="mod-desc">Aceite, coleta e entrega</div>
+    </a>
+
+    <a class="modulo" href="farmaclub_frete.html"
+      style="--cor:var(--azul2);--cor-bg:#e8f4fb">
+      <div class="mod-ico">📍</div>
+      <div class="mod-nome">Frete GPS</div>
+      <div class="mod-tag">Calculadora</div>
+      <div class="mod-desc">Rua real, distância e estimativa</div>
+    </a>
+
+    <a class="modulo" href="farmaclub_dados.js" target="_blank"
+      style="--cor:var(--am);--cor-bg:#fffbeb">
+      <div class="mod-ico">⚙</div>
+      <div class="mod-nome">Dados Centrais</div>
+      <div class="mod-tag">Configuração</div>
+      <div class="mod-desc">Cadastro único de farmácias e frete</div>
+    </a>
+
+  </div>
+
+  <!-- PALETA / VERSÃO -->
+  <div style="margin-top:28px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center">
+    <div id="farm-status" style="font-size:11px;color:#888"></div>
+  </div>
+
 </div>
 
 <div class="footer">
-  <img src="farmaclub_logo.png" style="height:32px;width:auto;display:inline-block;vertical-align:middle;margin-right:8px" alt="" onerror="this.style.display='none'">
-  <span style="font-size:12px;color:#aaa">FarmaClub Itaperuna — Gestão e Tecnologia para Farmácias Independentes · 2026</span>
+  FarmaClub Itaperuna · Gestão e Tecnologia para Farmácias Independentes · v1.0 · 2026
 </div>
+
+<script>
+// Atualizar hora e saudação
+function initDados(){
+  const h=new Date().getHours();
+  
+  document.querySelector(".saudacao h1").textContent=
+    (h<12?"Bom dia ☀️":h<18?"Boa tarde 🌤️":"Boa noite 🌙")+", Mury!";
+
+  // Status das farmácias (dados do farmaclub_dados.js se disponível)
+  const farms = typeof FARMACLUB !== "undefined"
+    ? FARMACLUB.farmacias
+    : [{aberto:true},{aberto:true},{aberto:false},{aberto:true},{aberto:true},{aberto:false}];
+  const abertas = farms.filter(f=>f.aberto).length;
+  const total = farms.length;
+  document.getElementById("badge-txt").textContent=
+    total+" farmácias · "+abertas+" abertas";
+  document.getElementById("farm-status").textContent=
+    "Sistema atualizado · "+new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+}
+initDados();
+</script>
 
 </body>
 </html>

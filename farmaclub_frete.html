@@ -4,277 +4,276 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>FarmaClub — Frete Inteligente</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,-apple-system,sans-serif;background:#f4f4f2;color:#1a1a1a;font-size:14px}
-.app{max-width:900px;margin:0 auto;padding:16px}
-.card{background:#fff;border-radius:12px;border:1px solid #e5e5e5;padding:16px;margin-bottom:12px}
-.btn-pri{padding:12px 18px;background:#3BAA35;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;width:100%;font-family:inherit}
-.btn-pri:active{transform:scale(.97)}
-input,select{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a;outline:none;font-family:inherit}
-input:focus{border-color:#3BAA35}
-.lbl{font-size:11px;color:#888;display:block;margin-bottom:4px;font-weight:500}
-.hero{background:linear-gradient(135deg,#3BAA35,#2E8A2A);padding:18px 20px;border-radius:14px;color:#fff;margin-bottom:16px}
-.tabs{display:flex;gap:4px;margin-bottom:16px;background:#f0f0f0;border-radius:8px;padding:3px}
-.tab{flex:1;padding:8px 4px;border:none;background:transparent;border-radius:6px;font-size:12px;color:#666;cursor:pointer;font-weight:600;font-family:inherit;text-align:center}
-.tab.ativo{background:#fff;color:#3BAA35;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.ac-wrap{position:relative;margin-bottom:10px}
-.ac-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:9999;max-height:260px;overflow-y:auto;margin-top:3px}
-.ac-item{padding:11px 14px;cursor:pointer;font-size:12px;border-bottom:1px solid #f5f5f5;display:flex;gap:8px}
+.app{max-width:1100px;margin:0 auto;padding:20px}
+.card{background:#fff;border-radius:12px;border:1px solid #e5e5e5;padding:16px;margin-bottom:14px}
+.btn-pri{padding:10px 18px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;width:100%;transition:background .15s;font-family:inherit}
+.btn-pri:hover{background:#0f766e}
+input,select{width:100%;padding:9px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;background:#fff;color:#1a1a1a;outline:none;font-family:inherit}
+input:focus,select:focus{border-color:#0d9488}
+label{font-size:11px;color:#888;display:block;margin-bottom:4px;font-weight:500}
+.hero{background:linear-gradient(135deg,#0d9488,#0f766e);padding:20px 24px;border-radius:14px;color:#fff;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.hero-tit{font-size:20px;font-weight:700}
+.hero-sub{font-size:12px;opacity:.8;margin-top:4px}
+#mapa{height:360px;border-radius:10px;overflow:hidden;border:1px solid #e5e5e5}
+.autocomplete-wrap{position:relative;margin-bottom:10px}
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;max-height:220px;overflow-y:auto;margin-top:4px}
+.ac-item{padding:10px 14px;cursor:pointer;font-size:12px;border-bottom:1px solid #f5f5f5;display:flex;gap:8px;align-items:flex-start}
 .ac-item:last-child{border-bottom:none}
-.ac-item:hover{background:#f0fdf8}
-.farm-item{border:1.5px solid #e5e5e5;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,background .15s;display:flex;gap:10px;align-items:center}
-.farm-item:hover{border-color:#3BAA35}
-.farm-item.sel{border-color:#3BAA35;border-width:2px;background:#e6faf8}
-.farm-item.melhor{border-color:#16a34a;background:#f0fdf4}
-.res-box{background:linear-gradient(135deg,#3BAA35,#2E8A2A);border-radius:12px;padding:16px;color:#fff;margin-bottom:12px}
-.cfg-row{display:flex;align-items:center;gap:10px;margin:6px 0}
-.cfg-row input[type=range]{flex:1;accent-color:#3BAA35}
-.cfg-val{font-weight:700;color:#3BAA35;min-width:72px;text-align:right;font-size:13px}
+.ac-item:hover,.ac-item:focus{background:#f0fdf8}
+.ac-item .rua{font-weight:500;color:#1a1a1a}
+.ac-item .det{font-size:10px;color:#888;margin-top:2px}
+.farm-card{border:1.5px solid #e5e5e5;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;gap:10px;align-items:center}
+.farm-card:hover{border-color:#0d9488;background:#f0fdf8}
+.farm-card.selecionada{border-color:#0d9488;border-width:2px;background:#e6faf8}
+.farm-card.melhor{border-color:#16a34a;background:#f0fdf4}
+.resultado-box{background:linear-gradient(135deg,#0d9488,#0f766e);border-radius:12px;padding:16px;color:#fff;margin-top:12px}
+.tabs{display:flex;gap:4px;margin-bottom:18px;background:#f3f3f3;border-radius:8px;padding:3px}
+.tab{padding:7px 16px;border:none;background:transparent;border-radius:6px;font-size:13px;color:#666;cursor:pointer;font-weight:500;font-family:inherit;transition:all .15s}
+.tab.ativo{background:#fff;color:#0d9488;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.config-row{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+.config-row input[type=range]{flex:1;accent-color:#0d9488}
+.config-val{font-weight:700;color:#0d9488;min-width:72px;text-align:right;font-size:13px}
+.prog{height:4px;background:#eee;border-radius:2px;overflow:hidden;margin-top:4px}
+.prog-bar{height:100%;border-radius:2px;background:#0d9488;transition:width .3s}
 @keyframes spin{to{transform:rotate(360deg)}}
-.spin{display:inline-block;width:12px;height:12px;border:2px solid #e5e5e5;border-top-color:#3BAA35;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:4px}
+.spinner{display:inline-block;width:13px;height:13px;border:2px solid #e5e5e5;border-top-color:#0d9488;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="app">
 
 <div class="hero">
-  <div style="font-size:19px;font-weight:700">🛵 FarmaClub — Frete por Endereço</div>
-  <div style="font-size:12px;opacity:.8;margin-top:3px">Busca rua real · GPS · Itaperuna/RJ · OpenStreetMap</div>
-  <div style="font-size:11px;opacity:.7;margin-top:6px" id="hero-info">Carregando...</div>
+  <div>
+    <div class="hero-tit">🛵 FarmaClub — Frete Inteligente</div>
+    <div class="hero-sub">Busca por rua real · Distância GPS · Itaperuna/RJ · OpenStreetMap</div>
+  </div>
+  <div style="text-align:right;font-size:11px;opacity:.75">100% gratuito<br>sem cartão</div>
 </div>
 
 <div class="tabs">
-  <button class="tab ativo" onclick="setTab('simular',this)">🗺 Calcular frete</button>
+  <button class="tab ativo" onclick="setTab('simular',this)">🗺 Simular entrega</button>
   <button class="tab" onclick="setTab('farmacias',this)">🏥 Farmácias</button>
-  <button class="tab" onclick="setTab('config',this)">⚙ Config</button>
+  <button class="tab" onclick="setTab('config',this)">⚙ Configurar</button>
 </div>
 
-<!-- SIMULAR -->
+<!-- ABA SIMULAR -->
 <div id="tab-simular">
-  <div class="card">
-    <div style="font-weight:600;font-size:13px;margin-bottom:12px">📍 Endereço de entrega</div>
-    <div class="ac-wrap">
-      <label class="lbl">Rua ou bairro em Itaperuna</label>
-      <input type="text" id="inp-rua" placeholder="Ex: Rua das Flores, Parque Noel..." autocomplete="off" oninput="buscarEnd(this.value)">
-      <div id="ac-list" class="ac-list" style="display:none"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:10px">
-      <div><label class="lbl">Complemento</label><input type="text" id="inp-comp" placeholder="Apto..."></div>
-      <div><label class="lbl">Número</label><input type="text" id="inp-num" placeholder="Nº"></div>
-    </div>
-    <div id="end-ok" style="display:none;background:#f0fdf8;border:1px solid #b2ece7;border-radius:8px;padding:9px;margin-bottom:10px">
-      <div style="font-weight:600;color:#3BAA35;font-size:12px" id="end-nome">—</div>
-      <div style="font-size:10px;color:#888;margin-top:2px" id="end-coord">—</div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div><label class="lbl">Valor dos produtos (R$)</label><input type="number" id="inp-val" value="85.00" step="0.01" oninput="calcFrete()"></div>
-      <div><label class="lbl">Horário</label><input type="time" id="inp-hora" value="14:00" onchange="calcFrete()"></div>
-    </div>
-    <div id="st-busca" style="min-height:18px;margin-top:8px;font-size:11px;color:#3BAA35"></div>
-  </div>
-
-  <!-- Mapa SVG — 100% offline -->
-  <div class="card" style="padding:12px">
-    <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:8px">MAPA — clique numa farmácia para calcular</div>
-    <div style="background:#e8f4f0;border-radius:10px;overflow:hidden;border:1px solid #c8e6c9">
-      <svg id="svg-mapa" width="100%" viewBox="0 0 500 300" style="display:block"></svg>
-    </div>
-    <div style="font-size:10px;color:#aaa;text-align:center;margin-top:5px">Endereço buscado via OpenStreetMap · Internet necessária para busca de ruas</div>
-  </div>
-
-  <div id="card-farms" class="card" style="display:none">
-    <div style="font-weight:600;font-size:13px;margin-bottom:10px">🏥 Farmácias — por proximidade</div>
-    <div id="lista-farms"></div>
-  </div>
-
-  <div id="res-box" style="display:none">
-    <div class="res-box">
-      <div style="font-size:11px;opacity:.8;margin-bottom:4px">Frete estimado</div>
-      <div style="font-size:30px;font-weight:700" id="res-frete">—</div>
-      <div style="font-size:11px;margin-top:8px;opacity:.85;line-height:1.6" id="res-det">—</div>
-    </div>
+<div class="grid2">
+  <div>
     <div class="card">
-      <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:10px">RESUMO PARA O CLIENTE</div>
-      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f5f5f5;font-size:13px"><span>🛒 Produtos</span><span style="font-weight:700" id="res-prod">—</span></div>
-      <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f5f5f5;font-size:13px"><span id="res-ent-lbl">🛵 Entrega</span><span style="font-weight:700;color:#3BAA35" id="res-ent-val">—</span></div>
-      <div style="display:flex;justify-content:space-between;padding:8px 0 0;font-size:15px;font-weight:700"><span>Total</span><span style="color:#3BAA35" id="res-tot">—</span></div>
-      <div id="av-pico" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px;font-size:11px;color:#d97706">🔥 Horário de pico — multiplicador aplicado</div>
-      <div id="av-grat" style="display:none;margin-top:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:8px;font-size:11px;color:#16a34a">🎉 Frete grátis!</div>
+      <div style="font-weight:600;font-size:13px;margin-bottom:12px">📍 Endereço de entrega</div>
+      <div class="autocomplete-wrap">
+        <label>Rua ou bairro em Itaperuna</label>
+        <input type="text" id="inp-rua" placeholder="Ex: Rua das Flores, Parque Noel..."
+          autocomplete="off" oninput="buscarEnd(this.value)">
+        <div id="lista-end" class="autocomplete-list" style="display:none"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <label>Complemento</label>
+          <input type="text" id="inp-comp" placeholder="Apto, bloco...">
+        </div>
+        <div>
+          <label>Número</label>
+          <input type="text" id="inp-num" placeholder="Nº">
+        </div>
+      </div>
+      <div id="end-sel" style="display:none;background:#f0fdf8;border:1px solid #b2ece7;border-radius:8px;padding:9px;margin-bottom:10px;font-size:12px">
+        <div style="font-weight:600;color:#0d9488" id="end-nome">—</div>
+        <div style="color:#888;font-size:10px;margin-top:2px" id="end-coord">—</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <label>Valor dos produtos (R$)</label>
+          <input type="number" id="inp-val" value="85.00" step="0.01" oninput="calcFrete()">
+        </div>
+        <div>
+          <label>Horário</label>
+          <input type="time" id="inp-hora" value="14:00" onchange="calcFrete()">
+        </div>
+      </div>
+      <div id="status-busca" style="margin-top:8px;min-height:18px;font-size:11px;color:#0d9488"></div>
+    </div>
+    <div class="card" style="padding:8px">
+      <div id="mapa"></div>
+      <div style="font-size:10px;color:#aaa;text-align:center;margin-top:5px">
+        © OpenStreetMap · Clique no mapa para definir entrega
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card">
+      <div style="font-weight:600;font-size:13px;margin-bottom:10px">🏥 Farmácias — ordenadas por distância</div>
+      <div id="lista-farms">
+        <div style="font-size:12px;color:#aaa;padding:10px 0">Informe o endereço para ordenar por proximidade</div>
+      </div>
+    </div>
+    <div id="res-box" style="display:none">
+      <div class="resultado-box">
+        <div style="font-size:11px;opacity:.8;margin-bottom:4px">Frete estimado</div>
+        <div style="font-size:28px;font-weight:700" id="res-frete">R$ 0,00</div>
+        <div style="font-size:11px;margin-top:8px;opacity:.85" id="res-det">—</div>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:10px;letter-spacing:.5px">COMO O CLIENTE VÊ</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+          <span>🛒 Produtos</span><span style="font-weight:700" id="res-prod">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+          <span id="res-ent-lbl">🛵 Entrega</span>
+          <span style="font-weight:700;color:#0d9488" id="res-ent-val">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid #eee;padding-top:8px">
+          <span>Total</span><span style="color:#0d9488" id="res-tot">—</span>
+        </div>
+        <div id="aviso-pico" style="display:none;margin-top:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:7px;font-size:11px;color:#d97706">🔥 Horário de pico — preço ajustado</div>
+        <div id="aviso-gratis" style="display:none;margin-top:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:7px;font-size:11px;color:#16a34a">🎉 Frete grátis! Pedido acima do mínimo</div>
+      </div>
     </div>
   </div>
 </div>
+</div>
 
-<!-- FARMÁCIAS -->
+<!-- ABA FARMÁCIAS -->
 <div id="tab-farmacias" style="display:none">
   <div class="card">
-    <div style="font-weight:600;font-size:13px;margin-bottom:4px">Farmácias parceiras FarmaClub</div>
-    <div style="font-size:11px;color:#888;margin-bottom:14px">Dados do cadastro central — mesma fonte usada pela contabilidade</div>
+    <div style="font-weight:600;font-size:13px;margin-bottom:12px">Farmácias parceiras FarmaClub — Itaperuna</div>
+    <div id="mapa-farms" style="height:300px;border-radius:10px;overflow:hidden;margin-bottom:14px;border:1px solid #e5e5e5"></div>
     <div id="lista-farms-full"></div>
-    <div style="margin-top:14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;font-size:12px;color:#1d4ed8;line-height:1.6">
-      <strong>Arquitetura FarmaClub:</strong> cada farmácia é cadastrada uma única vez com CNPJ, endereço e coordenadas. O frete, o app do cliente, a contabilidade e o ERP central puxam todos do mesmo cadastro — sem repetição, sem inconsistência.
-    </div>
   </div>
 </div>
 
-<!-- CONFIG -->
+<!-- ABA CONFIG -->
 <div id="tab-config" style="display:none">
+<div class="grid2">
   <div class="card">
-    <div style="font-weight:600;font-size:13px;margin-bottom:14px">⚙ Parâmetros de frete</div>
+    <div style="font-weight:600;font-size:13px;margin-bottom:16px">Parâmetros de frete</div>
     <div style="margin-bottom:14px">
-      <label class="lbl">Taxa base (bandeirada)</label>
-      <div class="cfg-row"><input type="range" id="sl-base" min="1" max="8" step=".5" value="3" oninput="updCfg()"><span class="cfg-val" id="vl-base">R$ 3,00</span></div>
+      <label>Taxa base (bandeirada)</label>
+      <div class="config-row"><input type="range" id="sl-base" min="1" max="8" step=".5" value="3" oninput="updCfg()"><span class="config-val" id="vl-base">R$ 3,00</span></div>
     </div>
     <div style="margin-bottom:14px">
-      <label class="lbl">Valor por km</label>
-      <div class="cfg-row"><input type="range" id="sl-km" min=".5" max="4" step=".1" value="1.5" oninput="updCfg()"><span class="cfg-val" id="vl-km">R$ 1,50/km</span></div>
+      <label>Valor por km</label>
+      <div class="config-row"><input type="range" id="sl-km" min=".5" max="4" step=".1" value="1.5" oninput="updCfg()"><span class="config-val" id="vl-km">R$ 1,50/km</span></div>
     </div>
     <div style="margin-bottom:14px">
-      <label class="lbl">Multiplicador pico (11h–13h · 18h–20h)</label>
-      <div class="cfg-row"><input type="range" id="sl-pico" min="1" max="2.5" step=".1" value="1.4" oninput="updCfg()"><span class="cfg-val" id="vl-pico">1.4×</span></div>
+      <label>Multiplicador pico (11h–13h · 18h–20h)</label>
+      <div class="config-row"><input type="range" id="sl-pico" min="1" max="2.5" step=".1" value="1.4" oninput="updCfg()"><span class="config-val" id="vl-pico">1.4×</span></div>
     </div>
     <div style="margin-bottom:14px">
-      <label class="lbl">Frete grátis acima de (0 = desativado)</label>
-      <div class="cfg-row"><input type="range" id="sl-grat" min="0" max="300" step="10" value="150" oninput="updCfg()"><span class="cfg-val" id="vl-grat">R$ 150</span></div>
+      <label>Frete grátis acima de (0 = desativado)</label>
+      <div class="config-row"><input type="range" id="sl-grat" min="0" max="300" step="10" value="150" oninput="updCfg()"><span class="config-val" id="vl-grat">R$ 150</span></div>
     </div>
     <div style="margin-bottom:16px">
-      <label class="lbl">Velocidade média motoboy (km/h)</label>
-      <div class="cfg-row"><input type="range" id="sl-vel" min="15" max="50" step="1" value="25" oninput="updCfg()"><span class="cfg-val" id="vl-vel">25 km/h</span></div>
+      <label>Velocidade média do motoboy (km/h)</label>
+      <div class="config-row"><input type="range" id="sl-vel" min="15" max="50" step="1" value="25" oninput="updCfg()"><span class="config-val" id="vl-vel">25 km/h</span></div>
     </div>
-    <button class="btn-pri" onclick="salvarCfg()">✓ Salvar configurações</button>
+    <button class="btn-pri" onclick="salvarCfg()">Salvar configurações</button>
   </div>
   <div class="card">
-    <div style="font-weight:600;font-size:13px;margin-bottom:12px">Tabela de fretes simulados</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px">
+    <div style="font-weight:600;font-size:13px;margin-bottom:12px">Tabela de fretes por distância</div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px" id="tabela-cfg">
       <thead><tr style="background:#f8f8f8">
-        <th style="padding:8px;text-align:left;color:#888;font-weight:500">Dist.</th>
-        <th style="padding:8px;text-align:right;color:#888;font-weight:500">Normal</th>
-        <th style="padding:8px;text-align:right;color:#888;font-weight:500">Pico</th>
-        <th style="padding:8px;text-align:right;color:#888;font-weight:500">Tempo</th>
+        <th style="padding:8px;text-align:left;font-weight:500;color:#888">Distância</th>
+        <th style="padding:8px;text-align:right;font-weight:500;color:#888">Normal</th>
+        <th style="padding:8px;text-align:right;font-weight:500;color:#888">Pico</th>
+        <th style="padding:8px;text-align:right;font-weight:500;color:#888">Tempo</th>
       </tr></thead>
-      <tbody id="tbody-sim"></tbody>
+      <tbody id="tbody-cfg"></tbody>
     </table>
   </div>
 </div>
-
 </div>
+
+</div><!-- /app -->
+
 <script>
+// CONFIG
 let cfg={base:3,km:1.5,pico:1.4,gratis:150,vel:25};
 const fmt=v=>"R$ "+v.toFixed(2).replace(".",",");
+const fmtK=v=>v.toFixed(1)+" km";
 
-// FARMÁCIAS — usa cadastro central se disponível
-const farms=(typeof FARMACLUB!=="undefined")?FARMACLUB.farmacias:[
-  {id:1,nome:"Farmácia São João",bairro:"Centro",endereco_completo:"Rua Getúlio Vargas, 342 — Centro",cnpj:"12.345.678/0001-90",telefone:"(22) 3822-1234",horario:"Seg–Sex 8h–20h · Sáb 8h–18h",lat:-21.2062,lng:-41.8878,aberto:true,nota:4.9,cor:"#3BAA35"},
-  {id:2,nome:"Vida & Saúde",bairro:"Parque Noel",endereco_completo:"Av. Amaro Soares, 88 — Parque Noel",cnpj:"23.456.789/0001-01",telefone:"(22) 3822-5678",horario:"Seg–Sáb 7h–22h",lat:-21.1980,lng:-41.8820,aberto:true,nota:4.7,cor:"#2563eb"},
-  {id:3,nome:"Farmácia Popular",bairro:"São Cristóvão",endereco_completo:"Rua 7 de Setembro, 201",cnpj:"34.567.890/0001-12",telefone:"(22) 3822-9012",horario:"Seg–Sex 8h–19h",lat:-21.2120,lng:-41.8950,aberto:false,nota:4.5,cor:"#dc2626"},
-  {id:4,nome:"Drogaria Esperança",bairro:"Morro do Crica",endereco_completo:"Av. Principal, 10",cnpj:"45.678.901/0001-23",telefone:"(22) 3822-3456",horario:"Seg–Sex 8h–20h",lat:-21.2150,lng:-41.8820,aberto:true,nota:4.7,cor:"#d97706"},
-  {id:5,nome:"Farmácia Boa Saúde",bairro:"Meudon",endereco_completo:"Rua das Flores, 55",cnpj:"56.789.012/0001-34",telefone:"(22) 3822-7890",horario:"Seg–Sex 8h–20h",lat:-21.1950,lng:-41.8780,aberto:true,nota:4.6,cor:"#7c3aed"},
-  {id:6,nome:"Drogaria Central",bairro:"Boa Sorte",endereco_completo:"Rua Central, 120",cnpj:"67.890.123/0001-45",telefone:"(22) 3822-2345",horario:"Seg–Sex 8h–19h",lat:-21.2200,lng:-41.8900,aberto:false,nota:4.5,cor:"#0891b2"},
+// FARMÁCIAS
+const farms=[
+  {id:1,nome:"Farmácia São João",bairro:"Centro",end:"Rua Getúlio Vargas, 342",lat:-21.2062,lng:-41.8878,aberto:true,nota:4.9},
+  {id:2,nome:"Vida & Saúde",bairro:"Parque Noel",end:"Av. Amaro Soares, 88",lat:-21.1980,lng:-41.8820,aberto:true,nota:4.7},
+  {id:3,nome:"Farmácia Popular",bairro:"São Cristóvão",end:"Rua 7 de Setembro, 201",lat:-21.2120,lng:-41.8950,aberto:false,nota:4.5},
+  {id:4,nome:"Drogaria Esperança",bairro:"Morro do Crica",end:"Av. Principal, 10",lat:-21.2150,lng:-41.8820,aberto:true,nota:4.7},
+  {id:5,nome:"Farmácia Boa Saúde",bairro:"Meudon",end:"Rua das Flores, 55",lat:-21.1950,lng:-41.8780,aberto:true,nota:4.6},
+  {id:6,nome:"Drogaria Central",bairro:"Boa Sorte",end:"Rua Central, 120",lat:-21.2200,lng:-41.8900,aberto:false,nota:4.5},
 ];
 
-let coordCli=null,farmSel=null,timer=null,busca=[];
+// MAPA
+let mapa=null,mapaF=null,mCliente=null,linhaMapa=null;
+let coordCli=null,farmSel=null,timer=null;
 
-// HERO
-document.getElementById("hero-info").textContent=
-  farms.length+" farmácias cadastradas · "+farms.filter(f=>f.aberto).length+" abertas agora";
+function haversine(a,b,c,d){
+  const R=6371,dL=(c-a)*Math.PI/180,dN=(d-b)*Math.PI/180;
+  const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dN/2)**2;
+  return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
 
-// MAPA SVG (offline)
-function initSVG(){
-  const cLat=-21.2062,cLng=-41.8878,W=500,H=300,esc=2600;
-  const p=(lat,lng)=>({x:W/2+(lng-cLng)*esc,y:H/2-(lat-cLat)*esc});
-  window._p=p;
-  const bairros=[
-    {n:"Centro",lat:-21.206,lng:-41.888},{n:"Parque Noel",lat:-21.198,lng:-41.882},
-    {n:"S. Cristóvão",lat:-21.212,lng:-41.895},{n:"M. do Crica",lat:-21.215,lng:-41.882},
-    {n:"Meudon",lat:-21.195,lng:-41.878},{n:"Boa Sorte",lat:-21.220,lng:-41.890},
-    {n:"Retiro",lat:-21.202,lng:-41.876},{n:"Boa Ventura",lat:-21.199,lng:-41.897},
-  ];
-  let s=`
-    <rect width="500" height="300" fill="#e8f4f0"/>
-    <line x1="0" y1="150" x2="500" y2="150" stroke="#fff" stroke-width="2.5" opacity=".5"/>
-    <line x1="250" y1="0" x2="250" y2="300" stroke="#fff" stroke-width="2.5" opacity=".5"/>
-    <line x1="0" y1="90" x2="500" y2="170" stroke="#fff" stroke-width="1.5" opacity=".3"/>
-    <line x1="0" y1="210" x2="500" y2="110" stroke="#fff" stroke-width="1.5" opacity=".3"/>
-    <path d="M0,195 Q80,185 160,205 Q240,225 320,195 Q400,165 500,180" fill="none" stroke="#7ec8e3" stroke-width="5" opacity=".5"/>
-    <text x="55" y="212" font-size="9" fill="#4a90b8" opacity=".7">Rio Muriaé</text>`;
-  bairros.forEach(b=>{const q=p(b.lat,b.lng);s+=`<text x="${q.x}" y="${q.y}" text-anchor="middle" font-size="9" fill="#666" opacity=".65">${b.n}</text>`;});
+function initMapa(){
+  mapa=L.map("mapa").setView([-21.2062,-41.8878],14);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:19}).addTo(mapa);
   farms.forEach(f=>{
-    const q=p(f.lat,f.lng);
-    s+=`<g onclick="clicarFarm(${f.id},${f.lat},${f.lng},'${(f.endereco_completo||f.bairro).replace(/'/g,"")}')" style="cursor:pointer" title="${f.nome}">
-      <circle cx="${q.x}" cy="${q.y}" r="15" fill="${f.cor}" opacity="${f.aberto?.85:.35}" stroke="white" stroke-width="2.5"/>
-      <text x="${q.x}" y="${q.y+4}" text-anchor="middle" font-size="9" fill="white" font-weight="700">F${f.id}</text>
-      <text x="${q.x}" y="${q.y+23}" text-anchor="middle" font-size="8" fill="${f.cor}" font-weight="600">${f.nome.split(" ")[0]}</text>
-    </g>`;
+    L.marker([f.lat,f.lng]).addTo(mapa)
+      .bindPopup(`<strong>${f.nome}</strong><br>${f.end}<br>${f.aberto?"✅ Aberta":"❌ Fechada"}`);
   });
-  s+=`<g id="g-cli" style="display:none">
-    <circle id="c-cli" cx="250" cy="150" r="9" fill="#dc2626" stroke="white" stroke-width="3"/>
-    <text id="t-cli" x="250" y="138" text-anchor="middle" font-size="9" fill="#dc2626" font-weight="600">📍</text>
-  </g>
-  <line id="l-rota" x1="0" y1="0" x2="0" y2="0" stroke="#3BAA35" stroke-width="2.5" stroke-dasharray="7 3" opacity="0"/>`;
-  document.getElementById("svg-mapa").innerHTML=s;
-}
-
-function updSVGCli(lat,lng){
-  if(!window._p) return;
-  const q=window._p(lat,lng);
-  ["c-cli","t-cli"].forEach(id=>{const e=document.getElementById(id);if(e){e.setAttribute("cx",q.x);e.setAttribute("cy",q.y);e.setAttribute("x",q.x);}});
-  const g=document.getElementById("g-cli");if(g)g.style.display="block";
-}
-
-function updSVGRota(cLat,cLng,fLat,fLng){
-  if(!window._p) return;
-  const a=window._p(cLat,cLng),b=window._p(fLat,fLng);
-  const l=document.getElementById("l-rota");
-  if(l){l.setAttribute("x1",a.x);l.setAttribute("y1",a.y);l.setAttribute("x2",b.x);l.setAttribute("y2",b.y);l.setAttribute("opacity","0.8");}
-}
-
-window.clicarFarm=function(id,lat,lng,end){farmSel=id;setCoord(lat,lng,end);};
-
-// BUSCA NOMINATIM
-function buscarEnd(q){
-  clearTimeout(timer);
-  const l=document.getElementById("ac-list");
-  if(q.length<3){l.style.display="none";return;}
-  document.getElementById("st-busca").innerHTML=`<span class="spin"></span>Buscando em Itaperuna...`;
-  timer=setTimeout(async()=>{
-    try{
-      const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+" Itaperuna RJ Brasil")}&format=json&limit=6&addressdetails=1&accept-language=pt-BR`;
-      const r=await fetch(url,{headers:{"User-Agent":"FarmaClub/1.0"}});
-      const d=await r.json();
-      document.getElementById("st-busca").textContent="";
-      if(!d.length){l.innerHTML=`<div class="ac-item"><span>🔍</span><div><div style="font-weight:500">Sem resultado para "${q}"</div><div style="font-size:10px;color:#888">Tente outro nome de rua ou bairro</div></div></div>`;l.style.display="block";return;}
-      busca=d;
-      l.innerHTML=d.map((x,i)=>`<div class="ac-item" onclick="selEnd(${i})">
-        <span style="font-size:16px;flex-shrink:0">📍</span>
-        <div><div style="font-weight:500">${x.display_name.split(",").slice(0,2).join(",")}</div>
-        <div style="font-size:10px;color:#888">${x.display_name.split(",").slice(2,4).join(",").trim()}</div></div>
-      </div>`).join("");
-      l.style.display="block";
-    }catch(e){document.getElementById("st-busca").innerHTML=`<span style="color:#dc2626">Erro. Verifique a internet.</span>`;}
-  },600);
-}
-
-function selEnd(i){
-  const d=busca[i];
-  document.getElementById("inp-rua").value=d.display_name.split(",").slice(0,2).join(",");
-  document.getElementById("ac-list").style.display="none";
-  setCoord(parseFloat(d.lat),parseFloat(d.lon),d.display_name);
+  mapa.on("click",e=>setCoord(e.latlng.lat,e.latlng.lng,"Ponto selecionado no mapa"));
 }
 
 function setCoord(lat,lng,nome){
   coordCli={lat,lng};
-  document.getElementById("end-ok").style.display="block";
-  document.getElementById("end-nome").textContent=nome.split(",").slice(0,3).join(",");
+  if(mCliente) mapa.removeLayer(mCliente);
+  mCliente=L.circleMarker([lat,lng],{radius:10,fillColor:"#dc2626",color:"white",weight:3,fillOpacity:1}).addTo(mapa).bindPopup("📍 Entrega");
+  mapa.setView([lat,lng],15);
+  document.getElementById("end-sel").style.display="block";
+  document.getElementById("end-nome").textContent=nome.split(",").slice(0,2).join(",");
   document.getElementById("end-coord").textContent=`${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-  updSVGCli(lat,lng);
   calcFrete();
 }
 
-// HAVERSINE
-function hav(a,b,c,d){
-  const R=6371,dL=(c-a)*Math.PI/180,dN=(d-b)*Math.PI/180;
-  const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dN/2)**2;
-  return+(R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))).toFixed(2);
+// BUSCA NOMINATIM
+function buscarEnd(q){
+  clearTimeout(timer);
+  const lista=document.getElementById("lista-end");
+  if(q.length<3){lista.style.display="none";return;}
+  document.getElementById("status-busca").innerHTML=`<span class="spinner"></span>Buscando...`;
+  timer=setTimeout(async()=>{
+    try{
+      const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q+" Itaperuna RJ Brasil")}&format=json&limit=6&addressdetails=1&accept-language=pt-BR`;
+      const r=await fetch(url,{"headers":{"User-Agent":"FarmaClub/1.0"}});
+      const d=await r.json();
+      document.getElementById("status-busca").textContent="";
+      if(!d.length){
+        lista.innerHTML=`<div class="ac-item"><span>🔍</span><div><div class="rua">Nenhum resultado</div><div class="det">Tente outro nome</div></div></div>`;
+        lista.style.display="block";return;
+      }
+      window._res=d;
+      lista.innerHTML=d.map((x,i)=>`<div class="ac-item" tabindex="0" onclick="selEnd(${i})">
+        <span>📍</span><div>
+          <div class="rua">${x.display_name.split(",")[0]}</div>
+          <div class="det">${x.display_name.split(",").slice(1,3).join(",").trim()}</div>
+        </div></div>`).join("");
+      lista.style.display="block";
+    }catch(e){document.getElementById("status-busca").textContent="Erro na busca.";}
+  },500);
+}
+
+function selEnd(i){
+  const d=window._res[i];
+  document.getElementById("inp-rua").value=d.display_name.split(",").slice(0,2).join(",");
+  document.getElementById("lista-end").style.display="none";
+  setCoord(parseFloat(d.lat),parseFloat(d.lon),d.display_name);
 }
 
 // CALCULAR FRETE
@@ -285,96 +284,130 @@ function calcFrete(){
   const h=parseInt(hora.split(":")[0]);
   const pico=(h>=11&&h<=13)||(h>=18&&h<=20);
   const mult=pico?cfg.pico:1;
+
   const lista=farms.map(f=>{
-    const dist=hav(coordCli.lat,coordCli.lng,f.lat,f.lng);
-    const fr=Math.max(cfg.base,+((cfg.base+cfg.km*dist)*mult).toFixed(2));
-    const grat=cfg.gratis>0&&val>=cfg.gratis;
-    return{...f,dist,fr,frCli:grat?0:fr,grat,tempo:Math.round((dist/cfg.vel)*60)+5};
+    const dist=haversine(coordCli.lat,coordCli.lng,f.lat,f.lng);
+    let fr=+(( cfg.base+cfg.km*dist)*mult).toFixed(2);
+    fr=Math.max(cfg.base,fr);
+    const gratis=cfg.gratis>0&&val>=cfg.gratis;
+    const frCli=gratis?0:fr;
+    const tempo=Math.round((dist/cfg.vel)*60)+5;
+    return{...f,dist:+dist.toFixed(2),fr,frCli,gratis,tempo};
   }).sort((a,b)=>a.dist-b.dist);
+
   const melhor=lista.find(f=>f.aberto)||lista[0];
   if(!farmSel) farmSel=melhor.id;
   const sel=lista.find(f=>f.id===farmSel)||melhor;
-  document.getElementById("card-farms").style.display="block";
+
   document.getElementById("lista-farms").innerHTML=lista.map((f,i)=>`
-    <div class="farm-item ${f.id===sel.id?"sel":i===0&&f.aberto?"melhor":""}" onclick="selFarm(${f.id})" style="opacity:${f.aberto?1:.5}">
-      <div style="font-size:20px;flex-shrink:0">${i===0&&f.aberto?"⭐":"🏥"}</div>
+    <div class="farm-card ${f.id===sel.id?"selecionada":i===0&&f.aberto?"melhor":""}"
+      onclick="selFarm(${f.id})" style="opacity:${f.aberto?1:.55}">
+      <div style="font-size:22px">${i===0&&f.aberto?"⭐":"🏥"}</div>
       <div style="flex:1">
-        <div style="font-weight:600;font-size:13px">${f.nome}</div>
-        <div style="font-size:11px;color:#888;margin-top:2px">${f.bairro} · ${f.dist.toFixed(1)}km · ~${f.tempo}min</div>
-        <div style="font-size:11px;color:${f.aberto?"#16a34a":"#dc2626"};margin-top:2px">${f.aberto?"● Aberta":"● Fechada"}${i===0&&f.aberto?' · <strong style="color:#3BAA35">mais próxima</strong>':""}</div>
+        <div style="font-weight:600;font-size:12px">${f.nome}</div>
+        <div style="font-size:10px;color:#888;margin-top:2px">${f.bairro} · ${fmtK(f.dist)} · ~${f.tempo}min</div>
+        <div style="font-size:10px;color:${f.aberto?"#16a34a":"#dc2626"};margin-top:2px">
+          ${f.aberto?"● Aberta":"● Fechada"}${i===0&&f.aberto?' · <strong style="color:#0d9488">mais próxima</strong>':""}
+        </div>
       </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div style="font-weight:700;font-size:14px;color:${f.grat?"#16a34a":"#3BAA35"}">${f.grat?"Grátis":fmt(f.frCli)}</div>
-        <div style="font-size:10px;color:#aaa">${f.dist.toFixed(1)}km</div>
+      <div style="text-align:right">
+        <div style="font-weight:700;font-size:13px;color:${f.gratis?"#16a34a":"#0d9488"}">${f.gratis?"Grátis":fmt(f.frCli)}</div>
+        <div style="font-size:10px;color:#aaa">frete</div>
       </div>
     </div>`).join("");
-  const frE=sel.grat?0:sel.frCli;
+
+  const frE=sel.gratis?0:sel.frCli;
   document.getElementById("res-box").style.display="block";
-  document.getElementById("res-frete").textContent=sel.grat?"GRÁTIS 🎉":fmt(sel.frCli);
-  document.getElementById("res-det").innerHTML=`<strong>${sel.nome}</strong><br>${sel.dist.toFixed(1)}km · ~${sel.tempo}min<br>Base ${fmt(cfg.base)} + ${sel.dist.toFixed(1)}km × R$${cfg.km.toFixed(2)}/km${pico?` × ${cfg.pico.toFixed(1)}× (pico)`:""}`;
+  document.getElementById("res-frete").textContent=sel.gratis?"GRÁTIS 🎉":fmt(sel.frCli);
+  document.getElementById("res-det").innerHTML=`${sel.nome} · ${fmtK(sel.dist)} · ~${sel.tempo}min<br>Base ${fmt(cfg.base)} + ${sel.dist}km × R$${cfg.km.toFixed(2)}/km${pico?` × ${mult}× (pico)`:""}`;
   document.getElementById("res-prod").textContent=fmt(val);
   document.getElementById("res-ent-lbl").textContent=`🛵 Entrega (~${sel.tempo}min)`;
-  document.getElementById("res-ent-val").textContent=sel.grat?"Grátis":fmt(frE);
-  document.getElementById("res-ent-val").style.color=sel.grat?"#16a34a":"#3BAA35";
+  document.getElementById("res-ent-val").textContent=sel.gratis?"Grátis":fmt(frE);
+  document.getElementById("res-ent-val").style.color=sel.gratis?"#16a34a":"#0d9488";
   document.getElementById("res-tot").textContent=fmt(val+frE);
-  document.getElementById("av-pico").style.display=pico?"block":"none";
-  document.getElementById("av-grat").style.display=sel.grat?"block":"none";
-  updSVGRota(coordCli.lat,coordCli.lng,sel.lat,sel.lng);
+  document.getElementById("aviso-pico").style.display=pico?"block":"none";
+  document.getElementById("aviso-gratis").style.display=sel.gratis?"block":"none";
+
+  if(linhaMapa) mapa.removeLayer(linhaMapa);
+  linhaMapa=L.polyline([[coordCli.lat,coordCli.lng],[sel.lat,sel.lng]],
+    {color:"#0d9488",weight:3,dashArray:"8 4",opacity:.7}).addTo(mapa);
 }
+
 window.selFarm=function(id){farmSel=id;calcFrete();};
 
 // CONFIG
 function updCfg(){
-  cfg.base=+document.getElementById("sl-base").value;cfg.km=+document.getElementById("sl-km").value;
-  cfg.pico=+document.getElementById("sl-pico").value;cfg.gratis=+document.getElementById("sl-grat").value;
+  cfg.base=+document.getElementById("sl-base").value;
+  cfg.km=+document.getElementById("sl-km").value;
+  cfg.pico=+document.getElementById("sl-pico").value;
+  cfg.gratis=+document.getElementById("sl-grat").value;
   cfg.vel=+document.getElementById("sl-vel").value;
   document.getElementById("vl-base").textContent="R$ "+cfg.base.toFixed(2);
   document.getElementById("vl-km").textContent="R$ "+cfg.km.toFixed(2)+"/km";
   document.getElementById("vl-pico").textContent=cfg.pico.toFixed(1)+"×";
   document.getElementById("vl-grat").textContent=cfg.gratis===0?"Desativado":"R$ "+cfg.gratis.toFixed(0);
   document.getElementById("vl-vel").textContent=cfg.vel+" km/h";
-  renderSim();if(coordCli) calcFrete();
+  renderTabCfg();
+  if(coordCli) calcFrete();
 }
-function renderSim(){
-  document.getElementById("tbody-sim").innerHTML=[.5,1,1.5,2,3,4,5,7,9].map((d,i,a)=>{
-    const fn=+(cfg.base+cfg.km*d).toFixed(2),fp=+(fn*cfg.pico).toFixed(2),t=Math.round((d/cfg.vel)*60)+5;
-    return`<tr style="border-bottom:${i<a.length-1?"1px solid #f5f5f5":"none"}"><td style="padding:7px">${d}km</td><td style="padding:7px;text-align:right;font-weight:600;color:#3BAA35">${fmt(fn)}</td><td style="padding:7px;text-align:right;font-weight:600;color:#d97706">${fmt(fp)}</td><td style="padding:7px;text-align:right;color:#888">~${t}min</td></tr>`;
+
+function renderTabCfg(){
+  const ds=[0.5,1,1.5,2,3,4,5,7,9];
+  document.getElementById("tbody-cfg").innerHTML=ds.map((d,i)=>{
+    const fn=+(cfg.base+cfg.km*d).toFixed(2);
+    const fp=+(fn*cfg.pico).toFixed(2);
+    const t=Math.round((d/cfg.vel)*60)+5;
+    return`<tr style="border-bottom:${i<ds.length-1?"1px solid #f5f5f5":"none"}">
+      <td style="padding:7px;color:#555">${d} km</td>
+      <td style="padding:7px;text-align:right;font-weight:600;color:#0d9488">${fmt(fn)}</td>
+      <td style="padding:7px;text-align:right;font-weight:600;color:#d97706">${fmt(fp)}</td>
+      <td style="padding:7px;text-align:right;color:#888">~${t}min</td>
+    </tr>`;
   }).join("");
 }
-function salvarCfg(){localStorage.setItem("fc_cfg",JSON.stringify(cfg));alert("✓ Salvo!");}
+
+function salvarCfg(){
+  localStorage.setItem("farmaclub_cfg",JSON.stringify(cfg));
+  alert("✓ Configurações salvas!");
+}
 
 // TABS
 function setTab(t,btn){
   ["simular","farmacias","config"].forEach(x=>document.getElementById("tab-"+x).style.display=x===t?"block":"none");
   document.querySelectorAll(".tab").forEach(b=>b.classList.remove("ativo"));
   if(btn) btn.classList.add("ativo");
-  if(t==="farmacias") renderFarmsLista();
-}
-function renderFarmsLista(){
-  document.getElementById("lista-farms-full").innerHTML=farms.map(f=>`
-    <div style="padding:12px 0;border-bottom:1px solid #f5f5f5">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">
-        <div style="width:10px;height:10px;border-radius:50%;background:${f.aberto?"#16a34a":"#dc2626"};flex-shrink:0"></div>
-        <div style="font-weight:600">${f.nome}</div>
-        <div style="margin-left:auto;font-size:11px;color:${f.aberto?"#16a34a":"#dc2626"}">${f.aberto?"Aberta":"Fechada"}</div>
-      </div>
-      <div style="font-size:12px;color:#888;line-height:1.8;padding-left:20px">
-        📍 ${f.endereco_completo||f.bairro}<br>
-        📞 ${f.telefone||"—"} · 🕐 ${f.horario||"—"}<br>
-        ${f.cnpj?`🏢 CNPJ: ${f.cnpj}<br>`:""}
-        ★ ${f.nota} · GPS: ${f.lat}, ${f.lng}
-      </div>
-    </div>`).join("");
+  if(t==="farmacias"&&!mapaF){
+    setTimeout(()=>{
+      mapaF=L.map("mapa-farms").setView([-21.2062,-41.8878],14);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:19}).addTo(mapaF);
+      farms.forEach(f=>L.marker([f.lat,f.lng]).addTo(mapaF).bindPopup(`<strong>${f.nome}</strong><br>${f.end}<br>${f.aberto?"✅ Aberta":"❌ Fechada"}`));
+      document.getElementById("lista-farms-full").innerHTML=farms.map(f=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #f5f5f5">
+          <div style="width:10px;height:10px;border-radius:50%;background:${f.aberto?"#16a34a":"#dc2626"};flex-shrink:0"></div>
+          <div style="flex:1">
+            <div style="font-weight:600">${f.nome}</div>
+            <div style="font-size:11px;color:#888">${f.end} · ★ ${f.nota}</div>
+          </div>
+          <div style="font-size:11px;color:${f.aberto?"#16a34a":"#dc2626"}">${f.aberto?"Aberta":"Fechada"}</div>
+        </div>`).join("");
+    },100);
+  }
 }
 
 // FECHAR AUTOCOMPLETE
-document.addEventListener("click",e=>{if(!e.target.closest(".ac-wrap")) document.getElementById("ac-list").style.display="none";});
+document.addEventListener("click",e=>{
+  if(!e.target.closest(".autocomplete-wrap")) document.getElementById("lista-end").style.display="none";
+});
 
 // INIT
 window.addEventListener("load",()=>{
-  const s=localStorage.getItem("fc_cfg");
-  if(s){cfg={...cfg,...JSON.parse(s)};["base","km","pico","vel"].forEach(k=>{const el=document.getElementById("sl-"+k);if(el)el.value=cfg[k];});const eg=document.getElementById("sl-grat");if(eg)eg.value=cfg.gratis;}
-  updCfg();initSVG();
+  const salvo=localStorage.getItem("farmaclub_cfg");
+  if(salvo){cfg={...cfg,...JSON.parse(salvo)};
+    ["base","km","pico","vel"].forEach(k=>document.getElementById("sl-"+k).value=cfg[k]);
+    document.getElementById("sl-grat").value=cfg.gratis;
+  }
+  updCfg();
+  initMapa();
 });
 </script>
 </body>

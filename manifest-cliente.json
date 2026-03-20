@@ -1,0 +1,88 @@
+{
+  "name": "FarmaClub — Medicamentos em Itaperuna",
+  "short_name": "FarmaClub",
+  "description": "Compre medicamentos das farmácias parceiras FarmaClub em Itaperuna/RJ com entrega rápida.",
+  "start_url": "/farmaclub_app_cliente.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#3BAA35",
+  "theme_color": "#3BAA35",
+  "lang": "pt-BR",
+  "categories": ["health", "medical", "shopping"],
+  "icons": [
+    {
+      "src": "icons/cliente-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/cliente-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/cliente-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/cliente-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/cliente-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/cliente-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/cliente-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/cliente-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot-cliente.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Tela inicial do FarmaClub"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buscar medicamento",
+      "short_name": "Buscar",
+      "description": "Buscar medicamentos nas farmácias",
+      "url": "/farmaclub_app_cliente.html#busca",
+      "icons": [{"src": "icons/cliente-96.png", "sizes": "96x96"}]
+    },
+    {
+      "name": "Meus pedidos",
+      "short_name": "Pedidos",
+      "description": "Ver meus pedidos",
+      "url": "/farmaclub_app_cliente.html#pedidos",
+      "icons": [{"src": "icons/cliente-96.png", "sizes": "96x96"}]
+    }
+  ]
+}

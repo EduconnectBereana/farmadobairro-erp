@@ -2,604 +2,469 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
 <title>FarmaClub — App Motoboy</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-:root{
-  --bg:#0e0f14;--bg2:#161820;--bg3:#1e2028;--bg4:#272a34;
-  --t:#f0f2f7;--t2:#9a9eb8;--t3:#5a5e74;
-  --green:#00e08a;--green2:#00b870;--greenBg:#00e08a18;
-  --amber:#ffb83f;--amberBg:#ffb83f18;
-  --red:#ff4d6a;--redBg:#ff4d6a18;
-  --blue:#4d9fff;--blueBg:#4d9fff18;
-  --teal:#0d9488;
-  --r:16px;--r2:12px;--r3:8px;
-}
-html,body{height:100%;background:#1a1a2e;display:flex;align-items:center;justify-content:center;font-family:'DM Sans',sans-serif}
-button,input,select{font-family:inherit}
-.phone{width:390px;height:780px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);display:flex;flex-direction:column}
-.notch{height:44px;background:var(--bg);display:flex;align-items:center;justify-content:space-between;padding:0 24px;flex-shrink:0;position:relative;z-index:10}
-.notch-time{font-size:15px;font-weight:600;color:var(--t);font-family:'DM Mono',monospace}
-.screen{flex:1;overflow:hidden;display:flex;flex-direction:column;position:relative}
-.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .3s;background:var(--bg)}
-.page.hidden{transform:translateX(100%);opacity:0;pointer-events:none}
-.page::-webkit-scrollbar{display:none}
-.hdr{padding:16px 20px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-.hdr-back{width:36px;height:36px;border-radius:50%;background:var(--bg3);border:none;color:var(--t);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.hdr-title{font-size:18px;font-weight:700;color:var(--t)}
-.card{background:var(--bg2);border-radius:var(--r);border:1px solid rgba(255,255,255,.06);padding:16px;margin:0 16px 12px}
-.card-sm{background:var(--bg3);border-radius:var(--r2);border:1px solid rgba(255,255,255,.05);padding:12px}
-.chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
-.btn{width:100%;padding:16px;border-radius:var(--r2);border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
-.btn:active{transform:scale(.97)}
-.btn-green{background:var(--green);color:#0e0f14}
-.btn-outline{background:transparent;color:var(--t2);border:1px solid rgba(255,255,255,.12)}
-.btn-amber{background:var(--amber);color:#0e0f14}
-.btn-blue{background:var(--blue);color:#fff}
-.btn-red{background:var(--red);color:#fff}
-.avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--teal),#0a7565);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff;flex-shrink:0}
-.status-toggle{display:flex;background:var(--bg3);border-radius:20px;padding:3px;gap:2px}
-.st-btn{flex:1;padding:7px 8px;border-radius:17px;border:none;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--t3);background:transparent;font-family:'DM Sans',sans-serif}
-.pedido-card{background:var(--bg2);border-radius:var(--r);border:1px solid rgba(255,255,255,.07);margin:0 16px 10px;overflow:hidden;cursor:pointer;transition:transform .1s,border-color .15s}
-.pedido-card:active{transform:scale(.98)}
-.pedido-card.novo{border-color:rgba(0,224,138,.3)}
-.pc-top{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:flex-start}
-.pc-id{font-size:13px;font-weight:700;color:var(--green);font-family:'DM Mono',monospace}
-.pc-mid{padding:0 16px 10px}
-.pc-local{font-size:12px;font-weight:500;color:var(--t);margin-bottom:3px;display:flex;align-items:center;gap:5px}
-.pc-local::before{content:"";width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.pc-local.origem::before{background:var(--blue)}
-.pc-local.destino::before{background:var(--green)}
-.pc-farm{font-size:11px;color:var(--t3);margin-left:13px;margin-bottom:8px}
-.pc-bot{padding:10px 16px;background:var(--bg3);display:flex;justify-content:space-between;align-items:center}
-.steps{display:flex;align-items:center;padding:0 20px;margin-bottom:16px}
-.step-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;transition:all .3s}
-.step-line{flex:1;height:2px;transition:background .3s}
-.step-lbl{font-size:9px;color:var(--t3);margin-top:4px;text-align:center;max-width:52px}
-.mapa-bg{width:100%;height:150px;background:linear-gradient(135deg,#1a2035 0%,#1e2840 50%,#1a2035 100%);position:relative;overflow:hidden}
-.mapa-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(77,159,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(77,159,255,.06) 1px,transparent 1px);background-size:32px 32px}
-.rua{position:absolute;background:rgba(255,255,255,.07);border-radius:2px}
-.pin{position:absolute;display:flex;flex-direction:column;align-items:center;transform:translateX(-50%)}
-.pin-dot{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px}
-.pin-tail{width:2px;height:6px}
-.bottom-nav{background:var(--bg2);border-top:1px solid rgba(255,255,255,.07);display:flex;padding:8px 0 12px;flex-shrink:0;position:relative;z-index:10}
-.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:transparent;cursor:pointer;padding:4px 0;font-family:'DM Sans',sans-serif}
-.bnav-ico{font-size:20px;transition:transform .15s}
-.bnav-lbl{font-size:9px;font-weight:600;letter-spacing:.3px;transition:color .15s}
-.bnav-btn.ativo .bnav-ico{transform:scale(1.1)}
-.toast{position:absolute;bottom:80px;left:16px;right:16px;background:var(--green);color:#0e0f14;border-radius:12px;padding:12px 16px;font-size:13px;font-weight:600;z-index:200;transform:translateY(80px);opacity:0;transition:all .3s;display:flex;align-items:center;gap:8px}
-.toast.show{transform:translateY(0);opacity:1}
-.hist-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.05)}
-.hist-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
-.ganho-big{font-size:42px;font-weight:700;color:var(--green);letter-spacing:-1px;line-height:1}
-.ganho-bar{height:4px;background:var(--bg4);border-radius:2px;margin:8px 0 4px;overflow:hidden}
-.ganho-prog{height:100%;border-radius:2px;background:var(--green);transition:width .6s ease}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.blink{animation:blink 1.4s infinite}
-@keyframes pulse-ring{0%{transform:scale(.95);box-shadow:0 0 0 0 rgba(0,224,138,.4)}70%{transform:scale(1);box-shadow:0 0 0 12px rgba(0,224,138,0)}100%{transform:scale(.95);box-shadow:0 0 0 0 rgba(0,224,138,0)}}
-.pulse-green{animation:pulse-ring 2s infinite}
-
-/* ═══ SCANNER ═══ */
-.scanner-overlay{position:absolute;inset:0;background:#000;z-index:500;display:flex;flex-direction:column;transition:opacity .3s}
-.scanner-overlay.hidden{opacity:0;pointer-events:none}
-.scanner-header{padding:14px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;background:rgba(0,0,0,.7)}
-.scanner-close{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.video-container{flex:1;position:relative;overflow:hidden}
-#scanner-video{width:100%;height:100%;object-fit:cover;display:block}
-.scan-frame{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
-.scan-box{width:220px;height:130px;position:relative}
-.scan-corner{position:absolute;width:24px;height:24px;border-color:var(--green);border-style:solid}
-.scan-corner.tl{top:0;left:0;border-width:3px 0 0 3px;border-radius:4px 0 0 0}
-.scan-corner.tr{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 4px 0 0}
-.scan-corner.bl{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 4px}
-.scan-corner.br{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 4px 0}
-@keyframes laser{0%{top:8px}100%{top:calc(100% - 8px)}}
-.scan-laser{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);animation:laser 1.8s ease-in-out infinite alternate;box-shadow:0 0 8px var(--green)}
-.scan-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center}
-.scan-hint-txt{font-size:12px;color:rgba(255,255,255,.8);background:rgba(0,0,0,.55);padding:6px 14px;border-radius:20px;display:inline-block}
-.scan-status{position:absolute;top:12px;left:0;right:0;text-align:center;transition:all .3s}
-.scan-status-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(0,0,0,.65);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
-.scan-result{position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-radius:20px 20px 0 0;padding:20px;transform:translateY(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
-.scan-result.show{transform:translateY(0)}
-/* Item check list */
-.item-check{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
-.item-check.ok .check-ico{background:var(--green);color:#0e0f14}
-.item-check.pending .check-ico{background:var(--bg4);color:var(--t3)}
-.check-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;transition:all .3s}
+body{font-family:system-ui,-apple-system,sans-serif;background:#1a1a2e;color:#fff;font-size:14px;min-height:100vh;display:flex;flex-direction:column;max-width:480px;margin:0 auto}
+button{font-family:inherit;cursor:pointer;border:none;outline:none}
+input{font-family:inherit;outline:none}
+.topbar{background:#14152a;padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;border-bottom:1px solid rgba(255,255,255,.1)}
+.logo-row{display:flex;align-items:center;gap:8px}
+.logo-row img{height:30px;filter:brightness(0) invert(1)}
+.logo-txt{font-size:15px;font-weight:700}
+.status-pill{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer}
+#content{flex:1;overflow-y:auto;padding-bottom:70px}
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#14152a;border-top:1px solid rgba(255,255,255,.1);display:flex;z-index:100}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 0;background:transparent;font-size:10px;font-weight:600;color:rgba(255,255,255,.4)}
+.bnav-btn.ativo{color:#3BAA35}
+.bnav-ico{font-size:20px;line-height:1}
+.card{background:#14152a;border-radius:14px;border:1px solid rgba(255,255,255,.1);margin:0 12px 12px;padding:16px}
+.card-light{background:#1e2040;border-radius:14px;border:1px solid rgba(255,255,255,.08);margin:0 12px 12px;padding:14px}
+.ped-card{background:#1e2040;border-radius:14px;margin:0 12px 10px;padding:14px;border:1.5px solid rgba(255,255,255,.08);cursor:pointer;transition:border-color .15s}
+.ped-card:hover{border-color:#3BAA35}
+.ped-card.ativo{border-color:#3BAA35;background:#1a2e1a}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.btn-pri{width:100%;padding:13px;border-radius:12px;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-top:8px}
+.btn-sec{width:100%;padding:11px;border-radius:12px;font-size:13px;font-weight:600;border:1.5px solid rgba(255,255,255,.2);background:transparent;color:#fff;cursor:pointer;margin-top:8px}
+.kpi{background:#1e2040;border-radius:10px;padding:12px;text-align:center}
+.kpi-val{font-size:22px;font-weight:700;color:#3BAA35}
+.kpi-lbl{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px}
+.divider{height:1px;background:rgba(255,255,255,.07);margin:10px 0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.live{animation:pulse 1.6s infinite}
+.empty{text-align:center;padding:40px 20px;color:rgba(255,255,255,.4)}
+.step{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start}
+.step-ico{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.scanner-wrap{background:#0d0d1a;border-radius:14px;padding:24px;text-align:center;margin:0 12px 12px;border:2px dashed rgba(255,255,255,.2)}
 </style>
+
+  <!-- PWA — FarmaClub Motoboy -->
+  <link rel="manifest" href="manifest-motoboy.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="FC Motoboy">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="description" content="App de entregas para motoboys parceiros FarmaClub em Itaperuna/RJ.">
+  <link rel="apple-touch-icon" href="icons/motoboy-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/motoboy-152.png">
 </head>
 <body>
-<div class="phone">
-  <div class="notch">
-    <div class="notch-time" id="clock">14:32</div>
-    <div style="width:100px;height:10px;background:var(--bg);border-radius:0 0 16px 16px;position:absolute;left:50%;transform:translateX(-50%);top:0"></div>
-    <div style="font-size:12px;color:var(--t)">●●● 🔋</div>
+
+<div class="topbar">
+  <div class="logo-row">
+    <img src="farmaclub_logo.png" alt="" onerror="this.style.display='none'">
+    <span class="logo-txt">Motoboy</span>
   </div>
-
-  <div class="toast" id="toast">✓ <span id="toast-msg"></span></div>
-
-  <div class="screen" id="screen">
-
-    <!-- ════ SCANNER ════ -->
-    <div class="scanner-overlay hidden" id="scanner-overlay">
-      <div class="scanner-header">
-        <button class="scanner-close" onclick="fecharScanner()">✕</button>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#fff" id="scan-titulo">Confirmar item</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.6)" id="scan-subtitulo">Leia o código de barras do produto</div>
-        </div>
-      </div>
-      <div class="video-container">
-        <video id="scanner-video" autoplay playsinline muted></video>
-        <div class="scan-frame">
-          <div class="scan-box">
-            <div class="scan-corner tl"></div>
-            <div class="scan-corner tr"></div>
-            <div class="scan-corner bl"></div>
-            <div class="scan-corner br"></div>
-            <div class="scan-laser"></div>
-          </div>
-        </div>
-        <div class="scan-hint"><span class="scan-hint-txt">Aponte para o código na embalagem</span></div>
-        <div class="scan-status" id="scan-status">
-          <div class="scan-status-pill"><span class="blink">●</span> Aguardando código...</div>
-        </div>
-        <div class="scan-result" id="scan-result"></div>
-      </div>
-    </div>
-
-    <!-- ════ HOME ════ -->
-    <div class="page" id="pg-home">
-      <div style="padding:14px 20px 8px;display:flex;align-items:center;gap:12px;flex-shrink:0">
-        <div class="avatar">CM</div>
-        <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;color:var(--t)">Carlos Mendes</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:1px">Motoboy · FarmaClub</div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:11px;color:var(--t3)">ganhos hoje</div>
-          <div style="font-size:18px;font-weight:700;color:var(--green)" id="ganhos-home">R$ 48,00</div>
-        </div>
-      </div>
-
-      <div style="padding:6px 16px 14px">
-        <div class="status-toggle" id="status-toggle">
-          <button class="st-btn" id="st-disp" onclick="setStatus('disponivel')" style="background:var(--green);color:#0e0f14">🟢 Disponível</button>
-          <button class="st-btn" id="st-rota" onclick="setStatus('rota')">🔵 Em rota</button>
-          <button class="st-btn" id="st-off" onclick="setStatus('offline')">⚫ Offline</button>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:0 16px;margin-bottom:14px">
-        <div class="card-sm" style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--t)" id="kpi-e">8</div><div style="font-size:10px;color:var(--t3);margin-top:2px">entregas</div></div>
-        <div class="card-sm" style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--amber)">4.9</div><div style="font-size:10px;color:var(--t3);margin-top:2px">avaliação</div></div>
-        <div class="card-sm" style="text-align:center"><div style="font-size:20px;font-weight:700;color:var(--blue)">42km</div><div style="font-size:10px;color:var(--t3);margin-top:2px">rodados</div></div>
-      </div>
-
-      <div style="padding:0 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:13px;font-weight:700;color:var(--t)">Pedidos disponíveis</div>
-        <div class="chip" style="background:var(--greenBg);color:var(--green)"><span class="blink">●</span> 2 novos</div>
-      </div>
-
-      <div class="pedido-card novo" onclick="abrirPedido('A4521')" id="card-A4521">
-        <div class="pc-top">
-          <div><div class="pc-id">#4521</div><div class="chip" style="background:var(--greenBg);color:var(--green);margin-top:4px;font-size:10px">NOVO</div></div>
-          <div style="text-align:right">
-            <div style="font-size:18px;font-weight:700;color:var(--t)">R$ 91,00</div>
-            <div style="font-size:11px;color:var(--t3)">frete R$3,50</div>
-            <div class="chip" style="background:var(--blueBg);color:var(--blue);font-size:10px;margin-top:4px">Débito</div>
-          </div>
-        </div>
-        <div class="pc-mid">
-          <div class="pc-local origem">Farmácia São João</div><div class="pc-farm">Centro — Rua Getúlio Vargas, 342</div>
-          <div class="pc-local destino">Maria da Silva</div><div class="pc-farm">Parque Noel — Rua das Flores, 88</div>
-        </div>
-        <div class="pc-bot">
-          <div style="display:flex;gap:12px">
-            <span style="font-size:11px;color:var(--t3)">📍 1,8km</span>
-            <span style="font-size:11px;color:var(--t3)">⏱ ~12 min</span>
-            <span style="font-size:11px;color:var(--t3)">🛒 3 itens</span>
-          </div>
-          <div style="font-size:13px;font-weight:700;color:var(--green)">R$ 6,00</div>
-        </div>
-      </div>
-
-      <div class="pedido-card" onclick="abrirPedido('A4520')" id="card-A4520">
-        <div class="pc-top">
-          <div><div class="pc-id">#4520</div><div class="chip" style="background:var(--blueBg);color:var(--blue);margin-top:4px;font-size:10px">AGUARDANDO</div></div>
-          <div style="text-align:right">
-            <div style="font-size:18px;font-weight:700;color:var(--t)">R$ 46,00</div>
-            <div style="font-size:11px;color:var(--t3)">frete R$1,00</div>
-            <div class="chip" style="background:var(--greenBg);color:var(--green);font-size:10px;margin-top:4px">Pix</div>
-          </div>
-        </div>
-        <div class="pc-mid">
-          <div class="pc-local origem">Drogaria Esperança</div><div class="pc-farm">Morro do Crica — Av. Principal, 10</div>
-          <div class="pc-local destino">João Pereira</div><div class="pc-farm">Centro — Rua Sete de Setembro, 201</div>
-        </div>
-        <div class="pc-bot">
-          <div style="display:flex;gap:12px">
-            <span style="font-size:11px;color:var(--t3)">📍 2,8km</span>
-            <span style="font-size:11px;color:var(--t3)">⏱ ~18 min</span>
-            <span style="font-size:11px;color:var(--t3)">🛒 1 item</span>
-          </div>
-          <div style="font-size:13px;font-weight:700;color:var(--green)">R$ 6,00</div>
-        </div>
-      </div>
-      <div style="height:16px"></div>
-    </div>
-
-    <!-- ════ DETALHE PEDIDO ════ -->
-    <div class="page hidden" id="pg-pedido">
-      <div class="hdr">
-        <button class="hdr-back" onclick="voltar('pg-home')">‹</button>
-        <div>
-          <div class="hdr-title" id="ped-titulo">Pedido #4521</div>
-          <div style="font-size:11px;color:var(--t3);margin-top:1px" id="ped-sub">Toque para aceitar</div>
-        </div>
-        <div style="margin-left:auto"><div class="chip" id="ped-status-chip" style="background:var(--greenBg);color:var(--green)">novo</div></div>
-      </div>
-      <div class="steps" id="step-bar"></div>
-      <!-- Mapa -->
-      <div style="margin:0 16px 12px;border-radius:var(--r2);overflow:hidden">
-        <div class="mapa-bg">
-          <div class="mapa-grid"></div>
-          <div class="rua" style="width:100%;height:3px;top:50%"></div>
-          <div class="rua" style="width:3px;height:100%;left:40%"></div>
-          <div style="position:absolute;width:160px;height:2px;border-top:2px dashed rgba(0,224,138,.4);top:50%;left:24%;transform:rotate(-28deg)"></div>
-          <div class="pin" style="left:28%;top:28%"><div class="pin-dot" style="background:var(--blue);color:#fff">F</div><div class="pin-tail" style="background:var(--blue)"></div><div style="font-size:8px;color:var(--blue);font-weight:600;margin-top:2px">Farmácia</div></div>
-          <div class="pin" style="right:18%;top:55%"><div class="pin-dot" style="background:var(--green);color:#0e0f14">C</div><div class="pin-tail" style="background:var(--green)"></div><div style="font-size:8px;color:var(--green);font-weight:600;margin-top:2px">Cliente</div></div>
-          <div id="moto-pos" style="position:absolute;font-size:20px;transition:all 1s ease;left:30%;top:40%">🛵</div>
-        </div>
-        <div style="background:var(--bg3);padding:8px 12px;display:flex;justify-content:space-between">
-          <div style="font-size:11px;color:var(--t3)" id="mapa-info">Farmácia → Cliente</div>
-          <div style="font-size:11px;font-weight:600;color:var(--blue)">1,8km · ~12 min</div>
-        </div>
-      </div>
-      <div class="card" style="margin-bottom:10px">
-        <div style="font-size:12px;font-weight:700;color:var(--t3);letter-spacing:.5px;margin-bottom:10px">ITENS DO PEDIDO</div>
-        <div id="ped-itens"></div>
-        <div style="height:1px;background:rgba(255,255,255,.08);margin:10px 0"></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px"><span style="color:var(--t3)">Frete</span><span style="font-weight:600;color:var(--t)" id="ped-frete-val">R$ 3,50</span></div>
-        <div style="display:flex;justify-content:space-between;font-size:15px"><span style="font-weight:700;color:var(--t)">Total cliente</span><span style="font-weight:700;color:var(--green)" id="ped-total-val">R$ 91,00</span></div>
-        <div style="margin-top:8px;padding:8px 10px;background:var(--greenBg);border-radius:8px;display:flex;justify-content:space-between">
-          <span style="font-size:12px;color:var(--green)">Sua comissão</span>
-          <span style="font-size:13px;font-weight:700;color:var(--green)">R$ 6,00</span>
-        </div>
-      </div>
-      <div style="padding:0 16px;margin-bottom:8px" id="acao-area"></div>
-      <div style="height:16px"></div>
-    </div>
-
-    <!-- ════ GANHOS ════ -->
-    <div class="page hidden" id="pg-ganhos">
-      <div class="hdr" style="justify-content:space-between"><div class="hdr-title">Meus ganhos</div></div>
-      <div class="card">
-        <div style="text-align:center;padding:10px 0">
-          <div style="font-size:11px;color:var(--t3);margin-bottom:4px">Total de hoje</div>
-          <div class="ganho-big">R$ 48,00</div>
-          <div style="font-size:12px;color:var(--t3);margin-top:6px">8 entregas · R$ 6,00 cada</div>
-          <div class="ganho-bar"><div class="ganho-prog" style="width:64%"></div></div>
-          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3)"><span>Meta: R$ 75,00</span><span>64%</span></div>
-        </div>
-      </div>
-      <div class="card">
-        ${[["Entregas concluídas","8","var(--green)"],["Km rodados","42km","var(--amber)"],["Tempo médio","18 min","var(--t2)"],["Canceladas","0","var(--t3)"]].map(([k,v,c])=>`
-          <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span style="font-size:13px;color:var(--t2)">${k}</span><span style="font-size:14px;font-weight:700;color:${c}">${v}</span></div>`).join("")}
-      </div>
-      <div style="height:16px"></div>
-    </div>
-
-    <!-- ════ PERFIL ════ -->
-    <div class="page hidden" id="pg-perfil">
-      <div class="hdr"><div class="hdr-title">Meu perfil</div></div>
-      <div class="card" style="text-align:center;padding:24px 16px">
-        <div class="avatar" style="width:72px;height:72px;font-size:26px;margin:0 auto 12px">CM</div>
-        <div style="font-size:20px;font-weight:700;color:var(--t)">Carlos Mendes</div>
-        <div style="font-size:13px;color:var(--t3);margin-top:4px">Motoboy desde Jan/2026</div>
-        <div style="display:flex;justify-content:center;gap:6px;margin-top:12px">
-          <div class="chip" style="background:var(--amberBg);color:var(--amber)">★ 4.9</div>
-          <div class="chip" style="background:var(--greenBg);color:var(--green)">● Ativo</div>
-        </div>
-      </div>
-      <div class="card">
-        ${[["Telefone","(22) 99812-3456"],["Moto","Honda CG 160 · MNS-4521"],["CNH","Categoria A · válida"],["Chave Pix","<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d7b4b6a5bbb8a4f9bab2b9b3b2a497a7beaff9b4b8ba">[email&#160;protected]</a>"]].map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.05)"><span style="font-size:12px;color:var(--t3)">${k}</span><span style="font-size:12px;font-weight:500;color:var(--t)">${v}</span></div>`).join("")}
-      </div>
-      <div style="height:16px"></div>
-    </div>
-
-  </div>
-
-  <div class="bottom-nav">
-    <button class="bnav-btn ativo" id="bnav-home" onclick="navTo('home')"><span class="bnav-ico">🏠</span><span class="bnav-lbl" style="color:var(--green)">Pedidos</span></button>
-    <button class="bnav-btn" id="bnav-ganhos" onclick="navTo('ganhos')"><span class="bnav-ico">💰</span><span class="bnav-lbl" style="color:var(--t3)">Ganhos</span></button>
-    <button class="bnav-btn" id="bnav-perfil" onclick="navTo('perfil')"><span class="bnav-ico">👤</span><span class="bnav-lbl" style="color:var(--t3)">Perfil</span></button>
-  </div>
+  <button class="status-pill" id="status-btn" onclick="toggleStatus()">
+    ● Disponível
+  </button>
 </div>
 
-<!-- ZXing para leitura de código de barras -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
-<script>
-const T="#0d9488",AM="#d97706",RD="#dc2626",GN="#16a34a",BL="#2563eb";
-let pedAtual=null;
-let ganhos=48,entregasCount=8;
-let scannerAtivo=false;
-let codeReader=null;
-let streamAtivo=null;
-let itensScan={}; // rastreia quais itens foram escaneados
+<div id="content"></div>
 
-const pedidos={
-  A4521:{id:"#4521",cliente:"Maria da Silva",tel:"(22) 99812-3456",farmacia:"Farmácia São João",endFarm:"Centro — Rua Getúlio Vargas, 342",endClient:"Parque Noel — Rua das Flores, 88",
-    itens:[
-      {id:1,ean:"7896004004532",n:"Dipirona 500mg 20cp",q:2,v:8.90,ico:"💊"},
-      {id:3,ean:"7896523240065",n:"Omeprazol 20mg 28cp",q:1,v:14.90,ico:"🫀"},
-    ],frete:3.50,total:91.00,forma:"Débito",comissao:6.00,step:0},
-  A4520:{id:"#4520",cliente:"João Pereira",tel:"(22) 98765-0123",farmacia:"Drogaria Esperança",endFarm:"Morro do Crica — Av. Principal, 10",endClient:"Centro — Rua Sete de Setembro, 201",
-    itens:[{id:2,ean:"7896714240118",n:"Amoxicilina 500mg 21cp",q:1,v:45.00,ico:"🔬"}],
-    frete:1.00,total:46.00,forma:"Pix",comissao:6.00,step:0},
+<nav class="bnav">
+  <button class="bnav-btn ativo" id="bn-home" onclick="navTo('home')"><span class="bnav-ico">🏠</span>Home</button>
+  <button class="bnav-btn" id="bn-pedidos" onclick="navTo('pedidos')"><span class="bnav-ico">📦</span>Pedidos</button>
+  <button class="bnav-btn" id="bn-historico" onclick="navTo('historico')"><span class="bnav-ico">📋</span>Histórico</button>
+  <button class="bnav-btn" id="bn-ganhos" onclick="navTo('ganhos')"><span class="bnav-ico">💰</span>Ganhos</button>
+</nav>
+
+<script>
+// ── DADOS ──
+const NOME_MOTOBOY = "Carlos Mendes";
+const VALOR_ENTREGA = 6.00;
+const fmt = v => "R$ "+v.toFixed(2).replace(".",",");
+
+// Status do motoboy
+let statusAtivo = true; // disponível ou não
+let tela = "home";
+let pedidoEmAndamento = null; // pedido que está entregando agora
+let etapaEntrega = 0; // 0=ir farmácia, 1=coletar, 2=entregar, 3=concluído
+
+// ── PEDIDOS (lê do localStorage — criados pelo App Cliente) ──
+function getPedidos(){
+  return JSON.parse(localStorage.getItem("fc_pedidos_live")||"[]");
+}
+
+function getPedidosPendentes(){
+  return getPedidos().filter(p=>p.status==="aguardando"&&!p.motoboy);
+}
+
+function atualizarStatus(pedId, novoStatus, motoboyNome){
+  const peds = getPedidos();
+  const idx = peds.findIndex(p=>p.id===pedId);
+  if(idx>=0){
+    peds[idx].status = novoStatus;
+    if(motoboyNome) peds[idx].motoboy = motoboyNome;
+    localStorage.setItem("fc_pedidos_live", JSON.stringify(peds));
+  }
+}
+
+// ── NAVEGAÇÃO ──
+function navTo(t){
+  tela=t;
+  ["home","pedidos","historico","ganhos"].forEach(x=>{
+    const e=document.getElementById("bn-"+x);
+    if(e) e.className="bnav-btn"+(x===t?" ativo":"");
+  });
+  rc();
+}
+window.navTo=navTo;
+
+function toggleStatus(){
+  statusAtivo=!statusAtivo;
+  const btn=document.getElementById("status-btn");
+  if(btn){
+    btn.style.background=statusAtivo?"rgba(59,170,53,.2)":"rgba(220,38,38,.2)";
+    btn.style.color=statusAtivo?"#3BAA35":"#E03A3A";
+    btn.textContent=(statusAtivo?"● Disponível":"○ Indisponível");
+  }
+  rc();
+}
+
+// ── RENDER ──
+function rc(){
+  const r={home:rHome,pedidos:rPedidos,historico:rHistorico,ganhos:rGanhos,entrega:rEntrega};
+  document.getElementById("content").innerHTML=(r[tela]||rHome)();
+}
+
+// HOME
+function rHome(){
+  const pendentes=getPedidosPendentes();
+  const hoje=JSON.parse(localStorage.getItem("fc_entregas_hoje")||"[]");
+  const ganhoHoje=hoje.length*VALOR_ENTREGA;
+
+  return`
+    <div style="padding:20px 16px 0">
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">Olá, ${NOME_MOTOBOY.split(" ")[0]}! 👋</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:20px">${statusAtivo?`<span style="color:#3BAA35" class="live">●</span> Você está disponível`:`<span style="color:#E03A3A">○</span> Você está indisponível`}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+        <div class="kpi"><div class="kpi-val">${hoje.length}</div><div class="kpi-lbl">Entregas hoje</div></div>
+        <div class="kpi"><div class="kpi-val">${fmt(ganhoHoje)}</div><div class="kpi-lbl">Ganhos hoje</div></div>
+        <div class="kpi"><div class="kpi-val">${pendentes.length}</div><div class="kpi-lbl">Novos pedidos</div></div>
+      </div>
+    </div>
+
+    ${pedidoEmAndamento?`
+      <div style="background:linear-gradient(135deg,#3BAA35,#2E8A2A);border-radius:14px;margin:0 12px 14px;padding:16px">
+        <div style="font-size:12px;font-weight:700;opacity:.9;margin-bottom:6px">🛵 ENTREGA EM ANDAMENTO</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px">${pedidoEmAndamento.id} · ${pedidoEmAndamento.cliente}</div>
+        <div style="font-size:12px;opacity:.85;margin-bottom:12px">${pedidoEmAndamento.endereco}</div>
+        <button onclick="tela='entrega';rc()" style="width:100%;padding:11px;background:rgba(255,255,255,.25);border-radius:10px;color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer">
+          Continuar entrega →
+        </button>
+      </div>`:""}
+
+    ${pendentes.length>0&&statusAtivo?`
+      <div style="padding:0 12px;margin-bottom:10px">
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">
+          📦 Novos pedidos (${pendentes.length})
+        </div>
+        ${pendentes.slice(0,3).map(p=>pedCardPreview(p)).join("")}
+      </div>`
+    :statusAtivo?`<div class="empty"><div style="font-size:40px;margin-bottom:12px">⏳</div>Aguardando novos pedidos...<br><small style="font-size:11px;margin-top:8px;display:block">Você receberá notificação quando um pedido chegar</small></div>`
+    :`<div class="empty"><div style="font-size:40px;margin-bottom:12px">😴</div>Você está indisponível<br><small style="font-size:11px;margin-top:8px;display:block">Toque em "Indisponível" para ficar disponível</small></div>`}`;
+}
+
+function pedCardPreview(p){
+  const itens=p.itens||[];
+  const totalItens=itens.reduce((s,i)=>s+i.qtd,0);
+  return`<div class="ped-card" onclick="aceitarPedido('${p.id}')">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+      <div>
+        <div style="font-size:15px;font-weight:700">${p.id}</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:2px">${p.cliente}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:15px;font-weight:700;color:#3BAA35">${fmt(p.total)}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.5)">+${fmt(VALOR_ENTREGA)} para você</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.7);margin-top:8px">
+      🏥 <strong>${p.farmacia}</strong><br>
+      📍 ${p.endereco}<br>
+      💊 ${totalItens} produto(s) · ${p.pagamento||"Pix"}
+    </div>
+    <button style="width:100%;padding:11px;background:#3BAA35;color:#fff;border-radius:10px;font-size:14px;font-weight:700;border:none;cursor:pointer;margin-top:12px">
+      ✅ Aceitar entrega — ${fmt(VALOR_ENTREGA)}
+    </button>
+  </div>`;
+}
+
+window.aceitarPedido=function(pedId){
+  const peds=getPedidos();
+  const p=peds.find(x=>x.id===pedId);
+  if(!p){alert("Pedido não encontrado.");return;}
+  atualizarStatus(pedId,"coletando",NOME_MOTOBOY);
+  pedidoEmAndamento={...p,motoboy:NOME_MOTOBOY,status:"coletando"};
+  etapaEntrega=0;
+  tela="entrega";
+  rc();
 };
 
-const stepLabels=["Novo","Aceito","Na farmácia","Coletado","A caminho","Entregue","Finalizado"];
-const stepIcos=["📋","✓","🏪","📦","🛵","🚪","✅"];
-
-function tick(){const d=new Date();document.getElementById("clock").textContent=d.getHours().toString().padStart(2,"0")+":"+d.getMinutes().toString().padStart(2,"0");}
-tick();setInterval(tick,10000);
-
-function showToast(msg,cor="var(--green)"){
-  const t=document.getElementById("toast");
-  document.getElementById("toast-msg").textContent=msg;
-  t.style.background=cor;t.style.color=cor==="var(--green)"?"#0e0f14":"#fff";
-  t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2800);
+// PEDIDOS DISPONÍVEIS
+function rPedidos(){
+  const pendentes=getPedidosPendentes();
+  return`
+    <div style="padding:16px 12px 8px;font-size:13px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px">
+      Pedidos disponíveis (${pendentes.length})
+    </div>
+    ${pendentes.length===0
+      ?`<div class="empty"><div style="font-size:40px;margin-bottom:12px">📭</div>Nenhum pedido disponível agora</div>`
+      :pendentes.map(p=>pedCardPreview(p)).join("")}`;
 }
 
-function setStatus(s){
-  const colors={disponivel:"var(--green)",rota:"var(--blue)",offline:"var(--bg4)"};
-  const textColors={disponivel:"#0e0f14",rota:"#fff",offline:"var(--t2)"};
-  [{k:"disponivel",id:"st-disp"},{k:"rota",id:"st-rota"},{k:"offline",id:"st-off"}].forEach(({k,id})=>{
-    const el=document.getElementById(id);
-    el.style.background=k===s?colors[k]:"transparent";
-    el.style.color=k===s?textColors[k]:"var(--t3)";
-  });
-}
+// ENTREGA EM ANDAMENTO
+function rEntrega(){
+  if(!pedidoEmAndamento){tela="home";return rHome();}
+  const p=pedidoEmAndamento;
+  const etapas=[
+    {tit:"Ir até a farmácia",sub:`${p.farmacia}`,ico:"🏍️",cor:"#1A5FA8",btn:"Cheguei na farmácia"},
+    {tit:"Coletar os produtos",sub:"Confirme cada item antes de sair",ico:"🏥",cor:"#d97706",btn:"Todos os itens coletados ✓"},
+    {tit:"Entregar ao cliente",sub:p.endereco,ico:"🛵",cor:"#3BAA35",btn:"Entrega confirmada ✅"},
+    {tit:"Entrega concluída!",sub:"Pedido finalizado com sucesso",ico:"🎉",cor:"#3BAA35",btn:""},
+  ];
+  const et=etapas[etapaEntrega];
 
-function navTo(pg){
-  ["home","ganhos","perfil"].forEach(p=>{document.getElementById("pg-"+p).classList.toggle("hidden",p!==pg);});
-  if(document.getElementById("pg-pedido")) document.getElementById("pg-pedido").classList.add("hidden");
-  [{id:"bnav-home",pg:"home"},{id:"bnav-ganhos",pg:"ganhos"},{id:"bnav-perfil",pg:"perfil"}].forEach(({id,pg:p})=>{
-    const btn=document.getElementById(id);btn.classList.toggle("ativo",p===pg);
-    btn.querySelector(".bnav-lbl").style.color=p===pg?"var(--green)":"var(--t3)";
-  });
-}
+  return`
+    <div style="background:${et.cor};padding:16px;text-align:center;margin-bottom:2px">
+      <div style="font-size:40px;margin-bottom:8px">${et.ico}</div>
+      <div style="font-size:17px;font-weight:700">${et.tit}</div>
+      <div style="font-size:12px;opacity:.85;margin-top:4px">${et.sub}</div>
+    </div>
 
-function abrirPedido(id){
-  pedAtual=id;itensScan={};
-  ["home","ganhos","perfil"].forEach(p=>document.getElementById("pg-"+p).classList.add("hidden"));
-  document.getElementById("pg-pedido").classList.remove("hidden");
-  renderPedidoPage(pedidos[id]);
-}
-
-function voltar(pg){
-  document.getElementById("pg-pedido").classList.add("hidden");
-  navTo("home");
-}
-
-function renderPedidoPage(ped){
-  document.getElementById("ped-titulo").textContent="Pedido "+ped.id;
-  document.getElementById("ped-sub").textContent=ped.cliente+" · "+ped.farmacia;
-  document.getElementById("ped-frete-val").textContent="R$ "+ped.frete.toFixed(2);
-  document.getElementById("ped-total-val").textContent="R$ "+ped.total.toFixed(2);
-  document.getElementById("ped-status-chip").textContent=stepLabels[ped.step];
-  document.getElementById("ped-itens").innerHTML=ped.itens.map(it=>{
-    const ok=itensScan[it.ean];
-    return`<div class="item-check ${ok?"ok":"pending"}">
-      <div class="check-ico">${ok?"✓":"○"}</div>
-      <div style="flex:1">
-        <div style="font-size:12px;font-weight:500;color:${ok?"var(--green)":"var(--t)"}">${it.ico} ${it.n}</div>
-        <div style="font-size:10px;color:var(--t3)">Qtd: ${it.q} · EAN: ${it.ean}</div>
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">Pedido ${p.id}</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div><div style="font-weight:600">${p.cliente}</div><div style="font-size:12px;color:rgba(255,255,255,.6)">${p.endereco}</div></div>
+        <div style="text-align:right"><div style="font-size:15px;font-weight:700;color:#3BAA35">${fmt(p.total)}</div><div style="font-size:11px;color:rgba(255,255,255,.5)">${p.pagamento||"Pix"}</div></div>
       </div>
-      ${ok?`<div class="chip" style="background:var(--greenBg);color:var(--green)">✓ lido</div>`:""}
-    </div>`;}).join("");
-  renderSteps(ped.step);
-  renderAcao(ped);
-}
+    </div>
 
-function renderSteps(step){
-  let html="";
-  stepLabels.forEach((lbl,i)=>{
-    const done=i<step,active=i===step;
-    html+=`<div style="display:flex;flex-direction:column;align-items:center">
-      <div class="step-dot ${active?"pulse-green":""}" style="background:${done||active?"var(--green)":"var(--bg4)"};color:${done||active?"#0e0f14":"var(--t3)"};width:${active?30:24}px;height:${active?30:24}px;font-size:${active?12:10}px">${done?"✓":active?stepIcos[i]:i+1}</div>
-      <div class="step-lbl">${lbl}</div></div>`;
-    if(i<stepLabels.length-1) html+=`<div class="step-line" style="background:${i<step?"var(--green)":"var(--bg4)"}"></div>`;
-  });
-  document.getElementById("step-bar").innerHTML=html;
-}
+    ${etapaEntrega===1?rColetarItens(p):""}
 
-function renderAcao(ped){
-  const area=document.getElementById("acao-area");
-  const totalItensEscan=Object.keys(itensScan).length;
-  const totalItens=ped.itens.length;
-  const todosEscaneados=totalItensEscan>=totalItens;
-
-  const acoes={
-    0:`<button class="btn btn-green" onclick="avancarStep()">✓ Aceitar pedido</button>
-       <button class="btn btn-outline" style="margin-top:8px" onclick="recusar()">Recusar</button>`,
-    1:`<div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:10px">
-         <div style="font-size:11px;color:var(--t3);margin-bottom:4px">IR BUSCAR EM:</div>
-         <div style="font-size:14px;font-weight:600;color:var(--t)">${pedidos[pedAtual].farmacia}</div>
-         <div style="font-size:12px;color:var(--t3);margin-top:2px">${pedidos[pedAtual].endFarm}</div>
-       </div>
-       <button class="btn btn-amber" onclick="avancarStep()">🏪 Cheguei na farmácia</button>`,
-    2:`<div style="background:rgba(255,183,63,.1);border:1px solid rgba(255,183,63,.3);border-radius:12px;padding:14px;margin-bottom:10px">
-         <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:8px">
-           📦 CONFIRME CADA ITEM COM O SCANNER
-           <span style="float:right;font-size:11px">${totalItensEscan}/${totalItens}</span>
-         </div>
-         <div style="height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-bottom:10px;overflow:hidden">
-           <div style="height:100%;background:var(--amber);border-radius:2px;width:${(totalItensEscan/totalItens)*100}%;transition:width .4s"></div>
-         </div>
-         ${ped.itens.map(it=>{const ok=itensScan[it.ean];return`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.06)">
-           <div style="width:22px;height:22px;border-radius:6px;background:${ok?"var(--green)":"rgba(255,255,255,.08)"};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${ok?"#0e0f14":"var(--t3)"}">
-             ${ok?"✓":"○"}
-           </div>
-           <div style="flex:1;font-size:12px;color:${ok?"var(--green)":"var(--t2)"}">
-             ${it.ico} ${it.n} <span style="color:var(--t3)">(${it.q}x)</span>
-           </div>
-           ${!ok?`<button onclick="escanearItem()" style="font-size:10px;padding:4px 8px;background:rgba(255,183,63,.2);border:1px solid rgba(255,183,63,.4);border-radius:6px;color:var(--amber);cursor:pointer">📷 Ler</button>`:`<div class="chip" style="background:var(--greenBg);color:var(--green)">✓</div>`}
-         </div>`;}).join("")}
-       </div>
-       <button class="btn" style="background:${todosEscaneados?"var(--green)":"var(--bg4)"};color:${todosEscaneados?"#0e0f14":"var(--t3)"};margin-bottom:8px" ${!todosEscaneados?"disabled":""} onclick="${todosEscaneados?"avancarStep()":"''"}">
-         ${todosEscaneados?"📦 Tudo conferido — saindo!":"Escaneie todos os itens primeiro"}
-       </button>
-       <button class="btn btn-outline" style="font-size:13px" onclick="escanearItem()">📷 Abrir scanner</button>`,
-    3:`<div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:10px">
-         <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ENTREGAR PARA:</div>
-         <div style="font-size:14px;font-weight:600;color:var(--t)">${pedidos[pedAtual].cliente}</div>
-         <div style="font-size:12px;color:var(--t3);margin-top:2px">${pedidos[pedAtual].endClient}</div>
-         <div style="margin-top:8px;font-size:12px;color:var(--blue)">📞 ${pedidos[pedAtual].tel}</div>
-       </div>
-       <button class="btn btn-blue" onclick="avancarStep()">🛵 Estou a caminho</button>`,
-    4:`<div style="background:var(--greenBg);border:1px solid rgba(0,224,138,.2);border-radius:12px;padding:12px;margin-bottom:10px;text-align:center">
-         <div style="font-size:12px;color:var(--green);font-weight:600">✓ WhatsApp enviado: "Seu pedido está chegando!"</div>
-       </div>
-       <button class="btn btn-green" onclick="avancarStep()">🚪 Cheguei — confirmar entrega</button>`,
-    5:`<div style="background:var(--bg3);border-radius:12px;padding:14px;margin-bottom:10px">
-         <div style="font-size:12px;font-weight:700;color:var(--t);margin-bottom:8px">CONFIRMAR PAGAMENTO</div>
-         <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700">
-           <span>Total</span><span style="color:var(--green)">R$ ${pedidos[pedAtual].total.toFixed(2)}</span>
-         </div>
-         <div style="font-size:12px;color:var(--t3);margin-top:6px">Forma: ${pedidos[pedAtual].forma}</div>
-       </div>
-       <button class="btn btn-green" onclick="avancarStep()">✅ Pagamento confirmado</button>`,
-    6:`<div style="text-align:center;padding:16px 0">
-         <div style="font-size:48px;margin-bottom:8px">🎉</div>
-         <div style="font-size:20px;font-weight:700;color:var(--green)">Entrega finalizada!</div>
-         <div style="font-size:13px;color:var(--t3);margin-top:4px">+R$ ${pedidos[pedAtual].comissao.toFixed(2)} adicionado</div>
-       </div>
-       <button class="btn btn-green" onclick="voltarAposEntrega()">Voltar para pedidos</button>`,
-  };
-  area.innerHTML=acoes[ped.step]||"";
-}
-
-// ══════ SCANNER MOTOBOY ══════
-function escanearItem(){
-  document.getElementById("scan-titulo").textContent="Confirmar item";
-  document.getElementById("scan-subtitulo").textContent="Leia o código de barras do produto";
-  document.getElementById("scanner-overlay").classList.remove("hidden");
-  document.getElementById("scan-result").classList.remove("show");
-  document.getElementById("scan-status").innerHTML=`<div class="scan-status-pill"><span class="blink">●</span> Aguardando código...</div>`;
-  scannerAtivo=true;
-
-  if(typeof ZXing!=="undefined"){
-    try{
-      codeReader=new ZXing.BrowserMultiFormatReader();
-      ZXing.BrowserMultiFormatReader.listVideoInputDevices().then(devices=>{
-        const deviceId=devices.length>1?devices[devices.length-1].deviceId:devices[0]?.deviceId;
-        codeReader.decodeFromVideoDevice(deviceId||null,"scanner-video",res=>{
-          if(res&&scannerAtivo) processarCodigoMotoboy(res.getText());
-        });
-      }).catch(()=>usarSimulacaoMotoboy());
-    }catch(e){usarSimulacaoMotoboy();}
-  } else {
-    iniciarCameraMotoboy();
-  }
-}
-
-async function iniciarCameraMotoboy(){
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-    streamAtivo=stream;
-    const v=document.getElementById("scanner-video");
-    v.srcObject=stream;v.play();
-    if("BarcodeDetector" in window){
-      const det=new BarcodeDetector({formats:["ean_13","ean_8","code_128"]});
-      const scan=async()=>{
-        if(!scannerAtivo) return;
-        try{const bs=await det.detect(v);if(bs.length>0){processarCodigoMotoboy(bs[0].rawValue);return;}}catch(e){}
-        if(scannerAtivo) requestAnimationFrame(scan);
-      };
-      requestAnimationFrame(scan);return;
-    }
-  }catch(e){}
-  usarSimulacaoMotoboy();
-}
-
-function usarSimulacaoMotoboy(){
-  document.getElementById("scan-status").innerHTML=`<div class="scan-status-pill">📱 Modo demonstração</div>`;
-  const ped=pedidos[pedAtual];
-  const itensNaoLidos=ped.itens.filter(it=>!itensScan[it.ean]);
-  const itemAlvo=itensNaoLidos.length>0?itensNaoLidos[0]:ped.itens[0];
-  setTimeout(()=>{if(scannerAtivo) processarCodigoMotoboy(itemAlvo.ean);},2500);
-}
-
-function processarCodigoMotoboy(codigo){
-  if(!scannerAtivo) return;
-  scannerAtivo=false;
-  if(navigator.vibrate) navigator.vibrate([80,40,80]);
-  pararCamera();
-
-  document.getElementById("scan-status").innerHTML=`<div class="scan-status-pill" style="background:rgba(0,224,138,.3)">✓ ${codigo}</div>`;
-
-  const ped=pedidos[pedAtual];
-  const item=ped.itens.find(it=>it.ean===codigo);
-  const result=document.getElementById("scan-result");
-
-  if(item){
-    itensScan[codigo]=true;
-    result.innerHTML=`
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <div style="width:48px;height:48px;border-radius:12px;background:var(--greenBg);display:flex;align-items:center;justify-content:center;font-size:26px">${item.ico}</div>
-        <div style="flex:1">
-          <div style="font-size:14px;font-weight:700;color:var(--t)">${item.n}</div>
-          <div style="font-size:11px;color:var(--t3)">Qtd esperada: ${item.q}x</div>
+    ${etapaEntrega<3?`
+      <div style="padding:0 12px">
+        <button onclick="avancarEtapa()" class="btn-pri" style="background:${et.cor};color:#fff">${et.btn}</button>
+        ${etapaEntrega>0?`<button onclick="voltarEtapa()" class="btn-sec">← Voltar</button>`:""}
+      </div>`
+    :`<div style="padding:0 12px">
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:48px;margin-bottom:10px">🎉</div>
+          <div style="font-size:18px;font-weight:700;color:#3BAA35;margin-bottom:6px">Entrega concluída!</div>
+          <div style="font-size:13px;color:rgba(255,255,255,.6);margin-bottom:20px">+${fmt(VALOR_ENTREGA)} adicionado aos seus ganhos</div>
         </div>
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#0e0f14">✓</div>
+        <button onclick="finalizarEntrega()" class="btn-pri" style="background:#3BAA35;color:#fff">✓ Voltar ao início</button>
+      </div>`}
+
+    <!-- BARRA DE PROGRESSO -->
+    <div style="padding:16px 12px 0">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        ${["Ir","Coletar","Entregar","Pronto"].map((s,i)=>`
+          <div style="text-align:center;flex:1">
+            <div style="width:28px;height:28px;border-radius:50%;background:${i<=etapaEntrega?et.cor:"rgba(255,255,255,.1)"};display:flex;align-items:center;justify-content:center;font-size:12px;margin:0 auto;font-weight:700">${i<etapaEntrega?"✓":i+1}</div>
+            <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:4px">${s}</div>
+          </div>`).join("")}
       </div>
-      <div style="background:var(--greenBg);border:1px solid rgba(0,224,138,.3);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--green);font-weight:600;text-align:center">
-        ✓ Item confirmado! ${Object.keys(itensScan).length}/${ped.itens.length} itens verificados
+    </div>`;
+}
+
+function rColetarItens(p){
+  const itens=p.itens||[];
+  let coletados=JSON.parse(localStorage.getItem("fc_coletados_"+p.id)||"{}");
+  const todos=itens.every(it=>coletados[it.pid||it.prodId]);
+  return`
+    <div class="card" style="background:#0d1a0d;border-color:#3BAA35">
+      <div style="font-size:12px;font-weight:700;color:#3BAA35;margin-bottom:12px">
+        📋 Confirme cada produto antes de sair
+        ${todos?`<span style="margin-left:8px;background:#3BAA35;color:#fff;border-radius:10px;padding:2px 8px">Tudo OK ✓</span>`:""}
       </div>
-      <button onclick="fecharScanner()" style="width:100%;padding:13px;background:var(--green);color:#0e0f14;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Continuar checagem</button>`;
-  } else {
-    // EAN não pertence a este pedido
-    result.innerHTML=`
-      <div style="text-align:center;padding:10px 0 14px">
-        <div style="font-size:36px;margin-bottom:8px">⚠️</div>
-        <div style="font-size:15px;font-weight:700;color:var(--t)">Produto não pertence a este pedido</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:6px">EAN: ${codigo}</div>
-        <div style="font-size:12px;color:var(--red);margin-top:4px;font-weight:600">Verifique com o atendente da farmácia</div>
+      ${itens.map(it=>{
+        const key=it.pid||it.prodId||it.id;
+        const ok=!!coletados[key];
+        return`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);opacity:${ok?1:.7}">
+          <div style="font-size:24px;flex-shrink:0">${it.ico||"💊"}</div>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:600;${ok?"text-decoration:line-through;color:rgba(255,255,255,.4)":""}">${it.nome}</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.5);">Qtd: ${it.qtd}</div>
+          </div>
+          <button onclick="confirmarItem('${p.id}','${key}')"
+            style="padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:${ok?"rgba(59,170,53,.2)":"#3BAA35"};color:${ok?"#3BAA35":"#fff"}">
+            ${ok?"✓ OK":"Confirmar"}
+          </button>
+        </div>`;}).join("")}
+      <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:10px;line-height:1.5">
+        ⚠️ Confirme todos os itens antes de sair da farmácia. Produto errado = responsabilidade do motoboy.
       </div>
-      <button onclick="escanearItem()" style="width:100%;padding:13px;background:var(--amber);color:#0e0f14;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Tentar novamente</button>`;
+    </div>`;
+}
+
+window.confirmarItem=function(pedId, itemKey){
+  let col=JSON.parse(localStorage.getItem("fc_coletados_"+pedId)||"{}");
+  col[itemKey]=!col[itemKey];
+  localStorage.setItem("fc_coletados_"+pedId,JSON.stringify(col));
+  rc();
+};
+
+window.avancarEtapa=function(){
+  if(!pedidoEmAndamento)return;
+  // Validar coleta na etapa 1
+  if(etapaEntrega===1){
+    const itens=pedidoEmAndamento.itens||[];
+    const col=JSON.parse(localStorage.getItem("fc_coletados_"+pedidoEmAndamento.id)||"{}");
+    const todos=itens.every(it=>col[it.pid||it.prodId||it.id]);
+    if(!todos){alert("⚠️ Confirme todos os produtos antes de continuar!");return;}
+    atualizarStatus(pedidoEmAndamento.id,"entregando",NOME_MOTOBOY);
+    pedidoEmAndamento.status="entregando";
   }
-  result.classList.add("show");
+  etapaEntrega++;
+  if(etapaEntrega>=3){
+    atualizarStatus(pedidoEmAndamento.id,"entregue",NOME_MOTOBOY);
+    pedidoEmAndamento.status="entregue";
+  }
+  rc();
+};
+
+window.voltarEtapa=function(){
+  if(etapaEntrega>0) etapaEntrega--;
+  rc();
+};
+
+window.finalizarEntrega=function(){
+  // Registrar nos ganhos de hoje
+  const hoje=JSON.parse(localStorage.getItem("fc_entregas_hoje")||"[]");
+  hoje.push({id:pedidoEmAndamento.id,ts:Date.now(),valor:VALOR_ENTREGA});
+  localStorage.setItem("fc_entregas_hoje",JSON.stringify(hoje));
+  localStorage.removeItem("fc_coletados_"+pedidoEmAndamento.id);
+  pedidoEmAndamento=null;
+  etapaEntrega=0;
+  tela="home";
+  rc();
+};
+
+// HISTÓRICO
+function rHistorico(){
+  const peds=getPedidos().filter(p=>p.motoboy===NOME_MOTOBOY).reverse();
+  if(!peds.length)return`<div class="empty"><div style="font-size:40px;margin-bottom:12px">📋</div>Nenhuma entrega ainda</div>`;
+  return`
+    <div style="padding:16px 12px 8px;font-size:13px;font-weight:700;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.5px">
+      Suas entregas (${peds.length})
+    </div>
+    ${peds.map(p=>`
+      <div class="card-light" style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+          <div>
+            <div style="font-weight:600">${p.id}</div>
+            <div style="font-size:12px;color:rgba(255,255,255,.6)">${p.cliente} · ${p.data||""}</div>
+          </div>
+          <div style="text-align:right">
+            <span style="background:${p.status==="entregue"?"rgba(59,170,53,.2)":"rgba(26,95,168,.2)"};color:${p.status==="entregue"?"#3BAA35":"#4A9FD4"};padding:3px 8px;border-radius:10px;font-size:11px;font-weight:600">${p.status==="entregue"?"✓ Entregue":"Em andamento"}</span>
+            <div style="font-size:13px;font-weight:700;color:#3BAA35;margin-top:4px">+${fmt(VALOR_ENTREGA)}</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5)">📍 ${p.endereco}</div>
+      </div>`).join("")}`;
 }
 
-function fecharScanner(){
-  scannerAtivo=false;pararCamera();
-  document.getElementById("scanner-overlay").classList.add("hidden");
-  document.getElementById("scan-result").classList.remove("show");
-  renderPedidoPage(pedidos[pedAtual]);
+// GANHOS
+function rGanhos(){
+  const hoje=JSON.parse(localStorage.getItem("fc_entregas_hoje")||"[]");
+  const peds=getPedidos().filter(p=>p.motoboy===NOME_MOTOBOY&&p.status==="entregue");
+  const ganhoTotal=peds.length*VALOR_ENTREGA;
+  const ganhoHoje=hoje.length*VALOR_ENTREGA;
+  const semana=Math.min(hoje.length*3,peds.length)*VALOR_ENTREGA;
+
+  return`
+    <div style="padding:20px 12px 10px">
+      <div style="font-size:14px;font-weight:700;color:rgba(255,255,255,.6);margin-bottom:16px">SEUS GANHOS</div>
+      <div style="background:linear-gradient(135deg,#3BAA35,#2E8A2A);border-radius:16px;padding:20px;margin-bottom:16px;text-align:center">
+        <div style="font-size:13px;opacity:.85;margin-bottom:6px">Total geral</div>
+        <div style="font-size:36px;font-weight:700">${fmt(ganhoTotal)}</div>
+        <div style="font-size:12px;opacity:.75;margin-top:6px">${peds.length} entregas · R$ ${VALOR_ENTREGA.toFixed(2)} cada</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div class="kpi"><div class="kpi-val">${fmt(ganhoHoje)}</div><div class="kpi-lbl">Hoje</div></div>
+        <div class="kpi"><div class="kpi-val">${fmt(semana)}</div><div class="kpi-lbl">Esta semana</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Como funciona seu pagamento</div>
+      ${[
+        ["📅","Pagamento quinzenal","Dias 15 e último dia útil do mês"],
+        ["📱","Via Pix","Para a chave cadastrada no aplicativo"],
+        ["🧾","Nota fiscal MEI","Emita a NFS-e para receber"],
+        ["📊","Extrato completo","Disponível aqui no histórico"],
+      ].map(([ico,tit,det])=>`
+        <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.07)">
+          <div style="font-size:20px;flex-shrink:0">${ico}</div>
+          <div><div style="font-weight:500;font-size:13px">${tit}</div><div style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px">${det}</div></div>
+        </div>`).join("")}
+    </div>
+    <div class="card" style="background:#141428;border-color:rgba(26,95,168,.4)">
+      <div style="font-size:12px;font-weight:700;color:#4A9FD4;margin-bottom:8px">ℹ️ Lembrete</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6">Você é MEI e presta serviço como autônomo. Emita a Nota Fiscal de Serviço (NFS-e) no portal da Prefeitura de Itaperuna para cada período de pagamento.</div>
+    </div>`;
 }
 
-function pararCamera(){
-  if(codeReader){try{codeReader.reset();}catch(e){}codeReader=null;}
-  if(streamAtivo){streamAtivo.getTracks().forEach(t=>t.stop());streamAtivo=null;}
+// INIT
+rc();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[FC Motoboy] SW registrado:', reg.scope))
+      .catch(err => console.log('[FC Motoboy] SW falhou:', err));
+  });
+
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    setTimeout(() => mostrarBannerMotoboy(deferredPrompt), 3000);
+  });
 }
 
-function avancarStep(){
-  const ped=pedidos[pedAtual];
-  ped.step=Math.min(6,ped.step+1);
-  if(ped.step===4){const m=document.getElementById("moto-pos");if(m){m.style.left="60%";m.style.top="52%";}}
-  renderPedidoPage(ped);
+function mostrarBannerMotoboy(prompt) {
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (localStorage.getItem('fc_motoboy_instalado')) return;
+
+  const banner = document.createElement('div');
+  banner.style.cssText = `
+    position:fixed;bottom:72px;left:12px;right:12px;
+    background:#1e2040;border-radius:14px;padding:14px;
+    box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:9999;
+    border:1.5px solid #3BAA35;display:flex;align-items:center;gap:12px;
+  `;
+  banner.innerHTML = `
+    <img src="icons/motoboy-72.png" style="width:48px;height:48px;border-radius:10px;flex-shrink:0">
+    <div style="flex:1">
+      <div style="font-weight:700;font-size:13px;color:#fff">Instalar app do Motoboy</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px">Acesso rápido direto da tela inicial</div>
+    </div>
+    <div style="display:flex;gap:6px;flex-shrink:0">
+      <button onclick="this.closest('div[style]').remove();localStorage.setItem('fc_motoboy_instalado','sim')"
+        style="padding:7px 12px;background:rgba(255,255,255,.1);border:none;border-radius:8px;font-size:12px;cursor:pointer;color:rgba(255,255,255,.7)">Não</button>
+      <button id="btn-inst-mb"
+        style="padding:7px 12px;background:#3BAA35;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:#fff">Instalar</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+
+  document.getElementById('btn-inst-mb').addEventListener('click', async () => {
+    if (!prompt) return;
+    prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === 'accepted') localStorage.setItem('fc_motoboy_instalado', 'sim');
+    banner.remove();
+  });
+
+  setTimeout(() => { if (banner.parentNode) banner.remove(); }, 8000);
 }
-
-function recusar(){showToast("Pedido recusado","#ff4d6a");navTo("home");}
-
-function voltarAposEntrega(){
-  const ped=pedidos[pedAtual];
-  ganhos+=ped.comissao;entregasCount++;
-  document.getElementById("ganhos-home").textContent="R$ "+ganhos.toFixed(2);
-  document.getElementById("kpi-e").textContent=entregasCount;
-  const card=document.getElementById("card-"+pedAtual);
-  if(card){card.style.opacity="0
+</script>
+</body>
+</html>

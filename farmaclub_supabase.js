@@ -1,10 +1,10 @@
-/**
+﻿/**
  * FARMACLUB — INTEGRAÇÃO SUPABASE
  * Fase B: banco de dados real, autenticação por farmácia, dados em tempo real
  *
  * CONFIGURAÇÃO (preencher com suas chaves):
  * 1. SUPABASE_URL   → já configurada abaixo
- * 2. SUPABASE_ANON  → cole a chave "anon public" do seu projeto Supabase
+ * 2. SUPABASE_ANON  → eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVzd3d2b25lZGZleHZ4bHprb29mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM2ODQ5MTYsImV4cCI6MjA4OTI2MDkxNn0.gTIWF1TnPdcpIqzGDEHH-9l45fbQ4IV4wGVqLx2Tp3k
  *    Supabase Dashboard → Settings → API → Project API keys → anon public
  */
 

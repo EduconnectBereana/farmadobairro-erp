@@ -90,6 +90,18 @@ a{text-decoration:none;color:inherit}
 .tag-prog{display:inline-block;background:#3BAA35;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:.3px;margin-bottom:3px}
 .kit-card{background:#fff;border:2px solid #1A5FA8;border-radius:14px;padding:14px;margin:0 12px 10px}
 .pickup-btn{flex:1;padding:11px;border-radius:10px;font-size:13px;font-weight:700;text-align:center;cursor:pointer;transition:all .15s}
+
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative}
+.ac-drop{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.14);z-index:300;overflow:hidden;border:1px solid #e8eaf4;max-height:320px;overflow-y:auto}
+.ac-item{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s}
+.ac-item:hover{background:#f8fdf8}
+.ac-item:last-child{border-bottom:none}
+.ac-ico{width:36px;height:36px;border-radius:8px;background:#f0fdf4;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ac-destaque{background:#fff3e8}
+/* COMPRAR DE NOVO */
+.comprar-novo{width:100%;padding:9px;background:#3BAA35;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:6px}
+.comprar-novo:active{transform:scale(.97)}
 /* CÓDIGO RECUPERAÇÃO */
 .code-inputs{display:flex;gap:8px;justify-content:center;margin:14px 0}
 .code-inp{width:44px;height:52px;text-align:center;font-size:22px;font-weight:700;border:1.5px solid #e0e0e0;border-radius:10px}
@@ -130,6 +142,19 @@ a{text-decoration:none;color:inherit}
 </nav>
 
 <script>
+
+// ── FEATURE FLAGS — lê configurações do ERP Central ──
+function getFlag(key){
+  try {
+    const flags=JSON.parse(localStorage.getItem("fc_feature_flags")||"{}");
+    const def={medicos:false,dentistas:false,fidelidade:false,telemedicina:false,b2b_dental:false};
+    return !!(Object.assign({},def,flags)[key]);
+  } catch(e){ return false; }
+}
+
+// ── RODAPÉ LEGAL ──
+const FOOTER_LEGAL=`<div style="background:#1a1a2e;color:rgba(255,255,255,.5);font-size:10px;line-height:1.8;padding:20px 16px;margin-top:8px"><div style="border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:10px;margin-bottom:10px;font-size:11px;color:rgba(255,255,255,.7);font-weight:600">FarmaClub Itaperuna — Rede de Farmácias Independentes</div><div style="margin-bottom:8px">FarmaClub Gestão e Tecnologia Ltda. | CNPJ: 00.000.000/0001-00 | Rua Getúlio Vargas, 342 | Centro | Itaperuna (RJ) | CEP 28300-000 | WhatsApp (22) 9XXXX-XXXX</div><div style="background:rgba(255,255,255,.05);border-radius:8px;padding:10px;margin-bottom:8px;border-left:3px solid #3BAA35">⚕️ Informações deste app não substituem orientações médicas. Consulte um médico.</div><div style="margin-bottom:8px">Preços válidos para compras neste canal. FarmaClub segue determinações da ANVISA e LGPD Lei 13.709/2018.</div><div style="border-top:1px solid rgba(255,255,255,.1);padding-top:8px;font-size:9px;text-align:center">© 2026 FarmaClub Itaperuna · Todos os direitos reservados</div></div>`;
+
 // ══════════════════════════════════════════
 // DADOS
 // ══════════════════════════════════════════
@@ -457,6 +482,13 @@ function toast(msg){
 // ══════════════════════════════════════════
 function navTo(t){
   // Se tentar ir para checkout sem login → abre auth primeiro
+  // Bloquear módulos inativos
+  if((t==="medicos"||t==="medico_perfil"||t==="agendamento")&&!getFlag("medicos")){
+    toast("Módulo em breve — fique ligado! 🚀"); return;
+  }
+  if((t==="dentistas"||t==="dentista_perfil"||t==="agendamento_dent")&&!getFlag("dentistas")){
+    toast("Módulo em breve — fique ligado! 🚀"); return;
+  }
   if(t==="checkout"&&!usuarioLogado){
     abrirAuth("login",()=>navTo("checkout"));
     return;
@@ -478,8 +510,8 @@ window.tgSenha=tgSenha;
 // RENDERS
 // ══════════════════════════════════════════
 function rc(){
-  const r={inicio:rInicio,busca:rBusca,pedidos:rPedidos,carrinho:rCarrinho,farmacia:rFarmacia,produto:rProduto,checkout:rCheckout,pagamento:rPagamento,pix:rPix,rastreamento:rRastreamento,conta:rConta};
-  document.getElementById("content").innerHTML=(r[tela]||rInicio)();
+  const r={inicio:rInicio,busca:rBusca,pedidos:rPedidos,carrinho:rCarrinho,farmacia:rFarmacia,produto:rProduto,checkout:rCheckout,pagamento:rPagamento,pix:rPix,rastreamento:rRastreamento,conta:rConta,medicos:rMedicos,medico_perfil:rMedicoPerfil,agendamento:rAgendamento,dentistas:rDentistas,dentista_perfil:rDentistaPerfil,agendamento_dent:rAgendamentoDent};
+  document.getElementById("content").innerHTML=(r[tela]||rInicio)()+FOOTER_LEGAL;
   if(tela==="rastreamento") setTimeout(initMapaRastreamento,100);
 }
 
@@ -492,8 +524,7 @@ function getCampanhasAtivas(){
 
 function tagCampanha(nomeProd){
   const camps = getCampanhasAtivas();
-  const camp = camps.find(c=>c.produto===nomeProd||
-    (c.itens&&c.itens.includes(nomeProd)));
+  const camp = camps.find(c=>c.produto===nomeProd||(c.itens&&c.itens.includes(nomeProd)));
   if(!camp) return "";
   if(camp.tipo==="novidade") return `<div class="tag-novidade">🟠 NOVIDADE</div>`;
   if(camp.tipo==="progressivo") return `<div class="tag-prog">📦 Leve ${camp.qtdMin}, ${camp.desconto}% off</div>`;
@@ -502,40 +533,74 @@ function tagCampanha(nomeProd){
 }
 
 function farmMaisProxima(){
-  // Usa farmácia mais próxima baseada nos dados cadastrados
-  // Em produção: usa geolocalização do cliente vs endereço da farmácia
-  // Por ora: primeira farmácia aberta (ordenada por ID)
   return farms.filter(f=>f.aberto).sort((a,b)=>a.id-b.id)[0]||farms[0];
 }
 
-function farmFechandoEm10min(f){
+function farmFechandoBreve(f){
   if(!f||!f.horario) return false;
-  const m=f.horario.match(/(\d+)h.*?(\d+)?h/);
-  if(!m) return false;
-  const fechaH=parseInt(m[2]||m[1])+12;
+  const m=f.horario.match(/(\d+)h/g);
+  if(!m||m.length<2) return false;
+  const fechaH=parseInt(m[m.length-1]);
   const agora=new Date();
-  const mins=(fechaH*60)-(agora.getHours()*60+agora.getMinutes());
-  return mins>=0&&mins<=10;
+  const minRestantes=fechaH*60-(agora.getHours()*60+agora.getMinutes());
+  return minRestantes>=0&&minRestantes<=10;
 }
 
 function rInicio(){
   const pedAtivo=getPedidosUser().find(p=>["aguardando","coletando","entregando"].includes(p.status));
-  const camps = getCampanhasAtivas();
-  const kits  = camps.filter(c=>c.tipo==="kit");
-  const novs  = camps.filter(c=>c.tipo==="novidade");
+  const camps=getCampanhasAtivas();
+  const kits=camps.filter(c=>c.tipo==="kit");
+  const novs=camps.filter(c=>c.tipo==="novidade");
+  const saudacao=["Bom dia","Boa tarde","Boa noite"][[6,12,18].findIndex(h=>new Date().getHours()<h)||2];
 
   return`
-    <div class="hero">
-      <div style="font-size:18px;font-weight:700;margin-bottom:4px">${usuarioLogado?`Olá, ${usuarioLogado.nome.split(" ")[0]}! 👋`:"Medicamentos em Itaperuna/RJ"}</div>
-      <div style="font-size:12px;opacity:.85;margin-bottom:12px">Entrega rápida · Melhores preços no PIX · Sem cadastro para ver preços</div>
-      <div style="position:relative">
-        <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px">🔍</span>
-        <input style="width:100%;padding:11px 14px 11px 40px;border-radius:24px;border:none;font-size:14px;font-family:inherit" placeholder="Buscar medicamento..." onclick="navTo('busca')" readonly>
+    <!-- HERO GLOBAL — busca no centro, limpo, sem catálogo -->
+    <div style="background:linear-gradient(160deg,#f0fdf4 0%,#fff 60%);padding:28px 20px 24px;text-align:center">
+      ${usuarioLogado
+        ?`<div style="font-size:13px;color:#9a9eb8;margin-bottom:4px">${saudacao} 👋</div>
+           <div style="font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:4px">${usuarioLogado.nome.split(" ")[0]}</div>`
+        :`<div style="margin-bottom:14px">
+            <div style="width:52px;height:52px;background:linear-gradient(135deg,#3BAA35,#2E8A2A);border-radius:14px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center">
+              <img src="farmaclub_logo.png" style="height:36px;filter:brightness(0) invert(1)" onerror="this.style.display='none'">
+            </div>
+            <div style="font-size:22px;font-weight:800;color:#1a1a2e;margin-bottom:4px">FarmaClub</div>
+            <div style="font-size:13px;color:#9a9eb8">Medicamentos, agendamentos e saúde em Itaperuna</div>
+          </div>`}
+
+      <!-- BUSCA CENTRAL — elemento principal da home -->
+      <div style="position:relative;max-width:400px;margin:0 auto 20px">
+        <div onclick="navTo('busca')" style="display:flex;align-items:center;gap:12px;background:#fff;border:2px solid #3BAA35;border-radius:50px;padding:14px 18px;cursor:pointer;box-shadow:0 4px 20px rgba(59,170,53,.15);transition:box-shadow .2s"
+          onmouseover="this.style.boxShadow='0 8px 30px rgba(59,170,53,.25)'" onmouseout="this.style.boxShadow='0 4px 20px rgba(59,170,53,.15)'">
+          <span style="font-size:20px;color:#3BAA35">🔍</span>
+          <span style="font-size:15px;color:#9a9eb8;flex:1;text-align:left">O que você precisa hoje?</span>
+          <span style="background:#3BAA35;color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;flex-shrink:0">Buscar</span>
+        </div>
+      </div>
+
+      <!-- ATALHOS RÁPIDOS -->
+      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+        ${[
+          ["💊","Remédios","analgesicos"],
+          ["💙","Pressão","cardiovasc"],
+          ["🩺","Diabetes","diabetes"],
+          ["🌿","Vitaminas","vitaminas"],
+          ...(getFlag("medicos")?[["👨‍⚕️","Médicos","medicos"]]:[]),
+          ...(getFlag("dentistas")?[["🦷","Dentistas","dentistas"]]:[]),
+        ].map(([ico,txt,acao])=>`
+          <div onclick="${acao==="medicos"?"navTo('medicos')":"catAtiva='"+acao+"';navTo('busca')"}"
+            style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:10px 14px;background:#fff;border-radius:12px;border:1.5px solid #e8eaf4;min-width:64px;transition:all .15s"
+            onmouseover="this.style.borderColor='#3BAA35';this.style.background='#f0fdf4'"
+            onmouseout="this.style.borderColor='#e8eaf4';this.style.background='#fff'">
+            <span style="font-size:22px">${ico}</span>
+            <span style="font-size:11px;font-weight:600;color:#555">${txt}</span>
+          </div>`).join("")}
       </div>
     </div>
 
+    <!-- PEDIDO ATIVO -->
     ${pedAtivo?`
-    <div onclick="pedidoAtual=getPedidos().find(x=>x.id==='${pedAtivo.id}')||pedAtivo;tela='rastreamento';rc()" style="background:linear-gradient(135deg,#1A5FA8,#1450a0);margin:10px 12px 0;border-radius:12px;padding:14px;color:#fff;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+    <div onclick="pedidoAtual=getPedidos().find(x=>x.id==='${pedAtivo.id}')||pedAtivo;tela='rastreamento';rc()"
+      style="background:linear-gradient(135deg,#1A5FA8,#1450a0);margin:0 12px 4px;border-radius:14px;padding:14px;color:#fff;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
       <div>
         <div style="font-size:11px;opacity:.8;font-weight:600;margin-bottom:3px"><span class="live">●</span> PEDIDO EM ANDAMENTO</div>
         <div style="font-size:14px;font-weight:700">${pedAtivo.id} · ${pedAtivo.farmacia}</div>
@@ -544,55 +609,89 @@ function rInicio(){
       <div style="font-size:22px">›</div>
     </div>`:""}
 
+    <!-- KITS EM PROMOÇÃO -->
     ${kits.length>0?`
-    <div style="padding:12px 12px 4px;font-size:11px;font-weight:700;color:#1A5FA8;letter-spacing:.5px;text-transform:uppercase;margin-top:10px">🎁 Kits em promoção</div>
-    ${kits.map(k=>`
-      <div class="kit-card">
-        <div style="font-size:14px;font-weight:700;margin-bottom:4px">${k.nome}</div>
-        ${k.descricao?`<div style="font-size:12px;color:#666;margin-bottom:8px">${k.descricao}</div>`:""}
-        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-          <div style="font-size:11px;color:#9a9eb8">${(k.itens||[]).join(" + ")}</div>
-          <div style="font-size:18px;font-weight:800;color:#1A5FA8">${fmt(k.precoKit||0)}</div>
-        </div>
-        <div style="font-size:11px;color:#9a9eb8;margin-top:4px">📱 Preço no PIX · Válido até ${new Date(k.dataFim).toLocaleDateString("pt-BR")}</div>
-      </div>`).join("")}`:""}
+    <div style="padding:16px 14px 6px;font-size:12px;font-weight:700;color:#1A5FA8;text-transform:uppercase;letter-spacing:.4px">🎁 Kits em promoção</div>
+    <div style="overflow-x:auto;scrollbar-width:none;padding:0 12px 4px;display:flex;gap:10px">
+      ${kits.map(k=>`
+        <div style="background:#fff;border:2px solid #1A5FA8;border-radius:14px;padding:14px;min-width:220px;flex-shrink:0">
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px;color:#1a1a2e">${k.nome}</div>
+          ${k.descricao?`<div style="font-size:11px;color:#9a9eb8;margin-bottom:8px">${k.descricao}</div>`:""}
+          <div style="font-size:11px;color:#9a9eb8;margin-bottom:6px">${(k.itens||[]).join(" + ")}</div>
+          <div style="font-size:18px;font-weight:800;color:#1A5FA8">${fmt(k.precoKit||0)} <span style="font-size:10px;background:#eff6ff;padding:2px 7px;border-radius:8px;font-weight:600">📱 PIX</span></div>
+        </div>`).join("")}
+    </div>`:""}
 
+    <!-- NOVIDADES -->
     ${novs.length>0?`
-    <div style="padding:12px 12px 4px;font-size:11px;font-weight:700;color:#E8650A;letter-spacing:.5px;text-transform:uppercase;${kits.length===0?"margin-top:10px":""}">🟠 Novidades na rede</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr">
-      ${novs.slice(0,4).map(n=>{
+    <div style="padding:16px 14px 6px;font-size:12px;font-weight:700;color:#E8650A;text-transform:uppercase;letter-spacing:.4px">🟠 Novidades</div>
+    <div style="overflow-x:auto;scrollbar-width:none;padding:0 12px 4px;display:flex;gap:10px">
+      ${novs.slice(0,5).map(n=>{
         const p=catalogo.find(x=>x.nome===n.produto)||catalogo[0];
-        return`<div style="background:#fff;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;padding:12px;cursor:pointer" onclick="prodAtivoId=${p.id};tela='produto';rc()">
-          <div class="tag-novidade">🟠 NOVIDADE</div>
-          <div style="font-size:28px;text-align:center;height:38px;display:flex;align-items:center;justify-content:center;margin-bottom:5px">${p.ico}</div>
-          <div style="font-size:12px;font-weight:600;line-height:1.3;margin-bottom:2px">${p.nome.split(" ").slice(0,4).join(" ")}</div>
-          <div style="font-size:14px;font-weight:700;color:#3BAA35;margin-top:4px">${fmt(p.preco)}</div>
+        return`<div onclick="prodAtivoId=${p.id};tela='produto';rc()"
+          style="background:#fff;border-radius:14px;border:2px solid #fde68a;padding:12px;min-width:130px;flex-shrink:0;cursor:pointer;text-align:center">
+          <div class="tag-novidade" style="margin-bottom:6px">🟠 NOVO</div>
+          <div style="font-size:26px;margin-bottom:6px">${p.ico}</div>
+          <div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:4px">${p.nome.split(" ").slice(0,3).join(" ")}</div>
+          <div style="font-size:13px;font-weight:700;color:#3BAA35">${fmt(p.preco)}</div>
         </div>`;}).join("")}
     </div>`:""}
 
-    <div style="padding:12px 12px 4px;font-size:11px;font-weight:700;color:#9a9eb8;letter-spacing:.5px;text-transform:uppercase;${kits.length+novs.length===0?"margin-top:8px":""}">
-      Mais buscados
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr">
-      ${catalogo.slice(0,8).map(p=>{
+    <!-- MAIS BUSCADOS — horizontal scroll cards -->
+    <div style="padding:16px 14px 6px;font-size:12px;font-weight:700;color:#9a9eb8;text-transform:uppercase;letter-spacing:.4px">🔥 Mais buscados</div>
+    <div style="overflow-x:auto;scrollbar-width:none;padding:0 12px 12px;display:flex;gap:10px">
+      ${catalogo.slice(0,10).map(p=>{
         const disp=farms.filter(f=>(p.est[f.id]||0)>0).length;
         const tag=tagCampanha(p.nome);
-        return`<div style="background:#fff;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;padding:12px;cursor:pointer" onclick="prodAtivoId=${p.id};tela='produto';rc()">
+        return`<div onclick="prodAtivoId=${p.id};tela='produto';rc()"
+          style="background:#fff;border-radius:14px;border:1px solid #e8eaf4;padding:12px;min-width:130px;flex-shrink:0;cursor:pointer">
           ${tag}
-          <div style="font-size:26px;text-align:center;height:38px;display:flex;align-items:center;justify-content:center;margin-bottom:5px">${p.ico}</div>
-          <div style="font-size:12px;font-weight:600;line-height:1.3;margin-bottom:2px">${p.nome.split(" ").slice(0,4).join(" ")}</div>
-          <div style="font-size:11px;color:#9a9eb8;margin-bottom:4px">${p.lab}</div>
-          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">
-            <span style="font-size:14px;font-weight:700;color:#3BAA35">${fmt(p.preco)}</span>
-            <span style="font-size:10px;background:#f0fdf4;color:#3BAA35;padding:1px 6px;border-radius:8px;font-weight:600">📱 PIX</span>
-          </div>
+          <div style="font-size:26px;text-align:center;margin-bottom:6px">${p.ico}</div>
+          <div style="font-size:11px;font-weight:600;line-height:1.3;margin-bottom:3px">${p.nome.split(" ").slice(0,3).join(" ")}</div>
+          <div style="font-size:10px;color:#9a9eb8;margin-bottom:5px">${p.lab}</div>
+          <div style="font-size:14px;font-weight:700;color:#3BAA35">${fmt(p.preco)}</div>
           ${p.precoAnt?`<div style="font-size:10px;color:#9a9eb8;text-decoration:line-through">${fmt(p.precoAnt)}</div>`:""}
-          <div style="font-size:10px;color:${disp>0?"#3BAA35":"#E03A3A"};margin-top:3px">${disp>0?disp+" farmácia(s)":"Sem estoque"}</div>
+          <div style="font-size:10px;color:${disp>0?"#3BAA35":"#E03A3A"};margin-top:3px">${disp>0?disp+" farm.":"Sem estoque"}</div>
         </div>`;}).join("")}
     </div>
-    <div style="margin:10px 12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:12px;padding:12px 14px;font-size:12px;color:#92400e">
-      💡 <strong>PIX = melhor preço.</strong> Compare, adicione ao carrinho e faça login só na hora de finalizar.
-    </div>`;
+
+    ${getFlag("medicos")?`<!-- MÓDULO MÉDICOS — entrada na home -->
+    <div onclick="navTo('medicos')" style="margin:0 12px 12px;background:linear-gradient(135deg,#1A5FA8,#0d47a1);border-radius:14px;padding:18px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:14px">
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">👨‍⚕️</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;margin-bottom:3px">Consultas Médicas</div>
+        <div style="font-size:12px;opacity:.85;line-height:1.4">Agende com médicos parceiros em Itaperuna. Após a consulta, compre os medicamentos aqui com desconto.</div>
+      </div>
+      <div style="font-size:22px;opacity:.7">›</div>
+    </div>
+
+    <!-- DENTISTAS — entrada na home -->
+    <div onclick="navTo('dentistas')" style="margin:0 12px 12px;background:linear-gradient(135deg,#0891b2,#0e7490);border-radius:14px;padding:18px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:14px">
+      <div style="width:52px;height:52px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🦷</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700;margin-bottom:3px">Dentistas Parceiros <span style="font-size:11px;background:rgba(255,255,255,.2);padding:2px 8px;border-radius:10px;margin-left:4px">Em breve</span></div>
+        <div style="font-size:12px;opacity:.85;line-height:1.4">Agende consultas odontológicas. Compre produtos de higiene bucal e materiais com desconto.</div>
+      </div>
+      <div style="font-size:22px;opacity:.7">›</div>
+    </div>`:""}
+
+    <!-- FARMÁCIAS PARCEIRAS — no final, não na frente -->
+    <div style="padding:4px 14px 6px;font-size:12px;font-weight:700;color:#9a9eb8;text-transform:uppercase;letter-spacing:.4px">🏥 Farmácias parceiras</div>
+    ${farms.filter(f=>f.aberto).map(f=>`
+      <div onclick="farmSel=${f.id};navTo('farmacia')"
+        style="display:flex;align-items:center;gap:10px;padding:11px 14px;background:#fff;border-bottom:1px solid #f0f0f0;cursor:pointer">
+        <div style="width:38px;height:38px;border-radius:10px;background:${f.cor}22;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🏥</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:13px">${f.nome}</div>
+          <div style="font-size:11px;color:#9a9eb8">${f.bairro} · ${f.horario}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:11px;color:#d97706">★ ${f.nota}</span>
+          <span style="background:#f0fdf4;color:#3BAA35;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600">Aberta</span>
+        </div>
+      </div>`).join("")}
+
+    <div style="height:16px"></div>`;
 }
 
 // FARMÁCIA
@@ -633,20 +732,100 @@ function rFarmacia(){
 }
 
 // BUSCA
+// Histórico de buscas recentes
+function getBuscasRecentes(){return JSON.parse(localStorage.getItem("fc_buscas_rec")||"[]");}
+function addBuscaRecente(txt){
+  if(!txt||txt.length<2)return;
+  let rec=getBuscasRecentes().filter(x=>x!==txt).slice(0,4);
+  rec.unshift(txt);
+  localStorage.setItem("fc_buscas_rec",JSON.stringify(rec));
+}
+
+function highlightMatch(txt, q){
+  if(!q) return txt;
+  const i=txt.toLowerCase().indexOf(q.toLowerCase());
+  if(i<0) return txt;
+  return txt.slice(0,i)+'<strong style="color:#3BAA35">'+txt.slice(i,i+q.length)+'</strong>'+txt.slice(i+q.length);
+}
+
 function rBusca(){
-  const prods=catalogo.filter(p=>(catAtiva==="todos"||p.cat===catAtiva)&&(buscaTxt===""||p.nome.toLowerCase().includes(buscaTxt.toLowerCase())||p.lab.toLowerCase().includes(buscaTxt.toLowerCase())));
+  const camps=getCampanhasAtivas();
+  const prods=catalogo.filter(p=>(catAtiva==="todos"||p.cat===catAtiva)&&(
+    buscaTxt===""||
+    p.nome.toLowerCase().includes(buscaTxt.toLowerCase())||
+    p.lab.toLowerCase().includes(buscaTxt.toLowerCase())||
+    p.ean.includes(buscaTxt)
+  ));
+
+  // Autocomplete — sugestões enquanto digita
+  const sugestoes = buscaTxt.length>=2
+    ? catalogo.filter(p=>
+        p.nome.toLowerCase().startsWith(buscaTxt.toLowerCase())||
+        p.nome.toLowerCase().includes(" "+buscaTxt.toLowerCase())
+      ).slice(0,6)
+    : [];
+
+  const recentes = getBuscasRecentes();
+
   return`
-    <div class="swrap"><span class="sico">🔍</span>
-      <input class="sinput" type="text" placeholder="Medicamento, laboratório..." value="${buscaTxt}" autofocus oninput="buscaTxt=this.value;rc()">
+    <div style="background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:52px;z-index:150;padding:10px 12px 6px">
+      <div class="ac-wrap">
+        <span class="sico">🔍</span>
+        <input class="sinput" id="busca-inp" type="text" placeholder="Medicamento, laboratório ou código EAN..."
+          value="${buscaTxt}" autofocus autocomplete="off"
+          oninput="buscaTxt=this.value;renderBuscaAC()"
+          onkeydown="if(event.key==='Enter'&&buscaTxt.length>0){addBuscaRecente(buscaTxt);document.getElementById('ac-drop')&&(document.getElementById('ac-drop').style.display='none');rc()}"
+          onfocus="renderBuscaAC()">
+        ${buscaTxt?`<button onclick="buscaTxt='';rc()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:transparent;color:#9a9eb8;font-size:18px;padding:0;border:none;cursor:pointer">✕</button>`:""}
+        <div id="ac-drop" class="ac-drop" style="display:none"></div>
+      </div>
     </div>
+
     <div class="cats">${CATS.map(c=>`<button class="cat-btn ${catAtiva===c.id?"ativo":""}" onclick="catAtiva='${c.id}';buscaTxt='';rc()">${c.n}</button>`).join("")}</div>
-    ${buscaTxt===""&&catAtiva==="todos"?`<div class="empty"><div style="font-size:40px;margin-bottom:12px">🔍</div>Digite para buscar<br><small style="font-size:11px;margin-top:6px;display:block">ou selecione uma categoria</small></div>`
-    :prods.map(p=>{
+
+    ${buscaTxt===""&&catAtiva==="todos"?`
+      <!-- ESTADO VAZIO: recentes + populares -->
+      ${recentes.length>0?`
+      <div style="padding:12px 14px 4px;font-size:11px;font-weight:700;color:#9a9eb8;text-transform:uppercase;letter-spacing:.4px">🕐 Buscas recentes</div>
+      ${recentes.map(r=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:#fff;border-bottom:1px solid #f5f5f5;cursor:pointer"
+          onclick="buscaTxt='${r}';addBuscaRecente('${r}');rc()">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="color:#9a9eb8;font-size:16px">🕐</span>
+            <span style="font-size:13px">${r}</span>
+          </div>
+          <button onclick="event.stopPropagation();const rec=getBuscasRecentes().filter(x=>x!=='${r}');localStorage.setItem('fc_buscas_rec',JSON.stringify(rec));rc()"
+            style="color:#9a9eb8;background:transparent;border:none;font-size:16px;cursor:pointer;padding:0">✕</button>
+        </div>`).join("")}`:""}
+
+      <div style="padding:12px 14px 4px;font-size:11px;font-weight:700;color:#9a9eb8;text-transform:uppercase;letter-spacing:.4px">🔥 Mais buscados</div>
+      ${catalogo.slice(0,6).map(p=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:#fff;border-bottom:1px solid #f5f5f5;cursor:pointer"
+          onclick="prodAtivoId=${p.id};addBuscaRecente('${p.nome.split(' ').slice(0,3).join(' ')}');tela='produto';rc()">
+          <div class="ac-ico">${p.ico}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:600">${p.nome.split(' ').slice(0,5).join(' ')}</div>
+            <div style="font-size:11px;color:#9a9eb8">${p.lab}</div>
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#3BAA35">${fmt(p.preco)}</div>
+        </div>`).join("")}
+    `
+    :prods.length===0?`
+      <div class="empty" style="padding-top:30px">
+        <div style="font-size:40px;margin-bottom:12px">🔍</div>
+        <div style="font-size:14px;margin-bottom:6px">Nenhum resultado para "<strong>${buscaTxt}</strong>"</div>
+        <div style="font-size:12px;color:#9a9eb8;margin-bottom:16px">Tente outro nome ou laboratório</div>
+        <button onclick="buscaTxt='';catAtiva='todos';rc()" style="padding:10px 20px;background:#3BAA35;color:#fff;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer">Ver todos os produtos</button>
+      </div>
+    `
+    :prods.map((p,i)=>{
       const disp=farms.filter(f=>(p.est[f.id]||0)>0);
-      return`<div class="card-flat" style="display:flex;gap:12px;cursor:pointer" onclick="prodAtivoId=${p.id};tela='produto';rc()">
-        <div style="font-size:26px;flex-shrink:0;width:44px;height:44px;background:#f0fdf4;border-radius:8px;display:flex;align-items:center;justify-content:center">${p.ico}</div>
+      const camp=camps.find(c=>c.produto===p.nome);
+      return`<div class="card-flat" style="display:flex;gap:12px;cursor:pointer" onclick="prodAtivoId=${p.id};addBuscaRecente(buscaTxt);tela='produto';rc()">
+        <div style="font-size:26px;flex-shrink:0;width:44px;height:44px;background:${camp?"#fff3e8":"#f0fdf4"};border-radius:8px;display:flex;align-items:center;justify-content:center">${p.ico}</div>
         <div style="flex:1">
-          <div style="font-weight:600;font-size:13px">${p.nome}</div>
+          ${camp?`<div class="tag-${camp.tipo==="novidade"?"novidade":camp.tipo==="kit"?"kit":"prog"}">${camp.tipo==="novidade"?"🟠 NOVIDADE":camp.tipo==="kit"?"🎁 KIT":"📦 LEVE MAIS"}</div>`:""}
+          <div style="font-weight:600;font-size:13px">${highlightMatch(p.nome,buscaTxt)}</div>
           <div style="font-size:11px;color:#9a9eb8;margin-top:2px">${p.lab} · ${p.receita?'<span style="color:#E03A3A">Receita</span>':'Venda livre'}</div>
           <div style="display:flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap">
             <span style="font-size:14px;font-weight:700;color:#3BAA35">${fmt(p.preco)}</span>
@@ -655,8 +834,61 @@ function rBusca(){
           </div>
           <div style="font-size:11px;color:${disp.length>0?"#3BAA35":"#E03A3A"};margin-top:3px">${disp.length>0?disp.length+" farmácia(s) com estoque":"Sem estoque"}</div>
         </div>
+        <div style="color:#9a9eb8;font-size:18px;align-self:center">›</div>
       </div>`;}).join("")}`;
 }
+
+// Renderizar autocomplete sem re-renderizar a página toda
+window.renderBuscaAC = function(){
+  const q = document.getElementById("busca-inp")?.value||"";
+  buscaTxt = q;
+  const drop = document.getElementById("ac-drop");
+  if(!drop) return;
+
+  // Sem query suficiente
+  if(q.length < 2){ drop.style.display="none"; return; }
+
+  const sugs = catalogo.filter(p=>
+    p.nome.toLowerCase().includes(q.toLowerCase())||
+    p.lab.toLowerCase().includes(q.toLowerCase())||
+    p.ean.includes(q)
+  ).slice(0,7);
+
+  if(!sugs.length){ drop.style.display="none"; return; }
+
+  const camps = getCampanhasAtivas();
+  drop.innerHTML = sugs.map(p=>{
+    const camp = camps.find(c=>c.produto===p.nome);
+    const disp = farms.filter(f=>(p.est[f.id]||0)>0).length;
+    return`<div class="ac-item ${camp?"ac-destaque":""}" onclick="prodAtivoId=${p.id};addBuscaRecente('${q}');document.getElementById('ac-drop').style.display='none';tela='produto';buscaTxt='';rc()">
+      <div class="ac-ico">${p.ico}</div>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:600">${highlightMatch(p.nome,q)}</div>
+        <div style="font-size:11px;color:#9a9eb8">${p.lab} · ${disp>0?`<span style="color:#3BAA35">${disp} farmácia(s)</span>`:'<span style="color:#E03A3A">Sem estoque</span>'}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-size:13px;font-weight:700;color:#3BAA35">${fmt(p.preco)}</div>
+        ${camp?`<div style="font-size:9px;color:#E8650A;font-weight:700">${camp.tipo==="novidade"?"🟠 NOVO":camp.tipo==="kit"?"🎁 KIT":"📦 PROMO"}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+
+  // Item "ver todos os resultados"
+  drop.innerHTML += `<div class="ac-item" style="background:#f8f8f8;justify-content:center"
+    onclick="addBuscaRecente('${q}');document.getElementById('ac-drop').style.display='none';rc()">
+    <span style="font-size:12px;font-weight:600;color:#3BAA35">🔍 Ver todos os resultados para "${q}"</span>
+  </div>`;
+
+  drop.style.display = "block";
+};
+
+// Fechar autocomplete ao clicar fora
+document.addEventListener("click", e=>{
+  if(!e.target.closest(".ac-wrap")){
+    const drop=document.getElementById("ac-drop");
+    if(drop) drop.style.display="none";
+  }
+});
 
 // PRODUTO
 function rProduto(){
@@ -1098,23 +1330,90 @@ window.reportarProblema=function(pedId){
 };
 
 // PEDIDOS
+// Comprar de novo — adiciona todos os itens do pedido ao carrinho
+window.comprarDeNovo = function(pedId){
+  const ped = getPedidos().find(p=>p.id===pedId);
+  if(!ped) return;
+  let adicionados=0, semEstoque=[];
+  ped.itens.forEach(it=>{
+    const p=catalogo.find(x=>x.pid===it.pid||x.id===it.pid);
+    const fid=it.fid;
+    if(p&&(p.est[fid]||0)>0){
+      const ex=carrinho.find(x=>x.pid===it.pid&&x.fid===fid);
+      if(ex) ex.qtd+=it.qtd;
+      else carrinho.push({...it,qtd:it.qtd});
+      adicionados++;
+    } else {
+      semEstoque.push(it.nome?.split(" ").slice(0,3).join(" ")||"Item");
+    }
+  });
+  updBadge();
+  if(adicionados>0&&semEstoque.length===0){
+    toast("✅ "+adicionados+" produto(s) adicionados ao carrinho!");
+    navTo("carrinho");
+  } else if(adicionados>0){
+    toast("✅ "+adicionados+" adicionados · "+semEstoque.length+" sem estoque");
+    navTo("carrinho");
+  } else {
+    toast("❌ Produtos sem estoque no momento");
+  }
+};
+
 function rPedidos(){
   if(!usuarioLogado)return`<div class="empty" style="padding-top:60px"><div style="font-size:48px;margin-bottom:12px">📦</div><div style="font-size:14px;margin-bottom:4px">Faça login para ver seus pedidos</div><div style="font-size:12px;color:#9a9eb8;margin-bottom:16px">Seus pedidos ficam salvos com sua conta</div><button onclick="abrirAuth('login',()=>navTo('pedidos'))" style="padding:12px 24px;background:#3BAA35;color:#fff;border-radius:10px;font-size:14px;font-weight:600">Entrar</button></div>`;
   const meus=getPedidosUser().reverse();
   if(!meus.length)return`<div class="empty" style="padding-top:60px"><div style="font-size:48px;margin-bottom:12px">📦</div><div style="font-size:14px;margin-bottom:16px">Nenhum pedido ainda</div><button onclick="navTo('inicio')" style="padding:12px 24px;background:#3BAA35;color:#fff;border-radius:10px;font-size:14px;font-weight:600">Comprar agora</button></div>`;
   return`
-    <div style="padding:14px 16px;background:#fff;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600">Meus pedidos</div>
-    ${meus.map(p=>`
-      <div class="card-flat" style="cursor:pointer" onclick="pedidoAtual=getPedidos().find(x=>x.id==='${p.id}')||null;tela='rastreamento';rc()">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-          <div style="font-weight:600;font-size:13px">${p.id} · ${p.farmacia}</div>
-          <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:${p.confirmadoCliente?"#f0fdf4":p.status==="entregando"?"#eff6ff":p.status==="entregue"?"#fffbeb":"#fffbeb"};color:${p.confirmadoCliente?"#3BAA35":p.status==="entregando"?"#1A5FA8":"#d97706"}">
-            ${p.confirmadoCliente?"✓ Concluído":p.status==="entregue"?"📦 Confirmar":p.status==="entregando"?"🛵 A caminho":"⏳ Aguardando"}
-          </span>
+    <div style="padding:14px 16px;background:#fff;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600">Meus pedidos (${meus.length})</div>
+    ${meus.map(p=>{
+      const concluido=p.confirmadoCliente;
+      const ativo=["aguardando","coletando","entregando"].includes(p.status)&&!concluido;
+      return`
+      <div style="background:#fff;border-bottom:1px solid #f0f0f0">
+        <div class="card-flat" style="cursor:pointer;padding-bottom:6px" onclick="pedidoAtual=getPedidos().find(x=>x.id==='${p.id}')||null;tela='rastreamento';rc()">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+            <div>
+              <div style="font-weight:600;font-size:13px">${p.id} · ${p.farmacia}</div>
+              <div style="font-size:11px;color:#9a9eb8;margin-top:2px">${p.itens.length} item(ns) · ${p.pagamento} · ${p.data}</div>
+            </div>
+            <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;flex-shrink:0;background:${concluido?"#f0fdf4":p.status==="entregando"?"#eff6ff":p.status==="entregue"?"#fffbeb":"#fffbeb"};color:${concluido?"#3BAA35":p.status==="entregando"?"#1A5FA8":"#d97706"}">
+              ${concluido?"✓ Concluído":p.status==="entregue"?"📦 Confirmar":p.status==="entregando"?"🛵 A caminho":"⏳ Aguardando"}
+            </span>
+          </div>
+
+          <!-- PRÉVIA DOS ITENS -->
+          <div style="display:flex;gap:4px;margin-top:6px;margin-bottom:4px;flex-wrap:wrap">
+            ${p.itens.slice(0,4).map(it=>`
+              <div style="width:36px;height:36px;background:#f0fdf4;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0" title="${it.nome||""}">${it.ico||"💊"}</div>`).join("")}
+            ${p.itens.length>4?`<div style="width:36px;height:36px;background:#f5f5f5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#9a9eb8;font-weight:700">+${p.itens.length-4}</div>`:""}
+          </div>
+
+          <div style="font-size:14px;font-weight:700;color:#3BAA35">${fmt(p.total)}</div>
         </div>
-        <div style="font-size:11px;color:#9a9eb8">${p.itens.length} item(ns) · ${p.pagamento} · ${p.data}</div>
-        <div style="font-size:13px;font-weight:700;color:#3BAA35;margin-top:4px">${fmt(p.total)}</div>
-      </div>`).join("")}`;
+
+        <!-- AÇÕES DO PEDIDO -->
+        <div style="padding:0 14px 12px;display:flex;gap:8px">
+          ${ativo?`
+            <button onclick="pedidoAtual=getPedidos().find(x=>x.id==='${p.id}')||null;tela='rastreamento';rc()"
+              style="flex:1;padding:9px;background:#1A5FA8;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">
+              🛵 Acompanhar entrega
+            </button>`:""}
+          ${concluido?`
+            <button onclick="comprarDeNovo('${p.id}')"
+              class="comprar-novo">
+              🔄 Comprar de novo
+            </button>
+            <button onclick="pedidoAtual=getPedidos().find(x=>x.id==='${p.id}')||null;tela='rastreamento';rc()"
+              style="padding:9px 14px;background:transparent;border:1.5px solid #e0e0e0;color:#9a9eb8;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">
+              Ver detalhes
+            </button>`:""}
+          ${!ativo&&!concluido?`
+            <button onclick="pedidoAtual=getPedidos().find(x=>x.id==='${p.id}')||null;tela='rastreamento';rc()"
+              style="flex:1;padding:9px;background:transparent;border:1.5px solid #e0e0e0;color:#9a9eb8;border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">
+              Ver detalhes
+            </button>`:""}
+        </div>
+      </div>`;}).join("")}`;
 }
 
 // CONTA
@@ -1250,6 +1549,329 @@ function notificarMotoboysPorDistancia(pedido){
   localStorage.setItem("fc_alertas_motoboy", JSON.stringify(alertas));
 }
 
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO MÉDICOS — FarmaClub
+// Agendamento presencial, créditos, bonificação 3% prescrições
+// ══════════════════════════════════════════════════════════
+
+const COMISSAO_FARMACLUB_CONSULTA = 0.10; // 10% da consulta
+const BONIFICACAO_PRESCRICAO = 0.03;      // 3% da venda de remédios prescritos
+
+// Médicos cadastrados (virão do Supabase na fase 2)
+const medicosDB = [
+  {
+    id:1, nome:"Dr. Carlos Eduardo Mury", crm:"CRM-RJ 52341",
+    especialidade:"Clínica Geral", subespecialidade:"Medicina de Família",
+    foto:"👨‍⚕️", nota:4.9, consultas:342,
+    valor:150, plataformaFica:15, medicoRecebe:135,
+    endereco:"Rua Getúlio Vargas, 210 — Centro, Itaperuna",
+    tel:"(22) 3822-5678",
+    horarios:{seg:[8,9,10,14,15,16],ter:[8,9,10,14,15,16],qua:[8,9,10],qui:[14,15,16],sex:[8,9,10,14]},
+    bio:"Médico clínico com 12 anos de experiência em medicina de família. Atendimento humanizado com foco na saúde preventiva.",
+    credito:0, ativo:true, prescricoes:[]
+  },
+  {
+    id:2, nome:"Dra. Ana Paula Ferreira", crm:"CRM-RJ 48912",
+    especialidade:"Pediatria", subespecialidade:"Neonatologia",
+    foto:"👩‍⚕️", nota:4.8, consultas:189,
+    valor:180, plataformaFica:18, medicoRecebe:162,
+    endereco:"Av. Cardoso Moreira, 45 — Centro, Itaperuna",
+    tel:"(22) 3823-1234",
+    horarios:{seg:[9,10,14,15],ter:[9,10,14,15],qua:[9,10,14,15],qui:[9,10],sex:[9,10]},
+    bio:"Pediatra com especialização em neonatologia. Atendimento carinhoso para bebês e crianças até 12 anos.",
+    credito:0, ativo:true, prescricoes:[]
+  },
+  {
+    id:3, nome:"Dr. Roberto Bastos", crm:"CRM-RJ 61034",
+    especialidade:"Cardiologia", subespecialidade:"Cardiologia Clínica",
+    foto:"👨‍⚕️", nota:4.7, consultas:95,
+    valor:220, plataformaFica:22, medicoRecebe:198,
+    endereco:"Rua Lace, 88 — Centro, Itaperuna",
+    tel:"(22) 3824-9876",
+    horarios:{ter:[14,15,16],qui:[14,15,16],sex:[14,15,16]},
+    bio:"Cardiologista com foco em prevenção de doenças cardiovasculares. Ecg e laudos no mesmo dia.",
+    credito:0, ativo:true, prescricoes:[]
+  },
+  {
+    id:4, nome:"Dra. Fernanda Lima", crm:"CRM-RJ 55677",
+    especialidade:"Dermatologia", subespecialidade:"Dermatologia Clínica",
+    foto:"👩‍⚕️", nota:4.9, consultas:278,
+    valor:200, plataformaFica:20, medicoRecebe:180,
+    endereco:"Rua Siqueira Campos, 32 — Centro, Itaperuna",
+    tel:"(22) 3825-4321",
+    horarios:{seg:[14,15,16],qua:[9,10,14,15,16],sex:[9,10]},
+    bio:"Dermatologista especialista em pele, cabelo e unhas. Tratamentos estéticos e clínicos.",
+    credito:0, ativo:true, prescricoes:[]
+  },
+];
+
+const DIAS_SEMANA = {seg:"Seg",ter:"Ter",qua:"Qua",qui:"Qui",sex:"Sex",sab:"Sáb",dom:"Dom"};
+
+let medicoAtivoId = null;
+let agendSlot = null; // {dia, hora}
+
+function getMedicos(){ return medicosDB.filter(m=>m.ativo); }
+function getMedico(id){ return medicosDB.find(m=>m.id===id); }
+
+function rMedicos(){
+  const meds = getMedicos();
+  const especialidades = [...new Set(meds.map(m=>m.especialidade))];
+  return`
+    <div style="background:#fff;padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px;position:sticky;top:52px;z-index:90">
+      <button onclick="navTo('inicio')" style="background:transparent;color:#5a5e7a;font-size:20px;padding:0">←</button>
+      <div>
+        <div style="font-weight:700;font-size:15px">Consultas Médicas</div>
+        <div style="font-size:11px;color:#9a9eb8">${meds.length} médicos disponíveis em Itaperuna</div>
+      </div>
+    </div>
+
+    <div style="background:linear-gradient(135deg,#1A5FA8,#0d47a1);padding:16px;color:#fff;text-align:center">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px">Agende sua consulta presencial</div>
+      <div style="font-size:12px;opacity:.85">Após a consulta, compre os medicamentos prescritos aqui com conveniência</div>
+    </div>
+
+    <!-- FILTRO POR ESPECIALIDADE -->
+    <div style="overflow-x:auto;scrollbar-width:none;padding:10px 12px;display:flex;gap:8px;background:#fff;border-bottom:1px solid #f0f0f0">
+      ${["Todas",...especialidades].map(e=>`
+        <button onclick="catAtiva='${e}';rc()"
+          style="padding:6px 14px;border-radius:20px;border:1.5px solid ${catAtiva===e||(!catAtiva&&e==="Todas")?"#1A5FA8":"#e0e0e0"};background:${catAtiva===e||(!catAtiva&&e==="Todas")?"#1A5FA8":"#fff"};color:${catAtiva===e||(!catAtiva&&e==="Todas")?"#fff":"#555"};font-size:12px;font-weight:600;white-space:nowrap;flex-shrink:0;cursor:pointer;font-family:inherit">
+          ${e}
+        </button>`).join("")}
+    </div>
+
+    <!-- CARDS DE MÉDICOS -->
+    <div style="padding:8px 0">
+      ${meds.filter(m=>!catAtiva||catAtiva==="Todas"||m.especialidade===catAtiva).map(m=>`
+        <div onclick="medicoAtivoId=${m.id};tela='medico_perfil';rc()"
+          style="background:#fff;border-bottom:1px solid #f0f0f0;padding:16px;cursor:pointer;display:flex;gap:14px">
+          <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#eff6ff,#dbeafe);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0">${m.foto}</div>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:14px;color:#1a1a2e">${m.nome}</div>
+            <div style="font-size:12px;color:#1A5FA8;font-weight:600;margin-top:2px">${m.especialidade}</div>
+            <div style="font-size:11px;color:#9a9eb8;margin-top:2px">${m.crm}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap">
+              <span style="color:#d97706;font-size:12px">★ ${m.nota}</span>
+              <span style="font-size:11px;color:#9a9eb8">${m.consultas} consultas</span>
+              <span style="font-size:12px;font-weight:700;color:#1A5FA8">${fmt(m.valor)}</span>
+            </div>
+            <div style="font-size:11px;color:#9a9eb8;margin-top:4px">📍 ${m.endereco.split("—")[0].trim()}</div>
+          </div>
+          <div style="color:#9a9eb8;font-size:20px;align-self:center">›</div>
+        </div>`).join("")}
+    </div>
+
+    <div style="padding:16px;background:#f0fdf4;margin:0 12px 16px;border-radius:12px;border:1px solid #bbf7d0">
+      <div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:6px">💊 Vantagem FarmaClub</div>
+      <div style="font-size:12px;color:#166534;line-height:1.6">
+        Após sua consulta, o médico pode indicar os medicamentos. Compre aqui com praticidade e seu médico recebe uma bonificação por cada compra.
+      </div>
+    </div>`;
+}
+
+function rMedicoPerfil(){
+  const m = getMedico(medicoAtivoId);
+  if(!m) return rMedicos();
+
+  const hoje = new Date();
+  const diasSemana = ["dom","seg","ter","qua","qui","sex","sab"];
+
+  // Próximos 7 dias úteis
+  const proxDias = [];
+  for(let i=1;i<=14&&proxDias.length<7;i++){
+    const d = new Date(hoje);
+    d.setDate(hoje.getDate()+i);
+    const dKey = diasSemana[d.getDay()];
+    if(m.horarios[dKey]&&m.horarios[dKey].length>0){
+      proxDias.push({
+        key: dKey,
+        data: d,
+        label: d.toLocaleDateString("pt-BR",{weekday:"short",day:"numeric",month:"short"}),
+        horas: m.horarios[dKey]
+      });
+    }
+  }
+
+  return`
+    <div style="background:#fff;padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px;position:sticky;top:52px;z-index:90">
+      <button onclick="tela='medicos';rc()" style="background:transparent;color:#5a5e7a;font-size:20px;padding:0">←</button>
+      <div style="font-weight:600;font-size:14px">${m.nome.split(" ")[0]} ${m.nome.split(" ")[1]}</div>
+    </div>
+
+    <!-- PERFIL -->
+    <div style="background:linear-gradient(135deg,#eff6ff,#fff);padding:20px;text-align:center;border-bottom:1px solid #f0f0f0">
+      <div style="font-size:52px;margin-bottom:8px">${m.foto}</div>
+      <div style="font-size:18px;font-weight:800;color:#1a1a2e;margin-bottom:2px">${m.nome}</div>
+      <div style="font-size:14px;font-weight:600;color:#1A5FA8;margin-bottom:4px">${m.especialidade} · ${m.subespecialidade}</div>
+      <div style="font-size:12px;color:#9a9eb8;margin-bottom:10px">${m.crm}</div>
+      <div style="display:flex;justify-content:center;gap:16px;margin-bottom:12px">
+        <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#1a1a2e">${m.nota}</div><div style="font-size:10px;color:#9a9eb8">Avaliação</div></div>
+        <div style="width:1px;background:#e8eaf4"></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#1a1a2e">${m.consultas}</div><div style="font-size:10px;color:#9a9eb8">Consultas</div></div>
+        <div style="width:1px;background:#e8eaf4"></div>
+        <div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#1A5FA8">${fmt(m.valor)}</div><div style="font-size:10px;color:#9a9eb8">Consulta</div></div>
+      </div>
+      <div style="font-size:12px;color:#555;line-height:1.6;max-width:320px;margin:0 auto">${m.bio}</div>
+    </div>
+
+    <!-- ENDEREÇO -->
+    <div style="background:#fff;padding:14px 16px;border-bottom:1px solid #f0f0f0">
+      <div style="font-size:12px;font-weight:700;color:#9a9eb8;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">📍 Localização</div>
+      <div style="font-size:13px;color:#1a1a2e">${m.endereco}</div>
+      <div style="font-size:12px;color:#9a9eb8;margin-top:4px">📞 ${m.tel}</div>
+    </div>
+
+    <!-- HORÁRIOS DISPONÍVEIS -->
+    <div style="background:#fff;padding:14px 16px;border-bottom:1px solid #f0f0f0">
+      <div style="font-size:12px;font-weight:700;color:#9a9eb8;text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px">📅 Horários disponíveis</div>
+      ${proxDias.length===0?`<div style="color:#9a9eb8;font-size:13px">Nenhum horário disponível nos próximos dias.</div>`
+      :proxDias.map(dia=>`
+        <div style="margin-bottom:12px">
+          <div style="font-size:12px;font-weight:600;color:#1a1a2e;margin-bottom:6px;text-transform:capitalize">${dia.label}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${dia.horas.map(h=>`
+              <button onclick="agendSlot={dia:'${dia.label}',hora:'${h}:00',data:'${dia.data.toLocaleDateString("pt-BR")}',medicoId:${m.id}};tela='agendamento';rc()"
+                style="padding:7px 14px;border-radius:8px;border:1.5px solid #1A5FA8;background:#fff;color:#1A5FA8;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s"
+                onmouseover="this.style.background='#1A5FA8';this.style.color='#fff'"
+                onmouseout="this.style.background='#fff';this.style.color='#1A5FA8'">
+                ${h}:00
+              </button>`).join("")}
+          </div>
+        </div>`).join("")}
+    </div>
+
+    <div style="padding:16px">
+      <button onclick="agendSlot={dia:'Próxima disponível',hora:'A combinar',data:'',medicoId:${m.id}};tela='agendamento';rc()"
+        style="width:100%;padding:14px;background:#1A5FA8;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">
+        Agendar consulta — ${fmt(m.valor)}
+      </button>
+    </div>`;
+}
+
+function rAgendamento(){
+  if(!agendSlot) return rMedicos();
+  const m = getMedico(agendSlot.medicoId);
+  if(!m) return rMedicos();
+  const taxaPlat = +(m.valor*COMISSAO_FARMACLUB_CONSULTA).toFixed(2);
+  const medicoRecebe = +(m.valor-taxaPlat).toFixed(2);
+
+  return`
+    <div style="background:#fff;padding:12px 16px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:10px;position:sticky;top:52px;z-index:90">
+      <button onclick="tela='medico_perfil';rc()" style="background:transparent;color:#5a5e7a;font-size:20px;padding:0">←</button>
+      <div style="font-weight:600">Confirmar agendamento</div>
+    </div>
+
+    <!-- RESUMO -->
+    <div style="background:linear-gradient(135deg,#1A5FA8,#0d47a1);padding:18px;color:#fff">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:36px">${m.foto}</div>
+        <div>
+          <div style="font-size:15px;font-weight:700">${m.nome}</div>
+          <div style="font-size:12px;opacity:.85">${m.especialidade}</div>
+          <div style="font-size:13px;font-weight:700;margin-top:4px">📅 ${agendSlot.dia} às ${agendSlot.hora}</div>
+          ${agendSlot.data?`<div style="font-size:11px;opacity:.8">${agendSlot.data}</div>`:""}
+        </div>
+      </div>
+    </div>
+
+    <!-- DADOS DO PACIENTE -->
+    <div style="background:#fff;padding:14px 16px;border-bottom:1px solid #f0f0f0">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">👤 Seus dados</div>
+      <div style="display:grid;gap:8px">
+        <div><label style="font-size:11px;color:#9a9eb8;display:block;margin-bottom:3px">Nome completo</label>
+          <input type="text" id="ag-nome" value="${usuarioLogado?.nome||""}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px"></div>
+        <div><label style="font-size:11px;color:#9a9eb8;display:block;margin-bottom:3px">WhatsApp</label>
+          <input type="tel" id="ag-tel" value="${usuarioLogado?.tel||""}" placeholder="(22) 99999-9999" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px"></div>
+        <div><label style="font-size:11px;color:#9a9eb8;display:block;margin-bottom:3px">Motivo da consulta (opcional)</label>
+          <input type="text" id="ag-motivo" placeholder="Ex: dor de cabeça frequente, pressão alta..." style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:13px"></div>
+      </div>
+    </div>
+
+    <!-- PAGAMENTO -->
+    <div style="background:#fff;padding:14px 16px;border-bottom:1px solid #f0f0f0">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">💳 Pagamento da consulta</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${["📱 PIX","💵 Dinheiro","💳 Débito","💳 Crédito"].map(f=>`
+          <button onclick="pagSel='${f}';rc()" style="padding:10px;border:1.5px solid ${pagSel===f?"#1A5FA8":"#e0e0e0"};border-radius:8px;background:${pagSel===f?"#eff6ff":"#fff"};font-size:12px;font-weight:600;color:${pagSel===f?"#1A5FA8":"#5a5e7a"};cursor:pointer;font-family:inherit">${f}</button>`).join("")}
+      </div>
+    </div>
+
+    <!-- RESUMO FINANCEIRO -->
+    <div style="background:#f8f8f8;padding:14px 16px;border-bottom:1px solid #f0f0f0">
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px solid #eee"><span>Valor da consulta</span><span style="font-weight:600">${fmt(m.valor)}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0">
+        <span style="color:#9a9eb8">Taxa de plataforma FarmaClub (10%)</span>
+        <span style="color:#9a9eb8">${fmt(taxaPlat)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-top:1px solid #eee">
+        <span style="color:#9a9eb8">Médico recebe</span>
+        <span style="color:#9a9eb8">${fmt(medicoRecebe)}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;padding-top:8px"><span>Total</span><span style="color:#1A5FA8">${fmt(m.valor)}</span></div>
+    </div>
+
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;margin:12px;border-radius:10px;padding:12px;font-size:12px;color:#166534;line-height:1.6">
+      💊 <strong>Dica:</strong> Após a consulta, os medicamentos prescritos podem ser comprados aqui no FarmaClub. Seu médico recebe 3% do valor como bonificação.
+    </div>
+
+    <div style="padding:0 12px 20px">
+      <button onclick="confirmarAgendamento()" style="width:100%;padding:14px;background:#1A5FA8;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">
+        ✅ Confirmar agendamento — ${fmt(m.valor)}
+      </button>
+    </div>`;
+}
+
+window.confirmarAgendamento = function(){
+  if(!usuarioLogado){ abrirAuth("login",()=>{tela="agendamento";rc();}); return; }
+  const nome=document.getElementById("ag-nome")?.value.trim();
+  const tel=document.getElementById("ag-tel")?.value.trim();
+  if(!nome||!tel){ alert("Preencha seu nome e WhatsApp."); return; }
+  const m=getMedico(agendSlot?.medicoId);
+  if(!m) return;
+
+  const agend={
+    id:"AG"+String(Date.now()).slice(-6),
+    medicoId:m.id, medico:m.nome, especialidade:m.especialidade,
+    paciente:nome, tel, email:usuarioLogado.email,
+    dia:agendSlot.dia, hora:agendSlot.hora, data:agendSlot.data,
+    valor:m.valor, status:"confirmado",
+    pagamento:pagSel||"PIX",
+    criadoEm:new Date().toISOString()
+  };
+
+  const ags=JSON.parse(localStorage.getItem("fc_agendamentos")||"[]");
+  ags.push(agend);
+  localStorage.setItem("fc_agendamentos",JSON.stringify(ags));
+
+  toast("✅ Consulta agendada! Você receberá confirmação no WhatsApp.");
+
+  // Exibir confirmação
+  document.getElementById("content").innerHTML=`
+    <div style="text-align:center;padding:40px 20px">
+      <div style="font-size:52px;margin-bottom:16px">🗓️</div>
+      <div style="font-size:20px;font-weight:800;color:#1A5FA8;margin-bottom:8px">Consulta agendada!</div>
+      <div style="font-size:14px;color:#555;line-height:1.7;margin-bottom:20px">
+        <strong>${m.nome}</strong><br>
+        📅 ${agendSlot.dia} às ${agendSlot.hora}<br>
+        📍 ${m.endereco.split("—")[0].trim()}<br>
+        📞 ${m.tel}
+      </div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:16px;margin-bottom:20px;text-align:left">
+        <div style="font-size:12px;font-weight:700;color:#16a34a;margin-bottom:6px">O que fazer:</div>
+        <div style="font-size:12px;color:#166534;line-height:1.8">
+          1. Confirme pelo WhatsApp do consultório: ${m.tel}<br>
+          2. Chegue 10 minutos antes com documento de identidade<br>
+          3. Após a consulta, compre os remédios aqui no FarmaClub<br>
+          4. Código do agendamento: <strong>${agend.id}</strong>
+        </div>
+      </div>
+      <button onclick="navTo('inicio')" style="width:100%;padding:13px;background:#1A5FA8;color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">Voltar ao início</button>
+      <button onclick="navTo('busca')" style="width:100%;padding:11px;background:transparent;border:1.5px solid #e0e0e0;color:#9a9eb8;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:8px">Comprar medicamentos</button>
+    </div>`;
+};
+
+
+
 // INIT
 atualizarTopUser();
 rc();
@@ -1269,5 +1891,6 @@ if('serviceWorker' in navigator){
   },5000);});
 }
 </script>
+
 </body>
 </html>

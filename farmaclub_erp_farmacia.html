@@ -538,31 +538,497 @@ window.atualizarSim = function(){
     </div>`;
 };
 
+
+// ══════════════════════════════════════════════════════════
+// MÓDULO ENTRADA DE NF-e — importação XML real
+// ══════════════════════════════════════════════════════════
+let nfeEtapa = "upload"; // upload | revisao | concluido
+let nfeDados = null;     // dados parseados do XML
+let nfeItens = [];       // itens após match com catálogo
+
 function renderNFE(){
+  if(nfeEtapa==="revisao") return renderNFERevisao();
+  if(nfeEtapa==="concluido") return renderNFEConcluido();
+  return renderNFEUpload();
+}
+
+function renderNFEUpload(){
   return`
-    <div class="grid2">
+    <!-- CABEÇALHO -->
+    <div style="background:linear-gradient(135deg,#1A5FA8,#0d47a1);border-radius:12px;padding:16px 20px;margin-bottom:16px;color:#fff">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px">📄 Entrada de Nota Fiscal Eletrônica</div>
+      <div style="font-size:12px;opacity:.85">Importe o XML da NF-e recebida do fornecedor — o sistema preenche tudo automaticamente</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px">
+
+      <!-- ZONA DE UPLOAD XML -->
       <div class="card">
-        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Entrada por NF-e (XML)</div>
-        <div style="border:2px dashed #ddd;border-radius:10px;padding:28px;text-align:center;margin-bottom:14px;cursor:pointer" onclick="this.style.borderColor='${T}'">
-          <div style="font-size:24px;margin-bottom:8px;color:#aaa">⬆</div>
-          <div style="font-size:13px;font-weight:600;margin-bottom:4px">Arraste o XML da NF-e aqui</div>
-          <div style="font-size:12px;color:#888">ou clique para selecionar arquivo</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:4px">📥 Importar XML da NF-e</div>
+        <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6">O arquivo XML vem junto com a nota fiscal eletrônica enviada pelo fornecedor. Geralmente chega por e-mail com extensão <strong>.xml</strong>.</div>
+
+        <!-- Área de drop -->
+        <div id="drop-zone"
+          style="border:2px dashed #1A5FA8;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;background:#f8fbff;transition:all .2s;margin-bottom:14px"
+          onclick="document.getElementById('xml-input').click()"
+          ondragover="event.preventDefault();this.style.background='#eff6ff';this.style.borderColor='#3BAA35'"
+          ondragleave="this.style.background='#f8fbff';this.style.borderColor='#1A5FA8'"
+          ondrop="event.preventDefault();this.style.background='#f8fbff';this.style.borderColor='#1A5FA8';processarXML(event.dataTransfer.files[0])">
+          <div style="font-size:36px;margin-bottom:10px">📄</div>
+          <div style="font-size:14px;font-weight:700;color:#1A5FA8;margin-bottom:6px">Clique ou arraste o XML aqui</div>
+          <div style="font-size:12px;color:#9a9eb8">Arquivo .xml da NF-e do fornecedor</div>
+          <input type="file" id="xml-input" accept=".xml" style="display:none" onchange="processarXML(this.files[0])">
         </div>
-        <div style="font-size:12px;color:#888;line-height:1.7">Ao importar o XML, o sistema atualiza o estoque, lança a conta a pagar e recalcula o preço de venda automaticamente.</div>
+
+        <div id="msg-nfe" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:12px"></div>
+
+        <!-- Botão de exemplo para testar sem XML real -->
+        <div style="text-align:center">
+          <button onclick="carregarXMLDemo()"
+            style="padding:8px 18px;background:transparent;border:1.5px solid #1A5FA8;color:#1A5FA8;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+            🧪 Testar com NF-e de demonstração
+          </button>
+        </div>
       </div>
-      <div class="card">
-        <div style="font-size:13px;font-weight:600;margin-bottom:12px">Entrada manual</div>
-        <div style="display:grid;gap:8px">
-          ${[["Fornecedor","text",""],["CNPJ do fornecedor","text","XX.XXX.XXX/XXXX-XX"],["Nº da nota","text",""],["Data de emissão","date",""],["Valor total","number","0.00"],["Vencimento pagamento","date",""]].map(([l,t,p])=>`
-            <div>
-              <div style="font-size:11px;color:#888;margin-bottom:3px">${l}</div>
-              <input type="${t}" placeholder="${p}">
+
+      <!-- INSTRUÇÕES E NOTAS RECENTES -->
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px">Como funciona</div>
+          ${[
+            ["1","Receba o XML","O fornecedor envia por e-mail junto da NF impressa"],
+            ["2","Importe aqui","Arraste o arquivo ou clique para selecionar"],
+            ["3","Confira os itens","O sistema cruza com o catálogo pelo EAN"],
+            ["4","Confirme","Estoque e contas a pagar atualizados automaticamente"],
+          ].map(([n,tit,desc])=>`
+            <div style="display:flex;gap:10px;margin-bottom:10px;align-items:flex-start">
+              <div style="width:24px;height:24px;border-radius:50%;background:#1A5FA8;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${n}</div>
+              <div>
+                <div style="font-size:12px;font-weight:600">${tit}</div>
+                <div style="font-size:11px;color:#9a9eb8;margin-top:2px">${desc}</div>
+              </div>
             </div>`).join("")}
-          <button style="padding:9px;background:${T};color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px">Registrar entrada</button>
         </div>
+
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px">Últimas entradas</div>
+          ${[
+            {num:"#45231",forn:"Farmanobre Dist.",valor:3840.50,data:"16/03",itens:22},
+            {num:"#45188",forn:"EMS Farmacêutica",valor:1220.00,data:"10/03",itens:8},
+            {num:"#45102",forn:"Aché Distribuidora",valor:2100.80,data:"02/03",itens:15},
+          ].map(n=>`
+            <div style="padding:8px 0;border-bottom:1px solid #f5f5f5">
+              <div style="display:flex;justify-content:space-between;font-size:12px">
+                <div><strong>${n.num}</strong> · ${n.forn}</div>
+                <div style="font-weight:600;color:#3BAA35">${fmt(n.valor)}</div>
+              </div>
+              <div style="font-size:11px;color:#9a9eb8;margin-top:2px">${n.data} · ${n.itens} itens</div>
+            </div>`).join("")}
+        </div>
+      </div>
+
+    </div>`;
+}
+
+// Parser de XML NF-e (padrão SEFAZ)
+function parsearNFe(xmlText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xmlText, "text/xml");
+  const err = doc.querySelector("parsererror");
+  if(err) throw new Error("XML inválido — verifique se é um arquivo de NF-e.");
+
+  const get = (el, tag) => el?.querySelector(tag)?.textContent?.trim() || "";
+  const getAll = (el, tag) => [...(el?.querySelectorAll(tag)||[])];
+
+  const nfe = doc.querySelector("NFe, nfeProc");
+  const infNFe = doc.querySelector("infNFe");
+  if(!infNFe) throw new Error("Não é um XML de NF-e válido. Verifique o arquivo.");
+
+  // Emitente
+  const emit = doc.querySelector("emit");
+  const fornecedor = {
+    nome:  get(emit,"xNome") || get(emit,"xFant") || "Fornecedor",
+    cnpj:  get(emit,"CNPJ"),
+    uf:    get(emit,"UF"),
+  };
+
+  // Cabeçalho da NF
+  const ide = doc.querySelector("ide");
+  const total = doc.querySelector("total ICMSTot, ICMSTot");
+  const cobr = doc.querySelector("cobr");
+  const dup = doc.querySelector("dup");
+
+  const cabecalho = {
+    numero:    get(ide,"nNF"),
+    serie:     get(ide,"serie"),
+    emissao:   get(ide,"dhEmi") || get(ide,"dEmi"),
+    chave:     infNFe.getAttribute("Id")?.replace("NFe","") || "",
+    valorTotal: parseFloat(get(total,"vNF")||"0"),
+    valorProd:  parseFloat(get(total,"vProd")||"0"),
+    frete:      parseFloat(get(total,"vFrete")||"0"),
+    desconto:   parseFloat(get(total,"vDesc")||"0"),
+    vencimento: get(dup,"dVenc") || "",
+  };
+
+  // Itens
+  const dets = getAll(doc,"det");
+  const itens = dets.map(det => {
+    const prod = det.querySelector("prod");
+    const imposto = det.querySelector("ICMS");
+    const qtd  = parseFloat(get(prod,"qCom")||"0");
+    const vUnit = parseFloat(get(prod,"vUnCom")||"0");
+    return {
+      seq:       det.getAttribute("nItem"),
+      ean:       get(prod,"cEAN")||get(prod,"cProd"),
+      codigo:    get(prod,"cProd"),
+      nome:      get(prod,"xProd"),
+      ncm:       get(prod,"NCM"),
+      cfop:      get(prod,"CFOP"),
+      unidade:   get(prod,"uCom"),
+      qtd,
+      vUnit,
+      vTotal:    parseFloat(get(prod,"vProd")||"0"),
+      // Cruzar com catálogo depois
+      match:     null,
+      precoVenda: 0,
+      lote:      "",
+      validade:  "",
+    };
+  });
+
+  return { fornecedor, cabecalho, itens };
+}
+
+// Cruzar itens com catálogo central pelo EAN
+function cruzarComCatalogo(itens) {
+  // Catálogo: produtos locais + catalogoBase do ERP Central
+  const catalogoLocal = JSON.parse(localStorage.getItem("fc_catalogo_central")||"[]");
+  const catalogoCompleto = [
+    {id:101,ean:"7896004004532",ico:"💊",nome:"Dipirona Sódica 500mg 20cp",lab:"EMS",cat:"analgesicos",preco_ref:8.90,custo_ref:3.80},
+    {id:102,ean:"7896714240118",ico:"🔬",nome:"Amoxicilina 500mg 21cp",lab:"Medley",cat:"antibioticos",preco_ref:22.50,custo_ref:14.50},
+    {id:103,ean:"7896523240065",ico:"🫀",nome:"Omeprazol 20mg 28cp",lab:"Aché",cat:"gastro",preco_ref:14.90,custo_ref:8.00},
+    {id:104,ean:"7891058006824",ico:"⚡",nome:"Vitamina C 1g 10cp",lab:"EMS",cat:"vitaminas",preco_ref:5.90,custo_ref:2.50},
+    {id:105,ean:"7896658010077",ico:"❤️",nome:"Losartana 50mg 30cp",lab:"EMS",cat:"cardiovasc",preco_ref:18.50,custo_ref:10.00},
+    {id:106,ean:"7891047944513",ico:"🩺",nome:"Metformina 850mg 30cp",lab:"Merck",cat:"diabetes",preco_ref:9.90,custo_ref:5.00},
+    {id:107,ean:"7896714270048",ico:"💊",nome:"Ibuprofeno 600mg 20cp",lab:"Medley",cat:"analgesicos",preco_ref:15.90,custo_ref:8.50},
+    {id:108,ean:"7896523405055",ico:"🫧",nome:"Simeticona 40mg 50cp",lab:"Aché",cat:"gastro",preco_ref:11.50,custo_ref:6.00},
+    {id:109,ean:"7896658020076",ico:"💙",nome:"Atenolol 25mg 30cp",lab:"EMS",cat:"cardiovasc",preco_ref:8.00,custo_ref:4.00},
+    {id:110,ean:"7896181916749",ico:"💊",nome:"Paracetamol 750mg 20cp",lab:"Farmoquímica",cat:"analgesicos",preco_ref:7.90,custo_ref:3.50},
+    {id:111,ean:"7891058001234",ico:"🌿",nome:"Loratadina 10mg 12cp",lab:"EMS",cat:"outros",preco_ref:7.50,custo_ref:3.00},
+    {id:112,ean:"7891058007711",ico:"🎯",nome:"Dorflex 36cp",lab:"EMS",cat:"analgesicos",preco_ref:22.00,custo_ref:12.00},
+    {id:113,ean:"7896714880055",ico:"👃",nome:"Neosoro 30ml",lab:"EMS",cat:"outros",preco_ref:12.50,custo_ref:6.00},
+    {id:114,ean:"7896523440088",ico:"🌀",nome:"Buscopan Composto 30cp",lab:"Aché",cat:"gastro",preco_ref:32.00,custo_ref:16.00},
+    ...catalogoLocal,
+  ];
+
+  return itens.map(item => {
+    const found = catalogoCompleto.find(p =>
+      (item.ean && p.ean === item.ean) ||
+      (p.nome.toLowerCase().includes(item.nome.toLowerCase().split(" ").slice(0,2).join(" ")))
+    );
+    return {
+      ...item,
+      match: found || null,
+      precoVenda: found ? found.preco_ref : +(item.vUnit * 2.3).toFixed(2), // markup 130% se não encontrar
+      lote: "",
+      validade: "",
+    };
+  });
+}
+
+window.processarXML = function(file) {
+  if(!file) return;
+  if(!file.name.endsWith(".xml") && file.type !== "text/xml") {
+    mostrarMsgNFe("❌ Selecione um arquivo .xml de NF-e.", "err");
+    return;
+  }
+  mostrarMsgNFe("⏳ Lendo arquivo...", "info");
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      nfeDados = parsearNFe(e.target.result);
+      nfeItens = cruzarComCatalogo(nfeDados.itens);
+      nfeEtapa = "revisao";
+      renderContent();
+    } catch(err) {
+      mostrarMsgNFe("❌ " + err.message, "err");
+    }
+  };
+  reader.readAsText(file, "UTF-8");
+};
+
+// NF-e de demonstração para testar sem arquivo real
+window.carregarXMLDemo = function() {
+  const xmlDemo = `<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc>
+  <NFe>
+    <infNFe Id="NFe35260312345678000100550010000452310000012345">
+      <ide><nNF>45231</nNF><serie>1</serie><dhEmi>2026-03-16T10:30:00-03:00</dhEmi></ide>
+      <emit><CNPJ>12345678000100</CNPJ><xNome>Farmanobre Distribuidora Ltda</xNome><UF>RJ</UF></emit>
+      <det nItem="1"><prod><cProd>001</cProd><cEAN>7896004004532</cEAN><xProd>DIPIRONA SOD 500MG 20CP EMS</xProd><NCM>30045099</NCM><CFOP>6102</CFOP><uCom>CX</uCom><qCom>50</qCom><vUnCom>3.85</vUnCom><vProd>192.50</vProd></prod></det>
+      <det nItem="2"><prod><cProd>002</cProd><cEAN>7896523240065</cEAN><xProd>OMEPRAZOL 20MG 28CP ACHE</xProd><NCM>30045099</NCM><CFOP>6102</CFOP><uCom>CX</uCom><qCom>30</qCom><vUnCom>5.10</vUnCom><vProd>153.00</vProd></prod></det>
+      <det nItem="3"><prod><cProd>003</cProd><cEAN>7896658010077</cEAN><xProd>LOSARTANA 50MG 30CP EMS</xProd><NCM>30045099</NCM><CFOP>6102</CFOP><uCom>CX</uCom><qCom>20</qCom><vUnCom>10.20</vUnCom><vProd>204.00</vProd></prod></det>
+      <det nItem="4"><prod><cProd>004</cProd><cEAN>7891058006824</cEAN><xProd>VITAMINA C 1G 10CP EMS</xProd><NCM>30045099</NCM><CFOP>6102</CFOP><uCom>CX</uCom><qCom>80</qCom><vUnCom>2.10</vUnCom><vProd>168.00</vProd></prod></det>
+      <det nItem="5"><prod><cProd>005</cProd><cEAN>7896714270048</cEAN><xProd>IBUPROFENO 600MG 20CP MEDLEY</xProd><NCM>30045099</NCM><CFOP>6102</CFOP><uCom>CX</uCom><qCom>40</qCom><vUnCom>8.50</vUnCom><vProd>340.00</vProd></prod></det>
+      <det nItem="6"><prod><cProd>006</cProd><cEAN>7891047944513</cEAN><xProd>METFORMINA 850MG 30CP MERCK</xProd><NCM>30045099</NCM><CFOP>6102</CFOP><uCom>CX</uCom><qCom>25</qCom><vUnCom>5.80</vUnCom><vProd>145.00</vProd></prod></det>
+      <total><ICMSTot><vProd>1202.50</vProd><vFrete>45.00</vFrete><vDesc>0</vDesc><vNF>1247.50</vNF></ICMSTot></total>
+      <cobr><dup><dVenc>2026-04-16</dVenc></dup></cobr>
+    </infNFe>
+  </NFe>
+</nfeProc>`;
+  try {
+    nfeDados = parsearNFe(xmlDemo);
+    nfeItens = cruzarComCatalogo(nfeDados.itens);
+    nfeEtapa = "revisao";
+    renderContent();
+  } catch(err) {
+    mostrarMsgNFe("❌ " + err.message, "err");
+  }
+};
+
+function mostrarMsgNFe(txt, tipo) {
+  const el = document.getElementById("msg-nfe");
+  if(!el) return;
+  el.textContent = txt;
+  el.style.display = "block";
+  const estilos = {
+    ok:   {bg:"#f0fdf4",cor:"#16a34a",brd:"#bbf7d0"},
+    err:  {bg:"#fef2f2",cor:"#dc2626",brd:"#fecaca"},
+    info: {bg:"#eff6ff",cor:"#1d4ed8",brd:"#bfdbfe"},
+  };
+  const s = estilos[tipo]||estilos.info;
+  el.style.background=s.bg; el.style.color=s.cor; el.style.border=`1px solid ${s.brd}`;
+}
+
+function renderNFERevisao(){
+  if(!nfeDados) return renderNFEUpload();
+  const {fornecedor, cabecalho} = nfeDados;
+  const matchados = nfeItens.filter(i=>i.match).length;
+  const semMatch  = nfeItens.filter(i=>!i.match).length;
+  const fmtData = d => d ? d.substring(0,10).split("-").reverse().join("/") : "—";
+
+  return`
+    <!-- CABEÇALHO -->
+    <div style="background:linear-gradient(135deg,#1A5FA8,#0d47a1);border-radius:12px;padding:14px 20px;margin-bottom:14px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:15px;font-weight:700">📄 NF-e ${cabecalho.numero} — Revisão antes de confirmar</div>
+        <div style="font-size:12px;opacity:.85;margin-top:2px">${fornecedor.nome} · Emissão: ${fmtData(cabecalho.emissao)}</div>
+      </div>
+      <button onclick="nfeEtapa='upload';nfeDados=null;nfeItens=[];renderContent()"
+        style="padding:7px 16px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;font-size:12px;cursor:pointer;font-family:inherit">
+        ← Cancelar
+      </button>
+    </div>
+
+    <!-- RESUMO -->
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
+      ${[
+        ["Fornecedor",fornecedor.nome.split(" ").slice(0,2).join(" "),"#1A5FA8"],
+        ["NF número",cabecalho.numero,"#1a1a2e"],
+        ["Total da NF",fmt(cabecalho.valorTotal),"#3BAA35"],
+        ["Itens encontrados",`${matchados}/${nfeItens.length}`,"#3BAA35"],
+        ["Sem match",semMatch,"#E03A3A"],
+      ].map(([l,v,c])=>`
+        <div style="background:#fff;border-radius:10px;padding:10px 12px;border:1px solid #e8eaf4;text-align:center">
+          <div style="font-size:14px;font-weight:700;color:${c}">${v}</div>
+          <div style="font-size:10px;color:#9a9eb8;margin-top:3px">${l}</div>
+        </div>`).join("")}
+    </div>
+
+    ${semMatch>0?`
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#92400e;line-height:1.6">
+      ⚠️ <strong>${semMatch} produto(s) não encontrado(s) no catálogo central</strong> — serão marcados como "Novo" e adicionados ao catálogo após a confirmação. Você pode ajustar o preço de venda antes de confirmar.
+    </div>`:""}
+
+    <!-- TABELA DE ITENS PARA REVISÃO -->
+    <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
+      <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0;font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center">
+        <span>Itens da nota fiscal (${nfeItens.length})</span>
+        <span style="font-size:11px;color:#9a9eb8">Ajuste o preço de venda se necessário</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:700px">
+          <thead style="background:#f8f8f8">
+            <tr>
+              <th style="padding:9px 12px;text-align:left;font-size:11px;color:#888;font-weight:500">Produto (XML)</th>
+              <th style="padding:9px 12px;text-align:left;font-size:11px;color:#888;font-weight:500">Match catálogo</th>
+              <th style="padding:9px 12px;text-align:center;font-size:11px;color:#888;font-weight:500">Qtd</th>
+              <th style="padding:9px 12px;text-align:right;font-size:11px;color:#888;font-weight:500">Custo unit.</th>
+              <th style="padding:9px 12px;text-align:right;font-size:11px;color:#888;font-weight:500">Preço venda PIX</th>
+              <th style="padding:9px 12px;text-align:left;font-size:11px;color:#888;font-weight:500">Lote / Validade</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${nfeItens.map((item,i)=>`
+              <tr style="border-bottom:1px solid #f5f5f5">
+                <td style="padding:10px 12px">
+                  <div style="font-size:12px;font-weight:600;color:#1a1a2e">${item.nome}</div>
+                  <div style="font-size:10px;color:#9a9eb8;font-family:monospace">EAN: ${item.ean||"—"}</div>
+                </td>
+                <td style="padding:10px 12px">
+                  ${item.match
+                    ?`<div style="display:flex;align-items:center;gap:6px">
+                        <span style="font-size:16px">${item.match.ico||"💊"}</span>
+                        <div>
+                          <div style="font-size:11px;font-weight:600;color:#3BAA35">${item.match.nome}</div>
+                          <div style="font-size:10px;color:#9a9eb8">${item.match.lab||""}</div>
+                        </div>
+                      </div>`
+                    :`<span style="background:#fffbeb;color:#d97706;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600">🆕 Novo produto</span>`}
+                </td>
+                <td style="padding:10px 12px;text-align:center;font-weight:600">${item.qtd}</td>
+                <td style="padding:10px 12px;text-align:right;font-size:12px;color:#555">${fmt(item.vUnit)}</td>
+                <td style="padding:10px 12px;text-align:right">
+                  <input type="number" step="0.01" value="${item.precoVenda.toFixed(2)}"
+                    onchange="nfeItens[${i}].precoVenda=parseFloat(this.value)||0"
+                    style="width:80px;padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:12px;text-align:right;font-family:inherit"
+                    onfocus="this.style.borderColor='#3BAA35'" onblur="this.style.borderColor='#e0e0e0'">
+                </td>
+                <td style="padding:10px 12px">
+                  <div style="display:flex;gap:6px">
+                    <input type="text" placeholder="Lote" value="${item.lote}"
+                      onchange="nfeItens[${i}].lote=this.value"
+                      style="width:70px;padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:11px;font-family:inherit">
+                    <input type="date" value="${item.validade}"
+                      onchange="nfeItens[${i}].validade=this.value"
+                      style="padding:5px 8px;border:1.5px solid #e0e0e0;border-radius:6px;font-size:11px;font-family:inherit">
+                  </div>
+                </td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONTA A PAGAR -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">💰 Conta a pagar gerada automaticamente</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div>
+          <label style="font-size:11px;color:#9a9eb8;display:block;margin-bottom:4px">Fornecedor</label>
+          <div style="padding:9px 12px;background:#f8f8f8;border-radius:8px;font-size:13px;font-weight:600">${fornecedor.nome}</div>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#9a9eb8;display:block;margin-bottom:4px">Valor total</label>
+          <div style="padding:9px 12px;background:#f8f8f8;border-radius:8px;font-size:14px;font-weight:700;color:#3BAA35">${fmt(cabecalho.valorTotal)}</div>
+        </div>
+        <div>
+          <label style="font-size:11px;color:#9a9eb8;display:block;margin-bottom:4px">Vencimento</label>
+          <input type="date" id="nfe-venc" value="${cabecalho.vencimento?cabecalho.vencimento.substring(0,10):""}"
+            style="width:100%;padding:9px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit">
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTÃO CONFIRMAR -->
+    <div style="display:flex;gap:10px">
+      <button onclick="confirmarEntradaNF()"
+        style="flex:1;padding:14px;background:linear-gradient(135deg,#3BAA35,#2E8A2A);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">
+        ✅ Confirmar entrada — atualizar estoque e lançar conta a pagar
+      </button>
+      <button onclick="nfeEtapa='upload';nfeDados=null;nfeItens=[];renderContent()"
+        style="padding:14px 20px;background:transparent;border:1.5px solid #e0e0e0;color:#9a9eb8;border-radius:10px;font-size:13px;cursor:pointer;font-family:inherit">
+        Cancelar
+      </button>
+    </div>`;
+}
+
+window.confirmarEntradaNF = function(){
+  if(!nfeDados||!nfeItens.length) return;
+
+  // 1. Atualizar estoque no localStorage (integração Supabase feita em background)
+  const estoque = JSON.parse(localStorage.getItem("fc_estoque_farm")||"{}");
+  nfeItens.forEach(item => {
+    const key = item.match ? item.match.id : ("novo_"+item.ean);
+    estoque[key] = {
+      id: key,
+      ean: item.ean,
+      nome: item.match ? item.match.nome : item.nome,
+      ico: item.match?.ico || "💊",
+      qtd: (estoque[key]?.qtd||0) + item.qtd,
+      preco: item.precoVenda,
+      custo: item.vUnit,
+      lote: item.lote,
+      validade: item.validade,
+      lab: item.match?.lab || "",
+      cat: item.match?.cat || "outros",
+    };
+  });
+  localStorage.setItem("fc_estoque_farm", JSON.stringify(estoque));
+
+  // 2. Lançar conta a pagar
+  const venc = document.getElementById("nfe-venc")?.value || "";
+  const contas = JSON.parse(localStorage.getItem("fc_contas_pagar")||"[]");
+  contas.push({
+    id: Date.now(),
+    credor: nfeDados.fornecedor.nome,
+    descricao: `NF-e nº ${nfeDados.cabecalho.numero}`,
+    valor: nfeDados.cabecalho.valorTotal,
+    vencimento: venc,
+    status: "pendente",
+    nf: nfeDados.cabecalho.numero,
+    lancarEm: new Date().toLocaleDateString("pt-BR"),
+  });
+  localStorage.setItem("fc_contas_pagar", JSON.stringify(contas));
+
+  // 3. Supabase em background
+  if(typeof sb!=="undefined"&&SUPABASE_ANON!=="COLE_AQUI_SUA_CHAVE_ANON_PUBLIC"){
+    const farmId = FC?.getFarmaciaLogada()?.id || 1;
+    nfeItens.forEach(async item => {
+      if(item.match?.id){
+        try {
+          const {data:ex} = await sb.from("estoque").eq("farmacia_id",farmId).eq("produto_id",item.match.id).single();
+          if(ex){ await sb.from("estoque").eq("id",ex.id).update({quantidade:ex.quantidade+item.qtd,lote:item.lote||ex.lote,validade:item.validade||ex.validade,updated_at:new Date().toISOString()}); }
+          else { await sb.from("estoque").insert({farmacia_id:farmId,produto_id:item.match.id,quantidade:item.qtd,lote:item.lote,validade:item.validade||null,quantidade_min:5}); }
+          // Atualizar preço
+          await sb.from("produtos").eq("id",item.match.id).update({preco_venda:item.precoVenda,preco_pix:item.precoVenda,preco_custo:item.vUnit,updated_at:new Date().toISOString()});
+        } catch(e){ console.warn("Supabase estoque:", e.message); }
+      }
+    });
+  }
+
+  nfeEtapa = "concluido";
+  renderContent();
+};
+
+function renderNFEConcluido(){
+  const itens = nfeItens.length;
+  const valor = nfeDados?.cabecalho?.valorTotal || 0;
+  const matchados = nfeItens.filter(i=>i.match).length;
+  return`
+    <div style="text-align:center;padding:40px 20px;max-width:520px;margin:0 auto">
+      <div style="font-size:56px;margin-bottom:16px">✅</div>
+      <div style="font-size:22px;font-weight:800;color:#3BAA35;margin-bottom:8px">Entrada concluída!</div>
+      <div style="font-size:14px;color:#555;line-height:1.8;margin-bottom:24px">
+        <strong>NF-e nº ${nfeDados?.cabecalho?.numero||"—"}</strong> processada com sucesso.<br>
+        ${itens} item(ns) · ${matchados} encontrados no catálogo · Valor total ${fmt(valor)}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:20px;font-weight:700;color:#3BAA35">${itens}</div>
+          <div style="font-size:11px;color:#9a9eb8">Itens no estoque</div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:#3BAA35">${fmt(valor)}</div>
+          <div style="font-size:11px;color:#9a9eb8">Conta a pagar</div>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:20px;font-weight:700;color:#d97706">${nfeItens.filter(i=>!i.match).length}</div>
+          <div style="font-size:11px;color:#9a9eb8">Produtos novos</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button onclick="nfeEtapa='upload';nfeDados=null;nfeItens=[];renderContent()" class="btn-pri" style="padding:12px 24px">
+          📄 Importar outra NF-e
+        </button>
+        <button onclick="setTab('estoque');renderContent()"
+          style="padding:12px 20px;background:transparent;border:1.5px solid #e0e0e0;color:#9a9eb8;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">
+          Ver estoque atualizado →
+        </button>
       </div>
     </div>`;
 }
+
 
 function renderFinanceiro(){
   const pagar=contasPagar.filter(c=>c.status==="pendente").reduce((s,c)=>s+c.valor,0);

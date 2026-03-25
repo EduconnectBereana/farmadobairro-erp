@@ -67,6 +67,7 @@ tfoot td{font-weight:700;font-size:12px;padding:10px 12px;background:#f8f8f8;bor
   <div class="nav-sec" style="color:#7c3aed;margin-top:4px">⚙ Sistema</div>
   <button class="nav-btn" data-tab="modulos" onclick="setTab('modulos')" style="color:#7c3aed;font-weight:600">🔧 Módulos & Fases</button>
   <div class="nav-sec">Inteligência</div>
+  <button class="nav-btn" data-tab="catalogo" onclick="setTab('catalogo')" style="color:#7c3aed;font-weight:600">📦 Catálogo Central</button>
   <button class="nav-btn" data-tab="estoque_rede" onclick="setTab('estoque_rede')">📦 Estoque da Rede</button>
   <button class="nav-btn" data-tab="distribuicao" onclick="setTab('distribuicao')" style="color:#1A5FA8;font-weight:600">🚚 Distribuição</button>
   <button class="nav-btn" data-tab="insights" onclick="setTab('insights')">★ IA & Insights</button>
@@ -244,22 +245,205 @@ function renderPedidos(){
     ${tbl(["#","Cliente","Bairro","Farmácia","Itens","Produtos","Frete","Total","Motoboy","Status"],rows)}`;
 }
 
+// Estado do formulário de motoboys
+let motoEtapa = "lista"; // lista | novo
+
 function renderMotoboys(){
+  if(motoEtapa==="novo") return renderNovoMotoboy();
+
   const tG=motoboys.reduce((s,m)=>s+m.ganhos,0);
   const tE=motoboys.reduce((s,m)=>s+m.pedidosHoje,0);
+
+  // Motoboys cadastrados no localStorage (vindos do Supabase/setup)
+  const motosLocal = JSON.parse(localStorage.getItem("fc_motoboys_central")||"[]");
+  const todosMotoboys = [...motoboys, ...motosLocal.filter(m=>!motoboys.find(x=>x.nome===m.nome))];
+
   const rows=motoboys.map((m,i)=>`<tr style="border-bottom:${i<motoboys.length-1?"1px solid #f5f5f5":"none"};opacity:${m.status==="offline"?.5:1}">
-    ${td(`<strong>${m.nome}</strong>`)}${td(dot(m.status))}${td(m.local,"font-size:11px;color:#888")}${td(m.pedidosHoje,"text-align:center")}${td(fmt(m.ganhos),"text-align:right;font-weight:700")}${td(`<span style="color:${AM}">${"★".repeat(Math.round(m.av))}</span> <span style="color:#888;font-size:11px">${m.av}</span>`)}</tr>`).join("");
+    ${td(`<strong>${m.nome}</strong><br><span style="font-size:10px;color:#9a9eb8">${m.vinculo||"FarmaClub"}</span>`)}
+    ${td(dot(m.status))}
+    ${td(m.local,"font-size:11px;color:#888")}
+    ${td(m.pedidosHoje,"text-align:center")}
+    ${td(fmt(m.ganhos),"text-align:right;font-weight:700")}
+    ${td(`<span style="color:${AM}">${"★".repeat(Math.round(m.av))}</span> <span style="color:#888;font-size:11px">${m.av}</span>`)}
+  </tr>`).join("");
+
+  // Motoboys cadastrados via setup/Supabase
+  const rowsLocal = motosLocal.map(m=>`
+    <tr style="border-bottom:1px solid #f5f5f5">
+      ${td(`<strong>${m.nome}</strong><br><span style="font-size:10px;color:#9a9eb8">${m.vinculo==="farmaclub"?"🟢 FarmaClub":"🏥 "+m.farmacia}</span>`)}
+      ${td(`<span style="background:#f0fdf4;color:#3BAA35;padding:2px 8px;border-radius:8px;font-size:11px">Disponível</span>`)}
+      ${td(m.telefone||"—","font-size:11px;color:#888")}
+      ${td("0","text-align:center")}
+      ${td("R$ 0,00","text-align:right;font-weight:700")}
+      ${td(`<span style="color:${AM}">★★★★★</span>`)}
+    </tr>`).join("");
+
   return`
     <div class="grid4" style="margin-bottom:16px">
-      ${kpi("Ativos agora",motoboys.filter(m=>m.status!=="offline").length,`${motoboys.filter(m=>m.status==="disponível").length} disponíveis`)}
-      ${kpi("Entregas hoje",tE,"todos os motoboys")}${kpi("Ganhos do dia",fmt(tG),"R$ 6,00/entrega")}${kpi("Nota média","4.76","★ satisfação",AM)}
+      ${kpi("Ativos agora",motoboys.filter(m=>m.status!=="offline").length+motosLocal.length,`em campo`)}
+      ${kpi("Entregas hoje",tE,"todos os motoboys")}
+      ${kpi("Ganhos do dia",fmt(tG),"R$ 6,00/entrega")}
+      ${kpi("Nota média","4.76","★ satisfação",AM)}
     </div>
-    ${tbl(["Motoboy","Status","Localização","Entregas","Ganhos","Avaliação"],rows)}
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:13px;font-weight:600">Equipe de entrega FarmaClub</div>
+      <button onclick="motoEtapa='novo';renderContent()" class="btn-pri" style="font-size:12px;padding:7px 16px">+ Cadastrar motoboy</button>
+    </div>
+
+    ${tbl(["Motoboy / Vínculo","Status","Contato","Entregas","Ganhos","Avaliação"],rows+rowsLocal)}
+
     <div style="margin-top:16px" class="card">
       <div class="sec-tit">Entregas por motoboy hoje</div>
       ${barras(motoboys.map(m=>m.nome.split(" ")[0]),motoboys.map(m=>m.pedidosHoje),BL,120)}
     </div>`;
 }
+
+function renderNovoMotoboy(){
+  const farmacias_list = [
+    {id:1,nome:"Farmácia São João"},
+    {id:2,nome:"Vida & Saúde"},
+    {id:4,nome:"Drogaria Esperança"},
+    {id:5,nome:"Farmácia Boa Saúde"},
+  ];
+  return`
+    <div style="background:#fff;padding:12px 0 14px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="motoEtapa='lista';renderContent()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:#888;padding:0">←</button>
+      <div style="font-weight:700;font-size:15px">Cadastrar novo motoboy</div>
+    </div>
+
+    <div class="card" style="max-width:640px">
+      <div id="msg-moto-erp" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px"></div>
+
+      <!-- VÍNCULO — primeiro campo, define o resto -->
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">Vínculo do motoboy *</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div id="vinc-fc" onclick="selecionarVinculo('farmaclub')"
+            style="border:2px solid #3BAA35;background:#f0fdf4;border-radius:10px;padding:14px;cursor:pointer;text-align:center">
+            <div style="font-size:22px;margin-bottom:6px">🟢</div>
+            <div style="font-weight:700;font-size:13px;color:#3BAA35">FarmaClub</div>
+            <div style="font-size:11px;color:#9a9eb8;margin-top:3px">Atende toda a rede</div>
+          </div>
+          <div id="vinc-farm" onclick="selecionarVinculo('farmacia')"
+            style="border:2px solid #e0e0e0;background:#fff;border-radius:10px;padding:14px;cursor:pointer;text-align:center">
+            <div style="font-size:22px;margin-bottom:6px">🏥</div>
+            <div style="font-weight:700;font-size:13px;color:#555">Farmácia específica</div>
+            <div style="font-size:11px;color:#9a9eb8;margin-top:3px">Exclusivo de uma unidade</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Farmácia vinculada (aparece só se vínculo = farmácia) -->
+      <div id="campo-farmacia-moto" style="display:none;margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Farmácia *</label>
+        <select id="m-farmacia" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit">
+          <option value="">— Selecione a farmácia —</option>
+          ${farmacias_list.map(f=>`<option value="${f.nome}">${f.nome}</option>`).join("")}
+        </select>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Nome completo *</label>
+          <input type="text" id="m-nome" placeholder="Ex: Carlos Mendes" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#3BAA35'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">WhatsApp *</label>
+          <input type="tel" id="m-tel" placeholder="(22) 99999-9999" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#3BAA35'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">CNH (número)</label>
+          <input type="text" id="m-cnh" placeholder="00000000000" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#3BAA35'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Placa da moto</label>
+          <input type="text" id="m-placa" placeholder="ABC-1234" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#3BAA35'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Chave PIX (pagamentos)</label>
+          <input type="text" id="m-pix" placeholder="CPF, telefone ou e-mail" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#3BAA35'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">Valor por entrega (R$)</label>
+          <input type="number" id="m-valor" value="6.00" step="0.50" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#3BAA35'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button onclick="salvarMotoboy()" class="btn-pri" style="flex:1;padding:12px;font-size:14px">✅ Cadastrar motoboy</button>
+        <button onclick="motoEtapa='lista';renderContent()" style="padding:12px 20px;background:transparent;border:1.5px solid #e0e0e0;color:#888;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+      </div>
+    </div>`;
+}
+
+let vinculoMoto = "farmaclub";
+
+window.selecionarVinculo = function(tipo){
+  vinculoMoto = tipo;
+  const fc = document.getElementById("vinc-fc");
+  const fa = document.getElementById("vinc-farm");
+  const campo = document.getElementById("campo-farmacia-moto");
+  if(tipo==="farmaclub"){
+    fc.style.borderColor="#3BAA35"; fc.style.background="#f0fdf4";
+    fa.style.borderColor="#e0e0e0"; fa.style.background="#fff";
+    if(campo) campo.style.display="none";
+  } else {
+    fa.style.borderColor="#1A5FA8"; fa.style.background="#eff6ff";
+    fc.style.borderColor="#e0e0e0"; fc.style.background="#fff";
+    if(campo) campo.style.display="block";
+  }
+};
+
+window.salvarMotoboy = function(){
+  const nome  = document.getElementById("m-nome")?.value.trim();
+  const tel   = document.getElementById("m-tel")?.value.trim();
+  const cnh   = document.getElementById("m-cnh")?.value.trim();
+  const placa = document.getElementById("m-placa")?.value.trim();
+  const pix   = document.getElementById("m-pix")?.value.trim();
+  const valor = parseFloat(document.getElementById("m-valor")?.value)||6;
+  const farmNome = document.getElementById("m-farmacia")?.value||"";
+  const msgEl = document.getElementById("msg-moto-erp");
+
+  const mostrarErro = txt => {
+    if(msgEl){ msgEl.textContent=txt; msgEl.style.display="block"; msgEl.style.background="#fef2f2"; msgEl.style.color="#dc2626"; msgEl.style.border="1px solid #fecaca"; }
+  };
+
+  if(!nome||!tel){ mostrarErro("Preencha nome e WhatsApp."); return; }
+  if(vinculoMoto==="farmacia"&&!farmNome){ mostrarErro("Selecione a farmácia vinculada."); return; }
+
+  const novo = {
+    id: Date.now(),
+    nome, telefone: tel, cnh, placa, pix,
+    vinculo: vinculoMoto,
+    farmacia: vinculoMoto==="farmacia" ? farmNome : "FarmaClub",
+    valorEntrega: valor,
+    disponivel: true, ativo: true,
+    lat: -21.2062, lng: -41.8878,
+    ganhos_hoje: 0, entregas_hoje: 0,
+    nota: 5.0,
+    cadastradoEm: new Date().toLocaleDateString("pt-BR"),
+  };
+
+  // Salvar no localStorage
+  const lista = JSON.parse(localStorage.getItem("fc_motoboys_central")||"[]");
+  lista.push(novo);
+  localStorage.setItem("fc_motoboys_central", JSON.stringify(lista));
+
+  // Salvar no Supabase se disponível
+  if(typeof sb !== "undefined" && SUPABASE_ANON !== "COLE_AQUI_SUA_CHAVE_ANON_PUBLIC"){
+    sb.from("motoboys").insert({
+      nome, telefone: tel, cnh, placa,
+      lat: -21.2062, lng: -41.8878,
+      disponivel: true, ativo: true,
+      ganhos_hoje: 0, entregas_hoje: 0, nota: 5.0,
+    }).then(({error})=>{ if(error) console.warn("Supabase motoboy:", error.message); });
+  }
+
+  motoEtapa = "lista";
+  renderContent();
+  toast(`✅ Motoboy "${nome}" cadastrado como ${vinculoMoto==="farmaclub"?"🟢 FarmaClub":"🏥 "+farmNome}!`);
+};
 
 function renderFinanceiro(){
   const tB=repasses.reduce((s,r)=>s+r.bruto,0);
@@ -345,6 +529,7 @@ const tabTitles={
   financeiro:["Financeiro & Repasses","Comissões e repasses"],
   compras:["Compras Coletivas","Necessidades e cotações"],
   pedidos_farmacias:["Pedidos das Farmácias","Consolidação e compra coletiva"],
+  catalogo:["Catálogo Central de Produtos","Gerenciado por você — vale para toda a rede"],
   estoque_rede:["Estoque da Rede","Visão cruzada de todas as farmácias"],
   distribuicao:["Distribuição","Separação e envio para farmácias"],
   campanhas_rede:["Campanhas da Rede","Novidades, kits e promoções ativas"],
@@ -1145,6 +1330,286 @@ window.imprimirConsolidado = function(){
 };
 
 
+
+// ══════════════════════════════════════════════════════════
+// CATÁLOGO CENTRAL DE PRODUTOS — gerenciado pelo gestor
+// ══════════════════════════════════════════════════════════
+const CATS_PROD = {analgesicos:"Analgésicos",antibioticos:"Antibióticos",gastro:"Gastro",cardiovasc:"Cardiovascular",diabetes:"Diabetes",vitaminas:"Vitaminas",outros:"Outros"};
+
+let catEtapa = "lista"; // lista | novo
+let catBusca = "";
+let catFiltro = "todos";
+
+// Catálogo demo embutido (14 produtos base da rede)
+const catalogoBase = [
+  {id:101,ean:"7896004004532",ico:"💊",nome:"Dipirona Sódica 500mg 20cp",lab:"EMS",cat:"analgesicos",preco_ref:8.90,custo_ref:3.80,receita:false},
+  {id:102,ean:"7896714240118",ico:"🔬",nome:"Amoxicilina 500mg 21cp",lab:"Medley",cat:"antibioticos",preco_ref:22.50,custo_ref:14.50,receita:true},
+  {id:103,ean:"7896523240065",ico:"🫀",nome:"Omeprazol 20mg 28cp",lab:"Aché",cat:"gastro",preco_ref:14.90,custo_ref:8.00,receita:false},
+  {id:104,ean:"7891058006824",ico:"⚡",nome:"Vitamina C 1g 10cp",lab:"EMS",cat:"vitaminas",preco_ref:5.90,custo_ref:2.50,receita:false},
+  {id:105,ean:"7896658010077",ico:"❤️",nome:"Losartana 50mg 30cp",lab:"EMS",cat:"cardiovasc",preco_ref:18.50,custo_ref:10.00,receita:true},
+  {id:106,ean:"7891047944513",ico:"🩺",nome:"Metformina 850mg 30cp",lab:"Merck",cat:"diabetes",preco_ref:9.90,custo_ref:5.00,receita:true},
+  {id:107,ean:"7896714270048",ico:"💊",nome:"Ibuprofeno 600mg 20cp",lab:"Medley",cat:"analgesicos",preco_ref:15.90,custo_ref:8.50,receita:false},
+  {id:108,ean:"7896523405055",ico:"🫧",nome:"Simeticona 40mg 50cp",lab:"Aché",cat:"gastro",preco_ref:11.50,custo_ref:6.00,receita:false},
+  {id:109,ean:"7896658020076",ico:"💙",nome:"Atenolol 25mg 30cp",lab:"EMS",cat:"cardiovasc",preco_ref:8.00,custo_ref:4.00,receita:true},
+  {id:110,ean:"7896181916749",ico:"💊",nome:"Paracetamol 750mg 20cp",lab:"Farmoquímica",cat:"analgesicos",preco_ref:7.90,custo_ref:3.50,receita:false},
+  {id:111,ean:"7891058001234",ico:"🌿",nome:"Loratadina 10mg 12cp",lab:"EMS",cat:"outros",preco_ref:7.50,custo_ref:3.00,receita:false},
+  {id:112,ean:"7891058007711",ico:"🎯",nome:"Dorflex 36cp",lab:"EMS",cat:"analgesicos",preco_ref:22.00,custo_ref:12.00,receita:false},
+  {id:113,ean:"7896714880055",ico:"👃",nome:"Neosoro 30ml",lab:"EMS",cat:"outros",preco_ref:12.50,custo_ref:6.00,receita:false},
+  {id:114,ean:"7896523440088",ico:"🌀",nome:"Buscopan Composto 30cp",lab:"Aché",cat:"gastro",preco_ref:32.00,custo_ref:16.00,receita:false},
+];
+
+function getCatalogoCentral(){
+  const extras = JSON.parse(localStorage.getItem("fc_catalogo_central")||"[]");
+  return [...catalogoBase, ...extras];
+}
+
+function renderCatalogoCentral(){
+  if(catEtapa==="novo") return renderNovoProdutoCatalogo();
+
+  const catalogo = getCatalogoCentral();
+  const filtrado = catalogo.filter(p=>
+    (catFiltro==="todos"||p.cat===catFiltro)&&
+    (catBusca===""||p.nome.toLowerCase().includes(catBusca.toLowerCase())||p.ean.includes(catBusca)||p.lab.toLowerCase().includes(catBusca.toLowerCase()))
+  );
+
+  return`
+    <!-- CABEÇALHO -->
+    <div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:12px;padding:16px 20px;margin-bottom:16px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-size:16px;font-weight:700">📦 Catálogo Central FarmaClub</div>
+        <div style="font-size:12px;opacity:.85;margin-top:3px">${catalogo.length} produtos · Gerenciado por você · Vale para toda a rede</div>
+      </div>
+      <button onclick="catEtapa='novo';renderContent()" style="padding:9px 18px;background:#fff;color:#7c3aed;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ Novo produto</button>
+    </div>
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">
+      <div style="background:#fff;border-radius:10px;padding:12px;border:1px solid #e8eaf4;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#7c3aed">${catalogo.length}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Total de produtos</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:12px;border:1px solid #e8eaf4;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#E03A3A">${catalogo.filter(p=>p.receita).length}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Com receita</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:12px;border:1px solid #e8eaf4;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#3BAA35">${catalogo.filter(p=>!p.receita).length}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Venda livre</div>
+      </div>
+      <div style="background:#fff;border-radius:10px;padding:12px;border:1px solid #e8eaf4;text-align:center">
+        <div style="font-size:22px;font-weight:700;color:#1A5FA8">${catalogoBase.length}</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Produtos base</div>
+      </div>
+    </div>
+
+    <!-- COMO FUNCIONA -->
+    <div style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#5b21b6;line-height:1.7">
+      <strong>Como funciona:</strong> Este é o catálogo central da rede. Você adiciona os produtos aqui uma única vez.
+      Quando a distribuidora entregar na farmácia, a farmácia abre a <strong>entrada de NF no ERP dela</strong> →
+      localiza os produtos pelo EAN → o estoque é creditado automaticamente para aquela farmácia.
+      Nenhuma farmácia precisa redigitar nome ou laboratório.
+    </div>
+
+    <!-- BUSCA E FILTRO -->
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <div style="position:relative;flex:1;min-width:200px">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9a9eb8">🔍</span>
+        <input type="text" placeholder="Nome, EAN ou laboratório..."
+          value="${catBusca}"
+          oninput="catBusca=this.value;renderContent()"
+          style="width:100%;padding:9px 14px 9px 34px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none">
+      </div>
+      <select onchange="catFiltro=this.value;renderContent()"
+        style="padding:9px 14px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit">
+        <option value="todos" ${catFiltro==="todos"?"selected":""}>Todas as categorias</option>
+        ${Object.entries(CATS_PROD).map(([k,v])=>`<option value="${k}" ${catFiltro===k?"selected":""}>${v}</option>`).join("")}
+      </select>
+    </div>
+
+    <!-- TABELA DE PRODUTOS -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead style="background:#f8f8f8">
+          <tr>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;color:#888;font-weight:500">Produto</th>
+            <th style="padding:10px 14px;text-align:left;font-size:11px;color:#888;font-weight:500">Laboratório</th>
+            <th style="padding:10px 14px;text-align:center;font-size:11px;color:#888;font-weight:500">EAN</th>
+            <th style="padding:10px 14px;text-align:center;font-size:11px;color:#888;font-weight:500">Receita</th>
+            <th style="padding:10px 14px;text-align:right;font-size:11px;color:#888;font-weight:500">Preço ref. PIX</th>
+            <th style="padding:10px 14px;text-align:right;font-size:11px;color:#888;font-weight:500">Custo ref.</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filtrado.length===0
+            ?`<tr><td colspan="6" style="padding:30px;text-align:center;color:#aaa;font-size:13px">Nenhum produto encontrado</td></tr>`
+            :filtrado.map((p,i)=>`
+            <tr style="border-bottom:${i<filtrado.length-1?"1px solid #f5f5f5":"none"}">
+              <td style="padding:10px 14px;display:flex;align-items:center;gap:8px">
+                <span style="font-size:20px">${p.ico||"💊"}</span>
+                <div>
+                  <div style="font-weight:600;font-size:13px">${p.nome}</div>
+                  <span style="font-size:10px;background:${p.cat==="analgesicos"?"#fef2f2":p.cat==="antibioticos"?"#eff6ff":p.cat==="gastro"?"#f0fdf4":"#f5f3ff"};color:#555;padding:1px 7px;border-radius:8px">${CATS_PROD[p.cat]||p.cat}</span>
+                </div>
+              </td>
+              <td style="padding:10px 14px;font-size:12px;color:#555">${p.lab||"—"}</td>
+              <td style="padding:10px 14px;text-align:center;font-size:11px;color:#9a9eb8;font-family:monospace">${p.ean||"—"}</td>
+              <td style="padding:10px 14px;text-align:center">
+                ${p.receita
+                  ?`<span style="background:#fef2f2;color:#E03A3A;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600">Sim</span>`
+                  :`<span style="background:#f0fdf4;color:#3BAA35;padding:2px 8px;border-radius:8px;font-size:11px;font-weight:600">Livre</span>`}
+              </td>
+              <td style="padding:10px 14px;text-align:right;font-weight:700;color:#3BAA35">${fmt(p.preco_ref||0)}</td>
+              <td style="padding:10px 14px;text-align:right;color:#888;font-size:12px">${fmt(p.custo_ref||0)}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>
+    ${filtrado.length>0?`<div style="font-size:11px;color:#9a9eb8;margin-top:8px;text-align:right">${filtrado.length} de ${catalogo.length} produtos exibidos</div>`:""}
+  `;
+}
+
+function renderNovoProdutoCatalogo(){
+  return`
+    <div style="background:#fff;padding:12px 0 14px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button onclick="catEtapa='lista';renderContent()" style="background:transparent;border:none;font-size:20px;cursor:pointer;color:#888;padding:0">←</button>
+      <div style="font-weight:700;font-size:15px">Adicionar produto ao catálogo central</div>
+    </div>
+
+    <div class="card" style="max-width:640px">
+      <div id="msg-cat" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;margin-bottom:14px"></div>
+
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;font-size:12px;color:#92400e;margin-bottom:16px;line-height:1.6">
+        💡 <strong>Preços de referência:</strong> São os preços sugeridos para a rede. Cada farmácia pode ajustar no ERP dela no momento da entrada da NF.
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div style="grid-column:span 2">
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px">NOME DO PRODUTO *</label>
+          <input type="text" id="cp-nome" placeholder="Ex: Dipirona Sódica 500mg 20 comprimidos"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px">CÓDIGO EAN (CÓDIGO DE BARRAS)</label>
+          <input type="text" id="cp-ean" placeholder="7896004004532"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;font-family:monospace" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px">LABORATÓRIO *</label>
+          <input type="text" id="cp-lab" placeholder="EMS, Aché, Medley..."
+            style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px">CATEGORIA *</label>
+          <select id="cp-cat" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit">
+            ${Object.entries(CATS_PROD).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px">REQUER RECEITA?</label>
+          <select id="cp-rec" style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit">
+            <option value="false">Não — venda livre</option>
+            <option value="true">Sim — receita obrigatória</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px">PREÇO REFERÊNCIA PIX (R$) *</label>
+          <input type="number" id="cp-preco" step="0.01" placeholder="8.90"
+            oninput="atualizarMargemCat()"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:600;color:#9a9eb8;display:block;margin-bottom:4px">CUSTO REFERÊNCIA (R$)</label>
+          <input type="number" id="cp-custo" step="0.01" placeholder="3.80"
+            oninput="atualizarMargemCat()"
+            style="width:100%;padding:10px 12px;border:1.5px solid #e0e0e0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" onfocus="this.style.borderColor='#7c3aed'" onblur="this.style.borderColor='#e0e0e0'">
+        </div>
+      </div>
+
+      <div id="margem-cat" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 14px;font-size:12px;color:#16a34a;margin-bottom:14px;display:none">
+        Margem de referência: —
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button onclick="salvarProdutoCatalogo()" style="flex:1;padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit">
+          ✅ Adicionar ao catálogo
+        </button>
+        <button onclick="catEtapa='lista';renderContent()" style="padding:12px 20px;background:transparent;border:1.5px solid #e0e0e0;color:#888;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+      </div>
+    </div>`;
+}
+
+window.atualizarMargemCat = function(){
+  const preco = parseFloat(document.getElementById("cp-preco")?.value)||0;
+  const custo = parseFloat(document.getElementById("cp-custo")?.value)||0;
+  const el = document.getElementById("margem-cat");
+  if(!el) return;
+  if(preco>0&&custo>0){
+    const margem = ((preco-custo)/preco*100).toFixed(1);
+    const lucro = (preco-custo).toFixed(2).replace(".",",");
+    el.style.display="block";
+    if(custo>=preco){
+      el.style.background="#fef2f2"; el.style.borderColor="#fecaca"; el.style.color="#dc2626";
+      el.textContent=`⚠️ Preço de venda menor que custo — prejuízo!`;
+    } else {
+      el.style.background="#f0fdf4"; el.style.borderColor="#bbf7d0"; el.style.color="#16a34a";
+      el.textContent=`Margem de referência: ${margem}% · Lucro bruto: R$ ${lucro} por unidade`;
+    }
+  } else {
+    el.style.display="none";
+  }
+};
+
+window.salvarProdutoCatalogo = function(){
+  const nome  = document.getElementById("cp-nome")?.value.trim();
+  const ean   = document.getElementById("cp-ean")?.value.trim();
+  const lab   = document.getElementById("cp-lab")?.value.trim();
+  const cat   = document.getElementById("cp-cat")?.value;
+  const rec   = document.getElementById("cp-rec")?.value==="true";
+  const preco = parseFloat(document.getElementById("cp-preco")?.value)||0;
+  const custo = parseFloat(document.getElementById("cp-custo")?.value)||0;
+  const msgEl = document.getElementById("msg-cat");
+
+  const erro = txt => {
+    if(msgEl){ msgEl.textContent=txt; msgEl.style.display="block"; msgEl.style.background="#fef2f2"; msgEl.style.color="#dc2626"; msgEl.style.border="1px solid #fecaca"; }
+  };
+
+  if(!nome||!lab){ erro("Preencha nome e laboratório."); return; }
+  if(preco<=0){ erro("Informe o preço de referência."); return; }
+  if(custo>0&&custo>=preco){ erro("Preço de venda precisa ser maior que o custo."); return; }
+
+  // Verificar EAN duplicado
+  const catalogo = getCatalogoCentral();
+  if(ean&&catalogo.find(p=>p.ean===ean)){
+    erro(`Produto com EAN ${ean} já existe no catálogo: "${catalogo.find(p=>p.ean===ean).nome}"`);
+    return;
+  }
+
+  const novo = {
+    id: Date.now(),
+    ean, ico:"💊", nome, lab, cat,
+    preco_ref: preco, custo_ref: custo,
+    receita: rec,
+    adicionadoEm: new Date().toLocaleDateString("pt-BR"),
+  };
+
+  const extras = JSON.parse(localStorage.getItem("fc_catalogo_central")||"[]");
+  extras.push(novo);
+  localStorage.setItem("fc_catalogo_central", JSON.stringify(extras));
+
+  // Supabase em background
+  if(typeof sb!=="undefined"&&SUPABASE_ANON!=="COLE_AQUI_SUA_CHAVE_ANON_PUBLIC"){
+    sb.from("produtos").insert({
+      ean, nome, laboratorio:lab, categoria:cat,
+      preco_custo:custo, preco_venda:preco, preco_pix:preco,
+      receita:rec, ativo:true, icone:"💊",
+    }).then(({error})=>{ if(error) console.warn("Supabase produto:", error.message); });
+  }
+
+  catEtapa="lista";
+  renderContent();
+  toast(`✅ "${nome}" adicionado ao catálogo!`);
+};
+
 // ── CAMPANHAS DA REDE — ERP CENTRAL ──
 function renderCampanhasRede(){
   const farmNomesLocal = {1:"São João",2:"Vida & Saúde",3:"Popular",4:"Esperança",5:"Boa Saúde",6:"Central"};
@@ -1698,7 +2163,7 @@ window.recarregarDados = async function() {
   if (btn) { btn.textContent = "🔄 Atualizar dados"; btn.disabled = false; }
 };
 
-const renders={dashboard:renderDashboard,farmacias:renderFarmacias,pedidos:renderPedidos,motoboys:renderMotoboys,financeiro:renderFinanceiro,compras:renderCompras,estoque_rede:renderEstoqueRede,distribuicao:renderDistribuicao,pedidos_farmacias:renderPedidosFarmacias,campanhas_rede:renderCampanhasRede,medicos_rede:renderMedicosRede,dentistas_rede:renderDentistasRede,modulos:renderModulos,insights:renderInsights,relatorios:renderRelatorios};
+const renders={dashboard:renderDashboard,farmacias:renderFarmacias,pedidos:renderPedidos,motoboys:renderMotoboys,financeiro:renderFinanceiro,compras:renderCompras,estoque_rede:renderEstoqueRede,distribuicao:renderDistribuicao,pedidos_farmacias:renderPedidosFarmacias,catalogo:renderCatalogoCentral,campanhas_rede:renderCampanhasRede,medicos_rede:renderMedicosRede,dentistas_rede:renderDentistasRede,modulos:renderModulos,insights:renderInsights,relatorios:renderRelatorios};
 let tabAtual="dashboard";
 
 function setTab(t){

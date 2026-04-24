@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>FarmaClub — ERP Contabilidade</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — ERP Contabilidade</title><style>
 :root{
   --bg:#f4f4f2; --card:#fff; --text:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --green:#3BAA35; --red:#dc2626; --orange:#d97706; --blue:#2563eb; --dark:#111827;
@@ -58,7 +58,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
 <script src="/shared/farmaclub_dados.js"></script>
 <div class="layout">
   <aside class="side">
-    <div class="logo">Contabilidade<small>FarmaClub · Itaperuna/RJ</small></div>
+    <div class="logo">Contabilidade<small>Farma do Bairro · Itaperuna/RJ</small></div>
     <a class="active" href="#">Dashboard</a>
     <a href="#simulador">Regime inteligente</a>
     <a href="/erp">ERP Central</a>
@@ -67,7 +67,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
     <div class="topbar"><div><div class="logo">Painel contábil</div><div class="muted">Visão consolidada das farmácias demo</div></div><span class="badge green">● Sincronizado</span></div>
     <div class="grid grid-4">
       <div class="card kpi"><div class="label">Faturamento da rede</div><div class="value" id="fatRede">R$ 0</div><div class="sub">Base demo</div></div>
-      <div class="card kpi"><div class="label">Comissão FarmaClub</div><div class="value" id="comRede">R$ 0</div><div class="sub">10% estimado</div></div>
+      <div class="card kpi"><div class="label">Comissão Farma do Bairro</div><div class="value" id="comRede">R$ 0</div><div class="sub">10% estimado</div></div>
       <div class="card kpi"><div class="label">DAS projetado</div><div class="value" id="dasRede">R$ 0</div><div class="sub">Simples 6%</div></div>
       <div class="card kpi"><div class="label">CNPJs</div><div class="value" id="cnpjRede">0</div><div class="sub">Ativos</div></div>
     </div>
@@ -95,7 +95,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
   </main>
 </div>
 <script>
-const farms=window.FARMACLUB.farmacias||[];
+const farms=window.FARMADOBAIRRO.farmacias||[];
 const fmt=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const total=farms.reduce((s,f)=>s+f.faturamento,0);
 document.getElementById('fatRede').textContent=fmt(total);

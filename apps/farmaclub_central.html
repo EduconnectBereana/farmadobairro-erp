@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Farma do Bairro — Sistema de Gestão</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --verde:#3BAA35;--verde2:#2E8A2A;--azul:#1A5FA8;
+  --azul2:#4A9FD4;--verm:#E03A3A;--roxo:#7c3aed;
+  --ciano:#0891b2;--am:#d97706;--bg:#f0f2f5;
+}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── TOPBAR ── */
+.topbar{background:linear-gradient(135deg,var(--verde),var(--verde2));padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 12px rgba(0,0,0,.18);position:sticky;top:0;z-index:100}
+.top-logo{display:flex;align-items:center;gap:10px}
+.top-logo img{height:36px;width:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,.2))}
+.top-nome{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px}
+.top-nome span{opacity:.75;font-weight:400}
+.top-badge{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:5px 12px;font-size:11px;color:#fff;font-weight:600}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.dot-live{width:7px;height:7px;border-radius:50%;background:#7dff7d;animation:blink 1.8s infinite;display:inline-block}
+
+/* ── CORPO ── */
+.body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px}
+
+/* ── SAUDAÇÃO ── */
+.saudacao{text-align:center;margin-bottom:28px}
+.saudacao h1{font-size:22px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.saudacao p{font-size:13px;color:#666}
+
+/* ── GRID 4x2 ── */
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;width:100%;max-width:820px}
+
+/* ── CARD DE MÓDULO ── */
+.modulo{background:#fff;border-radius:16px;border:2px solid #e8eaf4;padding:20px 14px 16px;text-decoration:none;color:inherit;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s,border-color .15s;cursor:pointer}
+.modulo::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--cor)}
+.modulo:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.12);border-color:var(--cor)}
+.modulo:active{transform:scale(.97)}
+.mod-ico{font-size:32px;line-height:1}
+.mod-nome{font-size:13px;font-weight:700;color:#1a1a2e;text-align:center;line-height:1.3}
+.mod-desc{font-size:11px;color:#888;text-align:center;line-height:1.4}
+.mod-tag{font-size:10px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:2px 8px;border-radius:10px;background:var(--cor-bg);color:var(--cor);margin-top:2px}
+
+/* ── CARD CENTRAL (destaque) ── */
+.modulo.central{grid-column:span 2;flex-direction:row;align-items:center;gap:14px;padding:18px 20px;text-align:left}
+.modulo.central .mod-ico{font-size:38px;flex-shrink:0}
+.modulo.central .mod-nome{font-size:15px}
+.modulo.central .mod-desc{font-size:12px}
+
+/* ── RODAPÉ ── */
+.footer{text-align:center;padding:14px;font-size:11px;color:#aaa}
+/* ── MAPA ── */
+.mapa-section{width:100%;max-width:820px;margin:0 auto 24px;padding:0 0px}
+.mapa-card{background:#fff;border-radius:16px;border:2px solid #e8eaf4;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.mapa-header{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid #f0f0f0}
+.mapa-header h3{font-size:14px;font-weight:700;color:#1a1a2e;margin:0}
+.mapa-legenda{display:flex;gap:12px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#666}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+#mapa-farms{height:320px}
+.mapa-footer{padding:10px 16px;background:#f8f8f8;font-size:11px;color:#888;border-top:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
+
+/* ── MOBILE ── */
+@media(max-width:600px){
+  .grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .modulo.central{grid-column:span 2;flex-direction:column;text-align:center}
+  .top-nome span{display:none}
+  .saudacao h1{font-size:18px}
+}
+@media(min-width:601px) and (max-width:800px){
+  .grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="top-logo">
+    <img src="farma-do-bairro-logo.png" alt="Farma do Bairro"
+      onerror="this.style.display='none'">
+    <div class="top-nome">Farma do Bairro <span>· Itaperuna/RJ</span></div>
+  </div>
+  <div class="top-badge">
+    <span class="dot-live"></span>
+    <span id="badge-txt">6 farmácias · online</span>
+  </div>
+</div>
+
+<!-- CORPO -->
+<div class="body">
+
+  <div class="saudacao">
+    <h1>Bem-vindo ao Farma do Bairro, Mury</h1>
+    <p>Selecione o módulo que deseja acessar</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- LINHA 1 — 4 módulos -->
+
+    <!-- ERP Central — destaque maior -->
+    <a class="modulo" href="farma-do-bairro_erp_central.html"
+      style="--cor:var(--verde);--cor-bg:#e8f5e6">
+      <div class="mod-ico">◼</div>
+      <div class="mod-nome">ERP Central</div>
+      <div class="mod-tag">Painel do Gestor</div>
+      <div class="mod-desc">Dashboard, pedidos, motoboys e repasses</div>
+    </a>
+
+    <a class="modulo" href="farma-do-bairro_erp_farmacia.html"
+      style="--cor:var(--azul);--cor-bg:#e8f0fb">
+      <div class="mod-ico">🏥</div>
+      <div class="mod-nome">ERP Farmácia</div>
+      <div class="mod-tag">Farmácia Parceira</div>
+      <div class="mod-desc">PDV, estoque, NF-e e financeiro</div>
+    </a>
+
+    <a class="modulo" href="farma-do-bairro_compra_coletiva.html"
+      style="--cor:var(--roxo);--cor-bg:#f3eefe">
+      <div class="mod-ico">🤝</div>
+      <div class="mod-nome">Compra Coletiva</div>
+      <div class="mod-tag">Central de Compras</div>
+      <div class="mod-desc">Cotação, pedido consolidado e rateio</div>
+    </a>
+
+    <a class="modulo" href="farma-do-bairro_contabilidade.html"
+      style="--cor:var(--ciano);--cor-bg:#e0f5fb">
+      <div class="mod-ico">📊</div>
+      <div class="mod-nome">Contabilidade</div>
+      <div class="mod-tag">Fiscal & Tributário</div>
+      <div class="mod-desc">DAS, DRE, obrigações e cadastros</div>
+    </a>
+
+    <!-- LINHA 2 — 4 módulos -->
+
+    <a class="modulo" href="farma-do-bairro_app_cliente.html"
+      style="--cor:var(--verde);--cor-bg:#e8f5e6">
+      <div class="mod-ico">📱</div>
+      <div class="mod-nome">App Cliente</div>
+      <div class="mod-tag">Marketplace</div>
+      <div class="mod-desc">Pedidos, carrinho e rastreamento</div>
+    </a>
+
+    <a class="modulo" href="farma-do-bairro_app_motoboy.html"
+      style="--cor:var(--verm);--cor-bg:#fdeaea">
+      <div class="mod-ico">🛵</div>
+      <div class="mod-nome">App Motoboy</div>
+      <div class="mod-tag">Entrega em Campo</div>
+      <div class="mod-desc">Aceite, coleta e entrega</div>
+    </a>
+
+    <a class="modulo" href="farma-do-bairro_frete.html"
+      style="--cor:var(--azul2);--cor-bg:#e8f4fb">
+      <div class="mod-ico">📍</div>
+      <div class="mod-nome">Frete GPS</div>
+      <div class="mod-tag">Calculadora</div>
+      <div class="mod-desc">Rua real, distância e estimativa</div>
+    </a>
+
+    <a class="modulo" href="farmaclub_dados.js" target="_blank"
+      style="--cor:var(--am);--cor-bg:#fffbeb">
+      <div class="mod-ico">⚙</div>
+      <div class="mod-nome">Dados Centrais</div>
+      <div class="mod-tag">Configuração</div>
+      <div class="mod-desc">Cadastro único de farmácias e frete</div>
+    </a>
+
+  </div>
+
+
+  <!-- MAPA OPENSTREETMAP -->
+  <div class="mapa-section">
+    <div class="mapa-card">
+      <div class="mapa-header">
+        <h3>📍 Farmácias parceiras — Itaperuna/RJ</h3>
+        <div class="mapa-legenda">
+          <div class="leg-item"><div class="leg-dot" style="background:#3BAA35"></div>Aberta</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#E03A3A"></div>Fechada</div>
+        </div>
+      </div>
+      <div id="mapa-farms"></div>
+      <div class="mapa-footer">
+        <span id="mapa-status">Carregando farmácias...</span>
+        <span>© OpenStreetMap contributors</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PALETA / VERSÃO -->
+  <div style="margin-top:28px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center">
+    <div id="farm-status" style="font-size:11px;color:#888"></div>
+  </div>
+
+</div>
+
+
+<!-- RODAPÉ LEGAL FARMADOBAIRRO -->
+<div style="background:#1a1a2e;color:rgba(255,255,255,.55);font-size:10px;line-height:1.8;padding:20px 16px;margin-top:auto">
+  <div style="border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:12px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <img src="farma-do-bairro-logo.png" alt="Farma do Bairro" style="height:28px;opacity:.7" onerror="this.style.display='none'">
+    <div style="font-size:11px;color:rgba(255,255,255,.7);font-weight:600">Farma do Bairro Itaperuna — Rede de Farmácias Independentes</div>
+  </div>
+
+  <div style="margin-bottom:10px">
+    <strong style="color:rgba(255,255,255,.8)">Farma do Bairro Gestão e Tecnologia Ltda.</strong> |
+    CNPJ: 00.000.000/0001-00 |
+    Rua Getúlio Vargas, 342 | Centro | Itaperuna (RJ) | CEP 28300-000 |
+    Dúvidas, elogios e reclamações:
+    <a href="https://wa.me/5522900000000" style="color:#3BAA35;text-decoration:none">WhatsApp (22) 9XXXX-XXXX</a>
+  </div>
+
+  <div style="margin-bottom:10px">
+    <strong style="color:rgba(255,255,255,.7)">Farmacêuticos responsáveis das farmácias parceiras:</strong><br>
+    Cada farmácia parceira da rede Farma do Bairro possui farmacêutico responsável devidamente inscrito no CRF-RJ e Autorização de Funcionamento de Empresa (AFE) emitida pela ANVISA. Informações disponíveis no balcão de cada estabelecimento.
+  </div>
+
+  <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:12px;margin-bottom:10px;border-left:3px solid #3BAA35">
+    <strong style="color:rgba(255,255,255,.8);font-size:10px">⚕️ AVISO IMPORTANTE — AUTOMEDICAÇÃO</strong><br>
+    As informações contidas neste site e aplicativo <strong>não devem ser usadas para automedicação</strong> e não substituem, em hipótese alguma, as orientações dadas por profissional da área médica.
+    Somente o médico está apto a diagnosticar qualquer problema de saúde e prescrever o tratamento adequado.
+    <strong>Ao persistirem os sintomas, um médico deverá ser consultado.</strong>
+  </div>
+
+  <div style="margin-bottom:10px">
+    Os preços e promoções divulgados no aplicativo e no site são válidos apenas para compras realizadas por estes canais digitais e estão sujeitos à disponibilidade de estoque no momento do pedido.
+    Todos os pedidos estão sujeitos à confirmação da disponibilidade do produto em estoque da farmácia parceira selecionada.
+  </div>
+
+  <div style="margin-bottom:10px">
+    A Farma do Bairro segue as determinações da
+    <a href="https://www.anvisa.gov.br" target="_blank" style="color:#3BAA35;text-decoration:none">ANVISA</a>
+    e da legislação farmacêutica vigente. Maiores esclarecimentos: <a href="https://www.anvisa.gov.br" target="_blank" style="color:#3BAA35;text-decoration:none">www.anvisa.gov.br</a>
+  </div>
+
+  <div style="margin-bottom:12px">
+    A Farma do Bairro utiliza tecnologias de proteção de dados para que você realize suas compras com segurança.
+    A privacidade e a segurança dos clientes são compromissos da Farma do Bairro.
+    Seus dados são tratados conforme a <strong style="color:rgba(255,255,255,.7)">Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018)</strong>.
+  </div>
+
+  <div style="border-top:1px solid rgba(255,255,255,.1);padding-top:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+    <span>© 2026 Farma do Bairro Itaperuna · Todos os direitos reservados</span>
+    <div style="display:flex;gap:12px">
+      <a href="#" style="color:#3BAA35;text-decoration:none">Política de Privacidade</a>
+      <a href="#" style="color:#3BAA35;text-decoration:none">Termos de Uso</a>
+      <a href="#" style="color:#3BAA35;text-decoration:none">LGPD</a>
+    </div>
+  </div>
+</div>
+<!-- FIM RODAPÉ LEGAL -->
+<div class="footer" style="display:none">
+  Farma do Bairro Itaperuna · Gestão e Tecnologia para Farmácias Independentes · v1.0 · 2026
+</div>
+
+<script>
+// Atualizar hora e saudação
+function initDados(){
+  const h=new Date().getHours();
+  
+  document.querySelector(".saudacao h1").textContent=
+    (h<12?"Bom dia ☀️":h<18?"Boa tarde 🌤️":"Boa noite 🌙")+", Mury!";
+
+  // Status das farmácias (dados do farmaclub_dados.js se disponível)
+  const farms = typeof FARMADOBAIRRO !== "undefined"
+    ? FARMADOBAIRRO.farmacias
+    : [{aberto:true},{aberto:true},{aberto:false},{aberto:true},{aberto:true},{aberto:false}];
+  const abertas = farms.filter(f=>f.aberto).length;
+  const total = farms.length;
+  document.getElementById("badge-txt").textContent=
+    total+" farmácias · "+abertas+" abertas";
+  document.getElementById("farm-status").textContent=
+    "Sistema atualizado · "+new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+}
+initDados();
+
+// ── MAPA OPENSTREETMAP ──
+function initMapa(){
+  const farms = (typeof FARMADOBAIRRO !== "undefined" && FARMADOBAIRRO.farmacias)
+    ? FARMADOBAIRRO.farmacias
+    : [
+      {id:1,nome:"Farmácia São João",bairro:"Centro",endereco:"Rua Getúlio Vargas, 342",lat:-21.2062,lng:-41.8878,aberto:true,nota:4.9,cor:"#3BAA35"},
+      {id:2,nome:"Vida & Saúde",bairro:"Parque Noel",endereco:"Av. Amaro Soares, 88",lat:-21.1980,lng:-41.8820,aberto:true,nota:4.7,cor:"#1A5FA8"},
+      {id:3,nome:"Farmácia Popular",bairro:"São Cristóvão",endereco:"Rua 7 de Setembro, 201",lat:-21.2120,lng:-41.8950,aberto:false,nota:4.5,cor:"#E03A3A"},
+      {id:4,nome:"Drogaria Esperança",bairro:"Morro do Crica",endereco:"Av. Principal, 10",lat:-21.2150,lng:-41.8820,aberto:true,nota:4.7,cor:"#d97706"},
+      {id:5,nome:"Farmácia Boa Saúde",bairro:"Meudon",endereco:"Rua das Flores, 55",lat:-21.1950,lng:-41.8780,aberto:true,nota:4.6,cor:"#7c3aed"},
+      {id:6,nome:"Drogaria Central",bairro:"Boa Sorte",endereco:"Rua Central, 120",lat:-21.2200,lng:-41.8900,aberto:false,nota:4.5,cor:"#0891b2"},
+    ];
+
+  // Inicializar mapa centrado em Itaperuna
+  const mapa = L.map("mapa-farms", {
+    center: [-21.2062, -41.8878],
+    zoom: 14,
+    zoomControl: true,
+    scrollWheelZoom: false, // evita scroll acidental
+  });
+
+  // Tiles OpenStreetMap
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap",
+    maxZoom: 19
+  }).addTo(mapa);
+
+  // Adicionar marcador para cada farmácia
+  farms.forEach(f => {
+    const cor = f.aberto ? "#3BAA35" : "#E03A3A";
+
+    // Ícone customizado com cor
+    const ico = L.divIcon({
+      html: `<div style="
+        width:36px;height:36px;border-radius:50% 50% 50% 0;
+        background:${cor};border:3px solid #fff;
+        transform:rotate(-45deg);
+        box-shadow:0 3px 10px rgba(0,0,0,.3);
+      "></div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 36],
+      popupAnchor: [0, -36],
+      className: ""
+    });
+
+    // Popup com informações da farmácia
+    const popup = `
+      <div style="font-family:system-ui,sans-serif;min-width:180px">
+        <div style="font-weight:700;font-size:14px;color:#1a1a2e;margin-bottom:4px">${f.nome}</div>
+        <div style="font-size:12px;color:#666;margin-bottom:4px">📍 ${f.endereco||f.bairro}</div>
+        <div style="font-size:12px;color:#666;margin-bottom:6px">⭐ ${f.nota||"4.8"} · ${f.horario||"8h–20h"}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="background:${f.aberto?"#f0fdf4":"#fef2f2"};color:${f.aberto?"#3BAA35":"#E03A3A"};
+            padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">
+            ${f.aberto ? "● Aberta agora" : "○ Fechada"}
+          </span>
+        </div>
+      </div>`;
+
+    L.marker([f.lat, f.lng], { icon: ico })
+      .addTo(mapa)
+      .bindPopup(popup, { maxWidth: 220 });
+  });
+
+  // Ajustar zoom para mostrar todas as farmácias
+  const bounds = L.latLngBounds(farms.map(f => [f.lat, f.lng]));
+  mapa.fitBounds(bounds.pad(0.15));
+
+  // Atualizar status no rodapé do mapa
+  const ab = farms.filter(f => f.aberto).length;
+  const statusEl = document.getElementById("mapa-status");
+  if(statusEl) statusEl.textContent = farms.length + " farmácias mapeadas · " + ab + " abertas agora";
+}
+
+// Inicializar mapa quando Leaflet estiver pronto
+if(typeof L !== "undefined") {
+  initMapa();
+} else {
+  // Aguardar Leaflet carregar
+  window.addEventListener("load", initMapa);
+}
+
+</script>
+
+</body>
+</html>

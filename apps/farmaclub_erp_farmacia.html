@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>FarmaClub — ERP Farmácia</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — ERP Farmácia</title><style>
 :root{
   --bg:#f4f4f2; --card:#fff; --text:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --green:#3BAA35; --red:#dc2626; --orange:#d97706; --blue:#2563eb; --dark:#111827;
@@ -54,7 +54,7 @@ input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;b
       <div class="card kpi"><div class="label">Faturamento</div><div class="value">R$ 87,6 mil</div><div class="sub">Mês atual</div></div>
       <div class="card kpi"><div class="label">Estoque</div><div class="value">92%</div><div class="sub">Cobertura</div></div>
       <div class="card kpi"><div class="label">Produtos validados</div><div class="value" id="kValidos">0</div><div class="sub">Base fiscal pronta</div></div>
-      <div class="card kpi"><div class="label">Comissão</div><div class="value">10%</div><div class="sub">FarmaClub</div></div>
+      <div class="card kpi"><div class="label">Comissão</div><div class="value">10%</div><div class="sub">Farma do Bairro</div></div>
     </div>
     <div class="notice">Nova rotina sugerida: <strong>importar XML da nota</strong> para criar/atualizar produtos e usar o <strong>scanner</strong> para inventário, busca e conferência física.</div>
     <div class="grid grid-2" style="margin-top:16px">
@@ -79,8 +79,8 @@ input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px;b
   </main>
 </div>
 <script>
-const produtos=(window.FARMACLUB.produtos||[]);
-const entradas=(window.FARMACLUB.entradasFiscais||[]);
+const produtos=(window.FARMADOBAIRRO.produtos||[]);
+const entradas=(window.FARMADOBAIRRO.entradasFiscais||[]);
 const fmt=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 document.getElementById('kValidos').textContent = produtos.filter(p=>p.status_fiscal==='validado').length.toLocaleString('pt-BR');
 document.getElementById('tbProd').innerHTML=produtos.map(p=>`<tr><td><strong>${p.nome}</strong><div class="muted">${p.lab} · EAN ${p.ean || 'sem cadastro'}</div></td><td><div>NCM ${p.ncm || 'pendente'}</div><div class="muted">${p.monofasico?'Monofásico':'Não monofásico'} · ${p.icms_st?'ICMS-ST':'ICMS normal'}</div></td><td>R$ ${p.preco_ref.toFixed(2).replace('.',',')}</td></tr>`).join('');

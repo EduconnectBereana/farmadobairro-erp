@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>FarmaClub — Medicamentos</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — Medicamentos</title><style>
 :root{
   --bg:#f4f4f2; --card:#fff; --text:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --green:#3BAA35; --red:#dc2626; --orange:#d97706; --blue:#2563eb; --dark:#111827;
@@ -49,7 +49,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
 <script src="/shared/farmaclub_dados.js"></script>
 <div class="container">
   <div class="topbar">
-    <div class="logo">FarmaClub<small>Medicamentos em Itaperuna</small></div>
+    <div class="logo">Farma do Bairro<small>Medicamentos em Itaperuna</small></div>
     <div class="nav">
       <a href="/comprar">App Cliente</a>
       <a href="/setup">Setup</a>
@@ -65,7 +65,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
 </div>
 <script>
 const fmt=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-const produtos=(window.FARMACLUB?.produtos||[]);
+const produtos=(window.FARMADOBAIRRO?.produtos||[]);
 document.getElementById('produtos').innerHTML=produtos.map(p=>`
   <div class="card">
     <div class="badge ${p.receita?'orange':'green'}">${p.receita?'Receita':'Livre'}</div>

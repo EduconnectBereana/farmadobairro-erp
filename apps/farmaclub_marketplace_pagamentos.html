@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>FarmaClub — Pagamentos e Split</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — Pagamentos e Split</title><style>
 :root{--bg:#f4f4f2;--card:#fff;--text:#1a1a1a;--muted:#6b7280;--line:#e5e7eb;--green:#3BAA35;--orange:#d97706;--blue:#2563eb}
 *{box-sizing:border-box} body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text);margin:0} a{text-decoration:none;color:inherit} button,input,select{font:inherit}
 .layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.side{background:#fff;border-right:1px solid var(--line);padding:20px}.side a{display:block;padding:10px 12px;border-radius:10px;margin-bottom:6px;font-weight:700;color:#4b5563}.side a.active,.side a:hover{background:#ecfdf5;color:#166534}.main{padding:20px}
@@ -15,7 +15,7 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 12px;border-bottom
 <script src="/shared/farmaclub_dados.js"></script>
 <div class="layout">
 <aside class="side">
-  <div class="logo">FarmaClub<small>Pagamentos e Split</small></div>
+  <div class="logo">Farma do Bairro<small>Pagamentos e Split</small></div>
   <a href="/erp">Dashboard</a>
   <a href="/farmacia">ERP Farmácia</a>
   <a href="/cadastro-fiscal">Cadastro fiscal</a>
@@ -27,10 +27,10 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 12px;border-bottom
     <div><div class="logo">Modelo de pagamento incorporado</div><div class="muted">Melhor estrutura para o momento atual do projeto</div></div>
     <div class="pill">MVP em 1 meio por pedido</div>
   </div>
-  <div class="notice">Regra central do sistema: <strong>10% do Farma Club só sobre medicamentos</strong>. Frete não entra na sua base e fica 100% com o motoboy. Juros e taxa do gateway ficam transparentes e fora da sua comissão.</div>
+  <div class="notice">Regra central do sistema: <strong>10% do Farma do Bairro só sobre medicamentos</strong>. Frete não entra na sua base e fica 100% com o motoboy. Juros e taxa do gateway ficam transparentes e fora da sua comissão.</div>
   <div class="grid grid-3" style="margin-top:16px">
     <div class="card"><h3>MVP</h3><p class="muted">Pix, crédito ou débito por pedido. Sem multimeios misto na primeira fase.</p></div>
-    <div class="card"><h3>Split</h3><p class="muted">Farmácia recebe o líquido. Motoboy recebe frete integral. Farma Club recebe comissão fixa calculada internamente.</p></div>
+    <div class="card"><h3>Split</h3><p class="muted">Farmácia recebe o líquido. Motoboy recebe frete integral. Farma do Bairro recebe comissão fixa calculada internamente.</p></div>
     <div class="card"><h3>Fase 2</h3><p class="muted">Estrutura pronta para múltiplas cobranças parciais depois, sem refazer o banco.</p></div>
   </div>
   <div class="grid grid-2" style="margin-top:16px">
@@ -54,9 +54,9 @@ table{width:100%;border-collapse:collapse} th,td{padding:10px 12px;border-bottom
   <div class="card" style="margin-top:16px">
     <h3>Regras operacionais do MVP</h3>
     <div class="tbl"><table><thead><tr><th>Regra</th><th>Decisão atual</th><th>Motivo</th></tr></thead><tbody>
-      <tr><td>Comissão Farma Club</td><td>10% sobre medicamentos</td><td>Evita ganhar sobre frete, juros e taxa de cartão.</td></tr>
+      <tr><td>Comissão Farma do Bairro</td><td>10% sobre medicamentos</td><td>Evita ganhar sobre frete, juros e taxa de cartão.</td></tr>
       <tr><td>Frete</td><td>100% motoboy</td><td>Dinheiro da corrida não passa economicamente pela farmácia.</td></tr>
-      <tr><td>Gateway fee</td><td>Transparente e fora da sua comissão</td><td>Protege a base do Farma Club.</td></tr>
+      <tr><td>Gateway fee</td><td>Transparente e fora da sua comissão</td><td>Protege a base do Farma do Bairro.</td></tr>
       <tr><td>Checkout</td><td>1 meio de pagamento por pedido</td><td>Menos abandono e menos complexidade operacional.</td></tr>
       <tr><td>Multimeios</td><td>Preparado para fase 2</td><td>Banco e API já aceitam evolução futura.</td></tr>
     </tbody></table></div>
@@ -76,8 +76,8 @@ function simular(){
   const netFarm=+(total-taxaFC-frete-gateway).toFixed(2);
   document.getElementById('resultado').innerHTML=[
     ['Forma de pagamento', pg],
-    ['Base do Farma Club', fmt(med)],
-    ['Comissão Farma Club', fmt(taxaFC)],
+    ['Base do Farma do Bairro', fmt(med)],
+    ['Comissão Farma do Bairro', fmt(taxaFC)],
     ['Frete do motoboy', fmt(frete)],
     ['Taxa do gateway', fmt(gateway)],
     ['Juros do cliente', fmt(juros)],

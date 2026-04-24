@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>FarmaClub — ERP Central</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — ERP Central</title><style>
 :root{
   --bg:#f4f4f2; --card:#fff; --text:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --green:#3BAA35; --red:#dc2626; --orange:#d97706; --blue:#2563eb; --dark:#111827;
@@ -42,7 +42,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04
 <script src="/shared/farmaclub_dados.js"></script>
 <div class="layout">
   <aside class="side">
-    <div class="logo">FarmaClub<small>ERP Central · Painel do Gestor</small></div>
+    <div class="logo">Farma do Bairro<small>ERP Central · Painel do Gestor</small></div>
     <a class="active" href="#dashboard">Dashboard</a>
     <a href="/farmacia">ERP Farmácia</a>
     <a href="/cadastro-fiscal">Cadastro fiscal</a>
@@ -63,7 +63,7 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04
       <div class="card kpi"><div class="label">Cadastros fiscais validados</div><div class="value" id="kFiscal">0</div><div class="sub">Produtos com NCM confiável</div></div>
       <div class="card kpi"><div class="label">Comissão estimada</div><div class="value" id="kCom">R$ 0</div><div class="sub">Somente sobre medicamentos</div></div>
     </div>
-    <div class="notice">Modelo incorporado: <strong>Pix, crédito ou débito por pedido no MVP</strong>. A comissão do Farma Club incide apenas sobre medicamentos; o frete fica 100% com o motoboy e o multimeios fica preparado para a fase 2.</div>
+    <div class="notice">Modelo incorporado: <strong>Pix, crédito ou débito por pedido no MVP</strong>. A comissão do Farma do Bairro incide apenas sobre medicamentos; o frete fica 100% com o motoboy e o multimeios fica preparado para a fase 2.</div>
     <div class="grid grid-2" style="margin-top:16px">
       <div class="card">
         <h3>Farmácias</h3>
@@ -75,16 +75,16 @@ th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04
       </div>
     </div>
     <div class="grid grid-3">
-      <div class="card"><h3>Split financeiro</h3><p class="muted">Farmácia recebe o líquido da venda, motoboy recebe o frete integral e o Farma Club recebe somente sobre medicamentos.</p></div>
+      <div class="card"><h3>Split financeiro</h3><p class="muted">Farmácia recebe o líquido da venda, motoboy recebe o frete integral e o Farma do Bairro recebe somente sobre medicamentos.</p></div>
       <div class="card"><h3>Entrada inteligente</h3><p class="muted">Scanner serve para inventário e busca rápida. O cadastro fiscal mestre nasce do XML da nota e depois entra em revisão por exceção.</p></div>
       <div class="card"><h3>Ação imediata</h3><p class="muted">Publicar este pacote, aplicar o SQL atualizado e começar a implantação piloto com importação das últimas NF-es de compra.</p></div>
     </div>
   </main>
 </div>
 <script>
-const farms=window.FARMACLUB.farmacias||[];
-const pedidos=window.FARMACLUB.pedidos||[];
-const entradas=window.FARMACLUB.entradasFiscais||[];
+const farms=window.FARMADOBAIRRO.farmacias||[];
+const pedidos=window.FARMADOBAIRRO.pedidos||[];
+const entradas=window.FARMADOBAIRRO.entradasFiscais||[];
 const fmt=v=>Number(v).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 document.getElementById('kFarm').textContent=farms.length;
 document.getElementById('kPed').textContent=pedidos.filter(p=>p.status!=='entregue').length;
@@ -94,6 +94,6 @@ document.getElementById('tbFarm').innerHTML=farms.map(f=>{
   const pct = f.produtos_cadastrados ? Math.round((f.fiscais_validados||0)/(f.produtos_cadastrados||1)*100) : 0;
   return `<tr><td><strong>${f.nome}</strong><div class="muted">${f.bairro}</div></td><td>${f.status}</td><td>${f.estoque_pct}%</td><td>${pct}%<div class="muted">${(f.fiscais_validados||0).toLocaleString('pt-BR')} de ${(f.produtos_cadastrados||0).toLocaleString('pt-BR')}</div></td><td>${fmt(f.faturamento)}</td></tr>`;
 }).join('');
-document.getElementById('tbNfe').innerHTML=[[ 'Modelo atual','1 meio por pedido' ],[ 'Métodos ativos',(window.FARMACLUB.pagamentosConfig?.metodosAtivos||[]).join(', ') ],[ 'Comissão Farma Club','10% só sobre medicamentos' ],[ 'Frete','100% motoboy' ],[ 'Multimeios', window.FARMACLUB.pagamentosConfig?.mixedMethods ? 'ativo' : 'preparado para fase 2' ]].map(([a,b])=>`<tr><td><strong>${a}</strong></td><td>${b}</td></tr>`).join('');
+document.getElementById('tbNfe').innerHTML=[[ 'Modelo atual','1 meio por pedido' ],[ 'Métodos ativos',(window.FARMADOBAIRRO.pagamentosConfig?.metodosAtivos||[]).join(', ') ],[ 'Comissão Farma do Bairro','10% só sobre medicamentos' ],[ 'Frete','100% motoboy' ],[ 'Multimeios', window.FARMADOBAIRRO.pagamentosConfig?.mixedMethods ? 'ativo' : 'preparado para fase 2' ]].map(([a,b])=>`<tr><td><strong>${a}</strong></td><td>${b}</td></tr>`).join('');
 </script>
 </body></html>

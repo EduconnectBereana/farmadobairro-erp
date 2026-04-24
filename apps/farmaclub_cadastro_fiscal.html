@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>FarmaClub — Cadastro Fiscal</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — Cadastro Fiscal</title><style>
 :root{
   --bg:#f4f4f2; --card:#fff; --text:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --green:#3BAA35; --red:#dc2626; --orange:#d97706; --blue:#2563eb; --dark:#111827;
@@ -47,7 +47,7 @@ button,.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);ba
 <script src="/shared/farmaclub_fiscal.js"></script>
 <div class="layout">
   <aside class="side">
-    <div class="logo">FarmaClub<small>Cadastro fiscal e XML</small></div>
+    <div class="logo">Farma do Bairro<small>Cadastro fiscal e XML</small></div>
     <a href="/erp">Dashboard</a>
     <a href="/farmacia">ERP Farmácia</a>
     <a class="active" href="#">Cadastro fiscal</a>
@@ -63,7 +63,7 @@ button,.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);ba
       </div>
     </div>
 
-    <div class="notice">Fluxo recomendado do Farma Club: <strong>1)</strong> importar XML da nota do fornecedor, <strong>2)</strong> criar/atualizar produto com NCM e EAN, <strong>3)</strong> revisar apenas exceções, <strong>4)</strong> usar scanner para inventário, venda e conferência física.</div>
+    <div class="notice">Fluxo recomendado do Farma do Bairro: <strong>1)</strong> importar XML da nota do fornecedor, <strong>2)</strong> criar/atualizar produto com NCM e EAN, <strong>3)</strong> revisar apenas exceções, <strong>4)</strong> usar scanner para inventário, venda e conferência física.</div>
 
     <div class="grid grid-4" style="margin-top:16px">
       <div class="card kpi"><div class="label">Itens importados</div><div class="value" id="kItens">0</div><div class="sub">Lidos dos XMLs</div></div>
@@ -105,7 +105,7 @@ button,.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);ba
   </main>
 </div>
 <script>
-const produtosLocais = window.FARMACLUB.produtos || [];
+const produtosLocais = window.FARMADOBAIRRO.produtos || [];
 let importedItems = [];
 let importedNotas = [];
 const fmtMoney = v => Number(v || 0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
@@ -163,7 +163,7 @@ document.getElementById('xmlInput').addEventListener('change', async (event) => 
   for (const file of files) {
     const text = await file.text();
     try {
-      const parsed = window.FARMACLUB_FISCAL.parseNFeXMLText(text);
+      const parsed = window.FARMADOBAIRRO_FISCAL.parseNFeXMLText(text);
       importedNotas.push({ ...parsed.nota, itens: parsed.itens.length });
       importedItems = importedItems.concat(parsed.itens);
     } catch (error) {
@@ -176,7 +176,7 @@ document.getElementById('xmlInput').addEventListener('change', async (event) => 
 });
 
 document.getElementById('eanSearch').addEventListener('input', (event) => {
-  const value = window.FARMACLUB_FISCAL.normalizeDigits(event.target.value);
+  const value = window.FARMADOBAIRRO_FISCAL.normalizeDigits(event.target.value);
   const product = produtosLocais.find(p => String(p.ean || '') === value) || importedItems.find(i => String(i.ean || '') === value);
   document.getElementById('eanResult').innerHTML = product
     ? `<strong>${product.nome || product.produto}</strong><br>NCM ${product.ncm || 'pendente'} · ${product.fonte_ncm || product.fonteNcm || 'sem fonte'}<br>${product.monofasico ? 'Monofásico' : 'Não monofásico'} · ${product.icms_st || product.icmsSt ? 'ICMS-ST' : 'ICMS normal'}`

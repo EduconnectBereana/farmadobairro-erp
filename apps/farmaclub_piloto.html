@@ -1,28 +1,28 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>FarmaClub — Portal Piloto</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — Portal Piloto</title><style>
 :root{--bg:#f4f4f2;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--green:#3BAA35;--blue:#2563eb;--dark:#0f172a;--amber:#b45309}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}a{text-decoration:none;color:inherit}button{font:inherit}
 .container{max-width:1180px;margin:0 auto;padding:24px}.hero{background:linear-gradient(135deg,#052e16,#0f172a);color:#fff;border-radius:24px;padding:28px}.hero h1{margin:0 0 8px;font-size:34px}.hero p{margin:0;color:#d1d5db;line-height:1.7;max-width:850px}.grid{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.card h2,.card h3{margin:0 0 10px}.muted{color:var(--muted)}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}.logo{font-weight:800;font-size:22px;color:var(--green)}.logo small{display:block;font-size:11px;color:var(--muted)}.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#ecfdf5;color:#15803d;border:1px solid #bbf7d0}.btn{display:inline-block;padding:11px 14px;border-radius:12px;background:#fff;border:1px solid var(--line);font-weight:700}.btn.primary{background:var(--green);border-color:var(--green);color:#fff}.stack{display:grid;gap:10px}.route{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #eef2f7;align-items:center}.pill{font-size:12px;padding:4px 9px;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}.ok{color:#15803d}.warn{color:var(--amber)}.list{margin:0;padding-left:18px}.footer{padding:24px 0;color:var(--muted);font-size:12px}@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}.hero h1{font-size:28px}}</style></head><body>
 <script src="/public/runtime-config.js"></script><script src="/shared/farmaclub_boot.js"></script><script src="/shared/farmaclub_dados.js"></script>
 <div class="container">
   <div class="topbar">
-    <div class="logo">FarmaClub<small>Portal de apresentação do piloto</small></div>
+    <div class="logo">Farma do Bairro<small>Portal de apresentação do piloto</small></div>
     <div class="badge" id="cfgBadge">● Validando ambiente</div>
   </div>
   <section class="hero">
     <h1>Ambiente pronto para apresentar à farmácia piloto</h1>
-    <p>Este portal concentra os links públicos do site, do app do cliente, do app do motoboy e dos painéis administrativos. A hospedagem fica preparada em um único projeto com rotas limpas para demonstrar a operação do FarmaClub sem exigir montagem manual.</p>
+    <p>Este portal concentra os links públicos do site, do app do cliente, do app do motoboy e dos painéis administrativos. A hospedagem fica preparada em um único projeto com rotas limpas para demonstrar a operação do Farma do Bairro sem exigir montagem manual.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px"><a class="btn primary" href="/site">Abrir site</a><a class="btn" href="/comprar">Abrir app cliente</a><a class="btn" href="/motoboy">Abrir app motoboy</a><a class="btn" href="/erp">Abrir ERP</a></div>
   </section>
   <div class="grid grid-3" style="margin-top:18px">
     <div class="card"><h3>Canais publicados</h3><div class="stack" id="routeList"></div></div>
-    <div class="card"><h3>Regras do piloto</h3><ul class="list muted"><li>Comissão do Farma Club só sobre medicamentos.</li><li>Frete 100% do motoboy.</li><li>Checkout MVP com Pix, crédito ou débito por pedido.</li><li>Cadastro fiscal nasce do XML da nota.</li><li>ERP e operação acessíveis por URL.</li></ul></div>
+    <div class="card"><h3>Regras do piloto</h3><ul class="list muted"><li>Comissão do Farma do Bairro só sobre medicamentos.</li><li>Frete 100% do motoboy.</li><li>Checkout MVP com Pix, crédito ou débito por pedido.</li><li>Cadastro fiscal nasce do XML da nota.</li><li>ERP e operação acessíveis por URL.</li></ul></div>
     <div class="card"><h3>Status do ambiente</h3><div id="envInfo" class="stack muted"></div></div>
   </div>
   <div class="grid grid-2" style="margin-top:16px">
     <div class="card"><h3>Roteiro de apresentação</h3><ol class="list muted"><li>Mostrar o site público e a busca de produtos.</li><li>Entrar no app cliente e validar o checkout MVP.</li><li>Abrir o app do motoboy e explicar o repasse integral do frete.</li><li>Fechar no ERP Central com visão de pedidos, fiscal e pagamentos.</li></ol></div>
     <div class="card"><h3>Pré-publicação</h3><ol class="list muted"><li>Subir este repositório no GitHub.</li><li>Conectar o projeto na Vercel.</li><li>Apontar o domínio próprio.</li><li>Editar <code>/public/runtime-config.js</code> com o Supabase real.</li><li>Aplicar os SQLs no Supabase.</li></ol></div>
   </div>
-  <div class="footer">Portal piloto · FarmaClub</div>
+  <div class="footer">Portal piloto · Farma do Bairro</div>
 </div>
 <script>
 const routes=[['Site público','/site'],['App cliente','/comprar'],['App motoboy','/motoboy'],['ERP central','/erp'],['ERP farmácia','/farmacia'],['Pagamentos','/pagamentos'],['Cadastro fiscal','/cadastro-fiscal'],['Instalação','/instalar'],['Health API','/api/health']];

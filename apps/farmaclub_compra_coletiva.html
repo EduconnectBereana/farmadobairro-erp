@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>FarmaClub — Compra Coletiva</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — Compra Coletiva</title><style>
 :root{
   --bg:#f4f4f2; --card:#fff; --text:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --green:#3BAA35; --red:#dc2626; --orange:#d97706; --blue:#2563eb; --dark:#111827;
@@ -55,7 +55,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
   </div>
 </div>
 <script>
-const items=(window.FARMACLUB.produtos||[]).map((p,i)=>({...p,qtd:(i+2)*12,custo:(i+2)*12*p.custo_ref}));
+const items=(window.FARMADOBAIRRO.produtos||[]).map((p,i)=>({...p,qtd:(i+2)*12,custo:(i+2)*12*p.custo_ref}));
 document.getElementById('tb').innerHTML=items.map(p=>`<tr><td><strong>${p.nome}</strong></td><td>${p.cat}</td><td>${p.qtd}</td><td>R$ ${p.custo.toFixed(2).replace('.',',')}</td></tr>`).join('');
 </script>
 </body></html>

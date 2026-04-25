@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — Cadastro Fiscal</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" type="image/png" href="/farma-do-bairro-logo.png">
+<link rel="apple-touch-icon" href="/farma-do-bairro-logo.png"><title>Farma do Bairro — Cadastro Fiscal</title><style>
 :root{
   --bg:#f4f4f2; --card:#fff; --text:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --green:#3BAA35; --red:#dc2626; --orange:#d97706; --blue:#2563eb; --dark:#111827;
@@ -40,6 +42,12 @@ button,.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);ba
 .notice{padding:14px;border-radius:14px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;font-size:13px}
 .code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#f8fafc;padding:2px 6px;border-radius:6px;border:1px solid #e2e8f0}
 @media (max-width:980px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.layout{grid-template-columns:1fr}}
+
+.brand-logo-mini{display:flex;align-items:center;gap:10px}
+.brand-logo-mini img{width:32px;height:32px;flex-shrink:0}
+.brand-logo-mini .brand-text{display:flex;flex-direction:column}
+.brand-logo-mini .brand-name{font-weight:800;font-size:18px;color:#3BAA35;line-height:1}
+.brand-logo-mini .brand-tagline{font-size:11px;color:#6b7280;font-weight:600;margin-top:3px}
 </style></head><body>
 <script src="/public/runtime-config.js"></script>
 <script src="/shared/farmaclub_boot.js"></script>
@@ -47,7 +55,7 @@ button,.btn{padding:10px 14px;border-radius:10px;border:1px solid var(--line);ba
 <script src="/shared/farmaclub_fiscal.js"></script>
 <div class="layout">
   <aside class="side">
-    <div class="logo">Farma do Bairro<small>Cadastro fiscal e XML</small></div>
+    <div class="brand-logo-mini"><img src="/farma-do-bairro-logo.png" alt="Farma do Bairro"><div class="brand-text"><span class="brand-name">Farma do Bairro</span><span class="brand-tagline">Cadastro fiscal e XML</span></div></div>
     <a href="/erp">Dashboard</a>
     <a href="/farmacia">ERP Farmácia</a>
     <a class="active" href="#">Cadastro fiscal</a>

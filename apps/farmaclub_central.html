@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" type="image/png" href="/farma-do-bairro-logo.png">
+<link rel="apple-touch-icon" href="/farma-do-bairro-logo.png">
 <title>Farma do Bairro — Sistema de Gestão</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -75,6 +77,12 @@ body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);min-hei
 @media(min-width:601px) and (max-width:800px){
   .grid{grid-template-columns:repeat(4,1fr)}
 }
+
+.brand-logo-mini{display:flex;align-items:center;gap:10px}
+.brand-logo-mini img{width:32px;height:32px;flex-shrink:0}
+.brand-logo-mini .brand-text{display:flex;flex-direction:column}
+.brand-logo-mini .brand-name{font-weight:800;font-size:18px;color:#3BAA35;line-height:1}
+.brand-logo-mini .brand-tagline{font-size:11px;color:#6b7280;font-weight:600;margin-top:3px}
 </style>
 </head>
 <body>

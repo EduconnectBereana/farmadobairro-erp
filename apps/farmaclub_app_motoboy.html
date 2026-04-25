@@ -1,8 +1,16 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — App Motoboy</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" type="image/png" href="/farma-do-bairro-logo.png">
+<link rel="apple-touch-icon" href="/farma-do-bairro-logo.png"><title>Farma do Bairro — App Motoboy</title><style>
 :root{--bg:#0f172a;--card:#111827;--text:#fff;--muted:#94a3b8;--line:#1f2937;--green:#3BAA35}
 *{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text);margin:0;padding-bottom:80px}a{text-decoration:none;color:inherit}button{font:inherit}
 .container{max-width:1180px;margin:0 auto;padding:24px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}.logo{font-weight:800;font-size:22px;color:#fff}.logo small{display:block;font-size:11px;color:var(--muted);font-weight:600}.grid{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.label{font-size:12px;color:var(--muted)}.value{font-size:28px;font-weight:800;margin-top:6px}.sub{font-size:11px;color:#9ca3af;margin-top:6px}.btn{padding:10px 14px;border-radius:10px;background:#111827;border:1px solid #334155;color:#fff;font-size:13px;font-weight:700}.btn.primary{background:var(--green);border-color:var(--green)}.bottom{position:fixed;bottom:0;left:0;right:0;background:#111827;border-top:1px solid #1f2937;padding:10px 16px;display:flex;justify-content:space-around}.notice{padding:14px;border-radius:14px;background:#172554;border:1px solid #1d4ed8;color:#bfdbfe;font-size:13px}
 @media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+.brand-logo-mini{display:flex;align-items:center;gap:10px}
+.brand-logo-mini img{width:32px;height:32px;flex-shrink:0}
+.brand-logo-mini .brand-text{display:flex;flex-direction:column}
+.brand-logo-mini .brand-name{font-weight:800;font-size:18px;color:#3BAA35;line-height:1}
+.brand-logo-mini .brand-tagline{font-size:11px;color:#6b7280;font-weight:600;margin-top:3px}
 </style></head><body>
 <script src="/public/runtime-config.js"></script>
 <script src="/shared/farmaclub_boot.js"></script>
@@ -10,7 +18,7 @@
 <script>window.FCBoot&&window.FCBoot.setPwaLinks({ manifest: '/public/manifest-motoboy.json' });</script>
 <div class="container">
   <div class="topbar">
-    <div class="logo">App Motoboy<small>Ganhos separados do pedido da farmácia</small></div>
+    <div class="brand-logo-mini"><img src="/farma-do-bairro-logo.png" alt="Farma do Bairro"><div class="brand-text"><span class="brand-name">App Motoboy</span><span class="brand-tagline">Ganhos separados do pedido da farmácia</span></div></div>
     <button class="btn primary" id="statusBtn" onclick="toggleStatus()">● Disponível</button>
   </div>
   <div class="notice">Regra do MVP: o motoboy recebe <strong>100% do frete</strong>. A corrida só é liberada depois que o pagamento for confirmado no site ou app.</div>

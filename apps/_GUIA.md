@@ -1,50 +1,55 @@
-# 📋 Rebranding da pasta /apps/ — Instruções
+# 🎨 Pacote com Logos — Farma do Bairro
 
-Este ZIP contém os **16 arquivos HTML da pasta `/apps/`** com o rebranding aplicado.
+Este ZIP tem os 16 arquivos HTML da pasta `/apps/` com:
 
-## O que tem dentro
+- Rebranding completo (FarmaClub → Farma do Bairro)
+- Logo visível em todas as páginas (tamanho conforme contexto)
+- Favicon (ícone da aba do navegador) configurado
+- Sintaxe JavaScript validada
 
-- 15 arquivos `farmaclub_*.html` (versões da pasta /apps/)
-- 1 arquivo `index.html` (da pasta /apps/)
+## Como ficaram as logos
 
-## Como aplicar (3 minutos)
+LOGO GRANDE (48px) - páginas institucionais:
+- farmaclub_site.html (landing)
+- farmaclub_piloto.html (portal piloto)
+- farmaclub_instalar.html
+- index.html
 
-### Passo 1 — Extrair
-Botão direito no ZIP → **Extrair tudo** → salva numa pasta temporária.
+LOGO PEQUENA (32px) - ferramentas operacionais:
+- farmaclub_erp_central.html
+- farmaclub_erp_farmacia.html
+- farmaclub_app_cliente.html
+- farmaclub_app_motoboy.html
+- farmaclub_contabilidade.html
+- farmaclub_marketplace_pagamentos.html
+- farmaclub_cadastro_fiscal.html
+- farmaclub_setup.html
+- farmaclub_seguranca.html
+- farmaclub_compra_coletiva.html
 
-### Passo 2 — Copiar para dentro de /apps/
-1. Abra a pasta do projeto (GitHub Desktop → Show in Explorer)
-2. **Entre na pasta `apps/`** (é uma subpasta dentro do projeto)
-3. Copia TODOS os 16 arquivos extraídos do ZIP pra dentro dessa pasta `apps/`
-4. Quando perguntar "Substituir arquivos?" → **Sim para todos**
+Páginas tecnicas (sem logo visual): farmaclub_central.html e farmaclub_frete.html
 
-### Passo 3 — Commit e push
-1. GitHub Desktop vai mostrar ~16 arquivos modificados em Changes
-2. Summary: `fix: rebranding dos arquivos da pasta /apps/`
-3. Clica em **Commit to main**
-4. Clica em **Push origin**
-5. Aguarda 1-2 minutos
+## Como aplicar
 
-### Passo 4 — Testar
-Aba anônima:
+1. Extrai o ZIP
+2. Cola TODOS os 16 arquivos dentro da pasta /apps/ do projeto
+3. Confirma "Substituir todos"
+4. GitHub Desktop -> Commit "feat: adicionar logo Farma do Bairro nas paginas"
+5. Push origin
+6. Aguarda 1-2min e testa em aba anonima
 
-- `https://farmaclub-erp.vercel.app/site`
-- `https://farmaclub-erp.vercel.app/comprar`
-- `https://farmaclub-erp.vercel.app/erp`
-- `https://farmaclub-erp.vercel.app/piloto`
+URLs para testar:
+- https://farmaclub-erp.vercel.app/site (logo grande)
+- https://farmaclub-erp.vercel.app/piloto (logo grande)
+- https://farmaclub-erp.vercel.app/comprar (logo pequena)
+- https://farmaclub-erp.vercel.app/erp (logo pequena)
 
-Todos devem mostrar **"Farma do Bairro"** agora.
+A aba do navegador deve mostrar o icone da logo (em vez do "FC" preto antigo).
 
----
+## Se logo aparecer esticada/cortada
 
-## ⚠️ Observação importante: logos
+Avisa que ajusto o CSS em 1 min.
 
-Os HTMLs da pasta `/apps/` **não usam tag de imagem** pra logo. O nome "Farma do Bairro" aparece como **texto estilizado em CSS** (classe `.logo` com cor verde).
+## Cache do navegador
 
-Isso significa que a logo bonita que sua esposa fez não aparece nessas páginas. Para mostrar a imagem da logo, precisaríamos editar cada HTML e adicionar `<img src="/farma-do-bairro-logo.png">` no lugar certo.
-
-**Recomendação:** por enquanto, deixa só o texto "Farma do Bairro" (já fica profissional). Quando quiser adicionar a logo real, me avisa que faço essa alteração numa sprint específica.
-
----
-
-**Geração:** 24/04/2026
+Se ainda aparecer logo antiga, Ctrl+Shift+R ou aba anonima.

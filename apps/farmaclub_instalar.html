@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — Instalar</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" type="image/png" href="/farma-do-bairro-logo.png">
+<link rel="apple-touch-icon" href="/farma-do-bairro-logo.png"><title>Farma do Bairro — Instalar</title><style>
 :root{
   --bg:#f4f4f2; --card:#fff; --text:#1a1a1a; --muted:#6b7280; --line:#e5e7eb;
   --green:#3BAA35; --red:#dc2626; --orange:#d97706; --blue:#2563eb; --dark:#111827;
@@ -43,11 +45,21 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green)}
   .grid-2,.grid-3,.grid-4, form .row{grid-template-columns:1fr}
   .hero h1{font-size:28px}
 }
+
+.brand-logo-grande{display:flex;align-items:center;gap:14px}
+.brand-logo-grande img{width:48px;height:48px;flex-shrink:0}
+.brand-logo-grande .brand-text{display:flex;flex-direction:column}
+.brand-logo-grande .brand-name{font-weight:800;font-size:22px;color:#3BAA35;line-height:1}
+.brand-logo-grande .brand-tagline{font-size:11px;color:#6b7280;font-weight:600;margin-top:4px}
+@media (max-width:600px){
+  .brand-logo-grande img{width:40px;height:40px}
+  .brand-logo-grande .brand-name{font-size:18px}
+}
 </style></head><body>
 <script src="/public/runtime-config.js"></script>
 <script src="/shared/farmaclub_boot.js"></script>
 <div class="container">
-  <div class="topbar"><div class="logo">Instalar<small>Publicação no GitHub/Vercel</small></div></div>
+  <div class="topbar"><div class="brand-logo-grande"><img src="/farma-do-bairro-logo.png" alt="Farma do Bairro"><div class="brand-text"><span class="brand-name">Instalar</span><span class="brand-tagline">Publicação no GitHub/Vercel</span></div></div></div>
   <div class="card"><h3>Ordem de publicação</h3><ol><li>Subir este repositório ao GitHub.</li><li>Conectar projeto na Vercel.</li><li>Preencher variáveis do <code>.env.example</code>.</li><li>Aplicar os SQLs no Supabase.</li><li>Testar rotas públicas e administrativas.</li></ol></div>
 <div class="card" style="margin-top:16px"><h3>Rotas principais para demonstração</h3><ul><li><code>/site</code> · vitrine pública</li><li><code>/comprar</code> · app do cliente</li><li><code>/motoboy</code> · app do motoboy</li><li><code>/erp</code> · ERP central</li><li><code>/piloto</code> · portal da apresentação</li></ul><p class="muted">Preencha primeiro <code>public/runtime-config.js</code> com o Supabase real e depois publique.</p></div>
 </div>

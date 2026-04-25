@@ -1,11 +1,23 @@
-<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Farma do Bairro — Portal Piloto</title><style>
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" type="image/png" href="/farma-do-bairro-logo.png">
+<link rel="apple-touch-icon" href="/farma-do-bairro-logo.png"><title>Farma do Bairro — Portal Piloto</title><style>
 :root{--bg:#f4f4f2;--card:#fff;--text:#111827;--muted:#6b7280;--line:#e5e7eb;--green:#3BAA35;--blue:#2563eb;--dark:#0f172a;--amber:#b45309}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}a{text-decoration:none;color:inherit}button{font:inherit}
-.container{max-width:1180px;margin:0 auto;padding:24px}.hero{background:linear-gradient(135deg,#052e16,#0f172a);color:#fff;border-radius:24px;padding:28px}.hero h1{margin:0 0 8px;font-size:34px}.hero p{margin:0;color:#d1d5db;line-height:1.7;max-width:850px}.grid{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.card h2,.card h3{margin:0 0 10px}.muted{color:var(--muted)}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}.logo{font-weight:800;font-size:22px;color:var(--green)}.logo small{display:block;font-size:11px;color:var(--muted)}.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#ecfdf5;color:#15803d;border:1px solid #bbf7d0}.btn{display:inline-block;padding:11px 14px;border-radius:12px;background:#fff;border:1px solid var(--line);font-weight:700}.btn.primary{background:var(--green);border-color:var(--green);color:#fff}.stack{display:grid;gap:10px}.route{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #eef2f7;align-items:center}.pill{font-size:12px;padding:4px 9px;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}.ok{color:#15803d}.warn{color:var(--amber)}.list{margin:0;padding-left:18px}.footer{padding:24px 0;color:var(--muted);font-size:12px}@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}.hero h1{font-size:28px}}</style></head><body>
+.container{max-width:1180px;margin:0 auto;padding:24px}.hero{background:linear-gradient(135deg,#052e16,#0f172a);color:#fff;border-radius:24px;padding:28px}.hero h1{margin:0 0 8px;font-size:34px}.hero p{margin:0;color:#d1d5db;line-height:1.7;max-width:850px}.grid{display:grid;gap:16px}.grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}.card h2,.card h3{margin:0 0 10px}.muted{color:var(--muted)}.topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}.logo{font-weight:800;font-size:22px;color:var(--green)}.logo small{display:block;font-size:11px;color:var(--muted)}.badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;background:#ecfdf5;color:#15803d;border:1px solid #bbf7d0}.btn{display:inline-block;padding:11px 14px;border-radius:12px;background:#fff;border:1px solid var(--line);font-weight:700}.btn.primary{background:var(--green);border-color:var(--green);color:#fff}.stack{display:grid;gap:10px}.route{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #eef2f7;align-items:center}.pill{font-size:12px;padding:4px 9px;border-radius:999px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe}.ok{color:#15803d}.warn{color:var(--amber)}.list{margin:0;padding-left:18px}.footer{padding:24px 0;color:var(--muted);font-size:12px}@media (max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}.hero h1{font-size:28px}}
+.brand-logo-grande{display:flex;align-items:center;gap:14px}
+.brand-logo-grande img{width:48px;height:48px;flex-shrink:0}
+.brand-logo-grande .brand-text{display:flex;flex-direction:column}
+.brand-logo-grande .brand-name{font-weight:800;font-size:22px;color:#3BAA35;line-height:1}
+.brand-logo-grande .brand-tagline{font-size:11px;color:#6b7280;font-weight:600;margin-top:4px}
+@media (max-width:600px){
+  .brand-logo-grande img{width:40px;height:40px}
+  .brand-logo-grande .brand-name{font-size:18px}
+}
+</style></head><body>
 <script src="/public/runtime-config.js"></script><script src="/shared/farmaclub_boot.js"></script><script src="/shared/farmaclub_dados.js"></script>
 <div class="container">
   <div class="topbar">
-    <div class="logo">Farma do Bairro<small>Portal de apresentação do piloto</small></div>
+    <div class="brand-logo-grande"><img src="/farma-do-bairro-logo.png" alt="Farma do Bairro"><div class="brand-text"><span class="brand-name">Farma do Bairro</span><span class="brand-tagline">Portal de apresentação do piloto</span></div></div>
     <div class="badge" id="cfgBadge">● Validando ambiente</div>
   </div>
   <section class="hero">
